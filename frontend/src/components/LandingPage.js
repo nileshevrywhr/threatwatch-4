@@ -35,6 +35,41 @@ const LandingPage = () => {
   
   const navigate = useNavigate();
 
+  // Check for existing authentication on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const userData = localStorage.getItem('user');
+    
+    if (token && userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        setAuthToken(token);
+      } catch (error) {
+        console.error('Failed to parse user data:', error);
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+      }
+    }
+  }, []);
+
+  const handleAuthSuccess = (userData, token) => {
+    setUser(userData);
+    setAuthToken(token);
+    setShowAuthModal(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    setUser(null);
+    setAuthToken(null);
+    
+    // Clear any session storage
+    const quickScanKeys = Object.keys(sessionStorage).filter(key => key.startsWith('quickScanResult_'));
+    quickScanKeys.forEach(key => sessionStorage.removeItem(key));
+  };
+
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
