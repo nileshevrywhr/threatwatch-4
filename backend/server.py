@@ -20,7 +20,7 @@ from auth_service import AuthService
 from auth_schemas import *
 from subscription_service import SubscriptionService, SUBSCRIPTION_TIERS
 from emergentintegrations.llm.chat import LlmChat, UserMessage
-from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest, CheckoutSessionResponse, CheckoutStatusResponse
+import stripe
 from sqlalchemy.orm import Session
 
 ROOT_DIR = Path(__file__).parent
