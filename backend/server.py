@@ -55,11 +55,19 @@ class UserStatus(BaseModel):
 class QuickScanRequest(BaseModel):
     query: str
 
+class DiscoveredLink(BaseModel):
+    title: str
+    url: str
+    snippet: str
+    date: str
+    severity: str
+
 class QuickScanResult(BaseModel):
     query: str
     summary: str
     key_threats: List[str]
     sources: List[str]
+    discovered_links: List[DiscoveredLink]
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 # Mock intelligence data
