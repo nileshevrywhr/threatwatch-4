@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from './ui/button';
@@ -6,7 +6,10 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
-import { Shield, Eye, Bell, Target, ArrowRight, CheckCircle, Zap } from 'lucide-react';
+import { Shield, Eye, Bell, Target, ArrowRight, CheckCircle, Zap, LogIn, UserPlus } from 'lucide-react';
+import AuthModal from './AuthModal';
+import SubscriptionPlans from './SubscriptionPlans';
+import UserMenu from './UserMenu';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
