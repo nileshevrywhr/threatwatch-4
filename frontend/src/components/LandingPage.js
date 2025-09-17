@@ -20,6 +20,8 @@ const LandingPage = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
+  const [quickScanLoading, setQuickScanLoading] = useState(false);
+  const [quickScanResult, setQuickScanResult] = useState(null);
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
