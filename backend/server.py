@@ -561,8 +561,6 @@ RECOMMENDATIONS:
     }
 
 # Original models for existing functionality
-class QuickScanRequest(BaseModel):
-    query: str
 
 class IntelligenceMatch(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
