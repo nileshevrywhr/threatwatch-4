@@ -225,12 +225,14 @@ async def create_checkout_session(
     
     stripe_checkout = StripeCheckout(api_key=api_key, webhook_url=webhook_url)
     
-    # Create checkout session request
+    # Create checkout session request for subscription
     checkout_request = CheckoutSessionRequest(
         stripe_price_id=stripe_price_id,
         quantity=1,
+        mode="subscription",  # Use subscription mode for recurring payments
         success_url=checkout_data.success_url,
         cancel_url=checkout_data.cancel_url,
+        customer_email=current_user.email,
         metadata={
             "user_id": str(current_user.id),
             "user_email": current_user.email,
