@@ -47,10 +47,20 @@ const IntelligenceFeed = () => {
   useEffect(() => {
     fetchUserData();
     
+    // Handle quick scan data from URL
+    if (quickScanData) {
+      try {
+        const parsedQuickScan = JSON.parse(decodeURIComponent(quickScanData));
+        setQuickScanResult(parsedQuickScan);
+      } catch (error) {
+        console.error('Failed to parse quick scan data:', error);
+      }
+    }
+    
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchUserData, 30000);
     return () => clearInterval(interval);
-  }, [userEmail]);
+  }, [userEmail, quickScanData]);
 
   const getSeverityBadge = (severity) => {
     const severityClasses = {
