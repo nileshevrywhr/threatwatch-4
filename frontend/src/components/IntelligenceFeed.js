@@ -18,6 +18,7 @@ const IntelligenceFeed = () => {
   const [searchParams] = useSearchParams();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authChecking, setAuthChecking] = useState(true);
   const [error, setError] = useState('');
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [quickScanResult, setQuickScanResult] = useState(null);
