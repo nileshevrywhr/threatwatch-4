@@ -291,36 +291,46 @@ async def get_payment_status(
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
     
-    # Check with Stripe
-    api_key = os.environ.get('STRIPE_API_KEY')
-    stripe_checkout = StripeCheckout(api_key=api_key, webhook_url="")  # webhook_url not needed for status check
+    # Set Stripe API key
+    stripe.api_key = os.environ.get('STRIPE_API_KEY')
     
     try:
-        checkout_status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
+        # Get checkout session from Stripe
+        checkout_session = stripe.checkout.Session.retrieve(session_id)
         
-        # Update transaction status
-        transaction.payment_status = checkout_status.payment_status
+        # Update transaction status based on payment status
+        payment_status = "paid" if checkout_session.payment_status == "paid" else "pending"
+        transaction.payment_status = payment_status
         
-        if checkout_status.payment_status == "paid" and transaction.transaction_status != "completed":
+        if payment_status == "paid" and transaction.transaction_status != "completed":
             # Upgrade user subscription
             SubscriptionService.upgrade_user_subscription(
                 auth_db,
                 current_user,
                 transaction.subscription_tier,
-                checkout_status.metadata.get("stripe_customer_id")
+                checkout_session.customer
             )
             transaction.transaction_status = "completed"
             
         auth_db.commit()
         
         return PaymentStatusResponse(
-            status=checkout_status.status,
-            payment_status=checkout_status.payment_status,
-            subscription_tier=transaction.subscription_tier if checkout_status.payment_status == "paid" else None,
-            message="Payment completed successfully" if checkout_status.payment_status == "paid" else "Payment pending"
+            status=checkout_session.status,
+            payment_status=payment_status,
+            subscription_tier=transaction.subscription_tier if payment_status == "paid" else None,
+            message="Payment completed successfully" if payment_status == "paid" else "Payment pending"
         )
         
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {str(e)}")
+        return PaymentStatusResponse(
+            status="error",
+            payment_status="unknown",
+            subscription_tier=None,
+            message=f"Stripe error: {str(e)}"
+        )
     except Exception as e:
+        logger.error(f"Payment status error: {str(e)}")
         return PaymentStatusResponse(
             status="error",
             payment_status="unknown",
