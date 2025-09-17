@@ -140,6 +140,7 @@ const IntelligenceFeed = () => {
       
       // Clear quick scan result and show success message
       setQuickScanResult(null);
+      sessionStorage.removeItem('quickScanResult');
       // Remove quick scan from URL
       const newUrl = new URL(window.location);
       newUrl.searchParams.delete('quickScan');
