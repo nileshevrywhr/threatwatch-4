@@ -14,17 +14,14 @@ import asyncio
 import json
 
 # Authentication and Payment imports
-from auth_models import User, UserSubscription, PaymentTransaction, Base
+from database import Base, get_auth_db, engine
+from auth_models import User, UserSubscription, PaymentTransaction
 from auth_service import AuthService
 from auth_schemas import *
 from subscription_service import SubscriptionService, SUBSCRIPTION_TIERS
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest, CheckoutSessionResponse, CheckoutStatusResponse
-from sqlalchemy import create_engine, Column, String, Boolean, DateTime, Text, Integer
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.sql import func
+from sqlalchemy.orm import Session
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
