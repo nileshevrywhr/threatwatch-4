@@ -53,6 +53,18 @@ const IntelligenceFeed = () => {
   useEffect(() => {
     fetchUserData();
     
+    // Clean up any stale Quick Scan results from other users in sessionStorage
+    if (userEmail) {
+      const allKeys = Object.keys(sessionStorage);
+      const quickScanKeys = allKeys.filter(key => key.startsWith('quickScanResult_'));
+      quickScanKeys.forEach(key => {
+        if (key !== `quickScanResult_${userEmail}`) {
+          // Remove Quick Scan results from other users
+          sessionStorage.removeItem(key);
+        }
+      });
+    }
+    
     // Handle quick scan data from sessionStorage (associated with specific email)
     if (hasQuickScan && userEmail) {
       try {
