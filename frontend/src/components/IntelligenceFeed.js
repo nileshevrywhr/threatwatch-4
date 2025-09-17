@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Alert, AlertDescription } from './ui/alert';
-import { Shield, Plus, RefreshCw, Clock, ExternalLink, AlertTriangle } from 'lucide-react';
+import { Shield, Plus, RefreshCw, Clock, ExternalLink, AlertTriangle, Zap, CheckCircle } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
