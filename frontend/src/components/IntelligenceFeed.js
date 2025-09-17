@@ -52,7 +52,15 @@ const IntelligenceFeed = () => {
         console.error('Failed to parse user data:', error);
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
+        setError('Authentication failed. Please sign in again.');
+        setLoading(false);
+        setShowAuthModal(true);
       }
+    } else {
+      // No stored authentication
+      setError('Please sign in to view your intelligence feed');
+      setLoading(false);
+      setShowAuthModal(true);
     }
   }, []);
 
