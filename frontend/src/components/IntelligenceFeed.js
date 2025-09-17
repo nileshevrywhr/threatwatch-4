@@ -53,13 +53,23 @@ const IntelligenceFeed = () => {
   useEffect(() => {
     fetchUserData();
     
-    // Handle quick scan data from sessionStorage
-    if (hasQuickScan) {
+    // Handle quick scan data from sessionStorage (associated with specific email)
+    if (hasQuickScan && userEmail) {
       try {
-        const storedQuickScan = sessionStorage.getItem('quickScanResult');
+        const storedQuickScan = sessionStorage.getItem(`quickScanResult_${userEmail}`);
         if (storedQuickScan) {
           const parsedQuickScan = JSON.parse(storedQuickScan);
-          setQuickScanResult(parsedQuickScan);
+          // Verify the scan belongs to this email and is recent (within 1 hour)
+          const scanTime = new Date(parsedQuickScan.timestamp);
+          const now = new Date();
+          const hoursDiff = Math.abs(now - scanTime) / 36e5;
+          
+          if (parsedQuickScan.userEmail === userEmail && hoursDiff < 1) {
+            setQuickScanResult(parsedQuickScan);
+          } else {
+            // Clean up old or mismatched scan results
+            sessionStorage.removeItem(`quickScanResult_${userEmail}`);
+          }
         }
       } catch (error) {
         console.error('Failed to parse quick scan data:', error);
