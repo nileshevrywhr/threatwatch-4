@@ -380,6 +380,10 @@ async def subscribe(
     
     return subscription
 
+# QuickScanRequest model
+class QuickScanRequest(BaseModel):
+    query: str
+
 # Enhanced quick scan with tier checking
 @api_router.post("/quick-scan")
 async def quick_scan(
