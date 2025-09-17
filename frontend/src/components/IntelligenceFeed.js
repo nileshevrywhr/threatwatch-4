@@ -110,25 +110,100 @@ const IntelligenceFeed = () => {
       date: quickScan.timestamp,
       severity: 'High',
       type: 'quick-scan-summary',
-      summary: quickScan.summary
+      summary: quickScan.summary,
+      url: null
     });
     
-    // Add each key threat as separate intelligence matches
-    if (quickScan.key_threats && quickScan.key_threats.length > 0) {
-      quickScan.key_threats.forEach((threat, index) => {
-        matches.push({
-          id: `quick-scan-threat-${Date.now()}-${index}`,
-          term: quickScan.query,
-          incident_title: threat,
-          source: 'AI Threat Extraction',
-          date: quickScan.timestamp,
-          severity: 'Medium',
-          type: 'quick-scan-threat'
-        });
+    return matches;
+  };
+
+  const convertDiscoveredLinksToMatches = (quickScan) => {
+    if (!quickScan || !quickScan.discovered_links) return [];
+    
+    return quickScan.discovered_links.map((link, index) => ({
+      id: `discovered-link-${Date.now()}-${index}`,
+      term: quickScan.query,
+      incident_title: link.title,
+      source: new URL(link.url).hostname,
+      date: link.date,
+      severity: link.severity,
+      type: 'discovered-link',
+      url: link.url,
+      snippet: link.snippet
+    }));
+  };
+
+  const getAllIntelligenceMatches = () => {
+    const regularMatches = userData?.intelligence_matches || [];
+    const quickScanMatches = quickScanResult ? convertQuickScanToMatches(quickScanResult) : [];
+    const discoveredLinks = quickScanResult ? convertDiscoveredLinksToMatches(quickScanResult) : [];
+    
+    return [...quickScanMatches, ...discoveredLinks, ...regularMatches];
+  };
+
+  const getFilteredAndSortedMatches = () => {
+    let matches = getAllIntelligenceMatches();
+    
+    // Apply filters
+    if (filterTerm) {
+      matches = matches.filter(match => 
+        match.incident_title.toLowerCase().includes(filterTerm.toLowerCase()) ||
+        match.term.toLowerCase().includes(filterTerm.toLowerCase()) ||
+        match.source.toLowerCase().includes(filterTerm.toLowerCase())
+      );
+    }
+    
+    if (severityFilter !== 'all') {
+      matches = matches.filter(match => match.severity.toLowerCase() === severityFilter.toLowerCase());
+    }
+    
+    if (sourceFilter !== 'all') {
+      matches = matches.filter(match => {
+        if (sourceFilter === 'quick-scan') {
+          return match.type === 'quick-scan-summary' || match.type === 'discovered-link';
+        } else if (sourceFilter === 'monitoring') {
+          return !match.type || match.type === 'regular';
+        }
+        return match.source.toLowerCase().includes(sourceFilter.toLowerCase());
       });
     }
     
+    // Apply sorting
+    matches.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case 'date':
+          aValue = new Date(a.date);
+          bValue = new Date(b.date);
+          break;
+        case 'severity':
+          const severityOrder = { 'Critical': 4, 'High': 3, 'Medium': 2, 'Low': 1 };
+          aValue = severityOrder[a.severity] || 0;
+          bValue = severityOrder[b.severity] || 0;
+          break;
+        case 'title':
+          aValue = a.incident_title.toLowerCase();
+          bValue = b.incident_title.toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+      
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+    
     return matches;
+  };
+
+  const getUniqueSourcesForFilter = () => {
+    const matches = getAllIntelligenceMatches();
+    const sources = [...new Set(matches.map(match => match.source))];
+    return sources;
   };
 
   const handleSubscribeToQuickScan = async () => {
