@@ -257,7 +257,61 @@ const LandingPage = () => {
               </CardContent>
             </Card>
 
-            {/* Quick Scan results now show on intelligence feed page */}
+            {/* View Existing Feed */}
+            <Card className="glass border-gray-700">
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl text-white">View My Feed</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Access your existing intelligence feed and subscriptions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleViewFeed} className="space-y-4">
+                  <div>
+                    <Label htmlFor="feedEmail" className="text-gray-300">
+                      Email Address *
+                    </Label>
+                    <Input
+                      id="feedEmail"
+                      name="feedEmail"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={feedEmail}
+                      onChange={(e) => setFeedEmail(e.target.value)}
+                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                      required
+                    />
+                  </div>
+
+                  {message && messageType === 'feed-error' && (
+                    <Alert className="border-red-500 bg-red-900/20">
+                      <CheckCircle className="h-4 w-4" />
+                      <AlertDescription className="text-red-300">
+                        {message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  <Button
+                    type="submit"
+                    disabled={feedLoading}
+                    className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-semibold py-3 transition-all duration-300"
+                  >
+                    {feedLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="animate-pulse">Loading feed...</div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <Eye className="h-4 w-4" />
+                        <span>View My Feed</span>
+                      </div>
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
           </div>
         </div>
       </section>
