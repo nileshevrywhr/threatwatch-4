@@ -422,49 +422,44 @@ const LandingPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleViewFeed} className="space-y-4">
-                  <div>
-                    <Label htmlFor="feedEmail" className="text-gray-300">
-                      Email Address *
-                    </Label>
-                    <Input
-                      id="feedEmail"
-                      name="feedEmail"
-                      type="email"
-                      placeholder="your@email.com"
-                      value={feedEmail}
-                      onChange={(e) => setFeedEmail(e.target.value)}
-                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
-                      required
-                    />
-                  </div>
-
-                  {message && messageType === 'feed-error' && (
-                    <Alert className="border-red-500 bg-red-900/20">
-                      <CheckCircle className="h-4 w-4" />
-                      <AlertDescription className="text-red-300">
-                        {message}
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                  <Button
-                    type="submit"
-                    disabled={feedLoading}
-                    className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-semibold py-3 transition-all duration-300"
-                  >
-                    {feedLoading ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="animate-pulse">Loading feed...</div>
+                {user ? (
+                  <div className="space-y-4">
+                    <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-600">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <CheckCircle className="h-4 w-4 text-green-400" />
+                        <span className="text-white font-semibold">{user.full_name}</span>
                       </div>
-                    ) : (
+                      <p className="text-sm text-gray-400">{user.email}</p>
+                      <div className="mt-2 flex items-center space-x-2">
+                        <span className="text-xs text-gray-500">Plan:</span>
+                        <span className="text-xs capitalize text-cyan-400 font-semibold">{user.subscription_tier}</span>
+                      </div>
+                    </div>
+                    
+                    <Button
+                      onClick={() => navigate(`/feed?email=${encodeURIComponent(user.email)}`)}
+                      className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-semibold py-3 transition-all duration-300"
+                    >
                       <div className="flex items-center space-x-2">
                         <Eye className="h-4 w-4" />
                         <span>View My Feed</span>
                       </div>
-                    )}
-                  </Button>
-                </form>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center space-y-4">
+                    <p className="text-gray-400">Sign in to access your personalized intelligence feed</p>
+                    <Button
+                      onClick={() => setShowAuthModal(true)}
+                      className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-semibold py-3 transition-all duration-300"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <LogIn className="h-4 w-4" />
+                        <span>Sign In to View Feed</span>
+                      </div>
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
