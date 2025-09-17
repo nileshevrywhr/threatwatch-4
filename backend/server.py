@@ -185,37 +185,63 @@ async def quick_scan(scan_request: QuickScanRequest):
     try:
         query = scan_request.query
         
-        # Simulate web search results (in a real implementation, you'd use actual search API)
+        # Simulate web search results with actual discoverable links
         mock_search_results = [
             {
                 "title": f"Recent {query} Security Incident Analysis",
-                "url": "https://cybersecurity-news.com/incident-analysis",
+                "url": "https://www.cisa.gov/news-events/cybersecurity-advisories",
                 "snippet": f"A comprehensive analysis of recent {query} incidents shows increasing sophistication in attack vectors. Security researchers have identified new patterns in threat actor behavior, suggesting coordinated campaigns targeting financial institutions and critical infrastructure.",
-                "date": "2024-12-15"
+                "date": "2024-12-15",
+                "severity": "Critical"
             },
             {
                 "title": f"Industry Alert: {query} Threat Landscape Update",
-                "url": "https://threat-intelligence.org/updates",
+                "url": "https://www.us-cert.gov/ncas/alerts",
                 "snippet": f"The latest threat intelligence report indicates a 40% increase in {query}-related attacks over the past week. Organizations are advised to implement enhanced monitoring and update their security protocols immediately.",
-                "date": "2024-12-14"
+                "date": "2024-12-14",
+                "severity": "High"
             },
             {
                 "title": f"Emergency Patch Released for {query} Vulnerability",
-                "url": "https://security-advisories.com/patches",
+                "url": "https://nvd.nist.gov/vuln/search",
                 "snippet": f"Critical security vulnerability discovered in systems vulnerable to {query} attacks. Emergency patches have been released by major vendors. CVE assigned and exploitation attempts detected in the wild.",
-                "date": "2024-12-13"
+                "date": "2024-12-13",
+                "severity": "Critical"
             },
             {
                 "title": f"Global {query} Campaign Targets Healthcare Sector",
-                "url": "https://healthcare-security.org/alerts",
+                "url": "https://www.hhs.gov/about/agencies/asa/ocio/cybersecurity/index.html",
                 "snippet": f"A sophisticated {query} campaign has been identified targeting healthcare organizations worldwide. The attack vector utilizes social engineering combined with technical exploits to gain initial access to healthcare networks.",
-                "date": "2024-12-12"
+                "date": "2024-12-12",
+                "severity": "High"
             },
             {
                 "title": f"New {query} Malware Variant Discovered",
-                "url": "https://malware-research.com/analysis",
+                "url": "https://www.virustotal.com/gui/home/search",
                 "snippet": f"Security researchers have identified a new variant of {query} malware with enhanced evasion capabilities. The malware demonstrates advanced persistence mechanisms and anti-analysis techniques.",
-                "date": "2024-12-11"
+                "date": "2024-12-11",
+                "severity": "Medium"
+            },
+            {
+                "title": f"{query} IOCs and Threat Indicators Released",
+                "url": "https://otx.alienvault.com/browse/global/pulses",
+                "snippet": f"New indicators of compromise (IOCs) related to {query} activities have been published. These include file hashes, IP addresses, and domain names associated with recent attack campaigns.",
+                "date": "2024-12-10",
+                "severity": "Medium"
+            },
+            {
+                "title": f"FBI Warning: {query} Attacks Targeting Small Businesses",
+                "url": "https://www.ic3.gov/Home/IndustryAlert",
+                "snippet": f"The FBI has issued a warning about increasing {query} attacks specifically targeting small and medium businesses. Attackers are exploiting common vulnerabilities in business applications and weak security practices.",
+                "date": "2024-12-09",
+                "severity": "High"
+            },
+            {
+                "title": f"Technical Analysis: {query} Attack Chain Breakdown",
+                "url": "https://attack.mitre.org/techniques",
+                "snippet": f"Detailed technical analysis of the {query} attack chain reveals multi-stage deployment with sophisticated evasion techniques. The analysis includes MITRE ATT&CK framework mappings and detection strategies.",
+                "date": "2024-12-08",
+                "severity": "Medium"
             }
         ]
         
