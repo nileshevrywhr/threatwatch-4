@@ -88,14 +88,19 @@ const IntelligenceFeed = () => {
     navigate('/');
   };
 
-  const fetchUserData = async (email = userEmail, token = authToken) => {
-    if (!email) {
-      setError('No email provided');
+  const fetchUserData = async (email = null, token = null) => {
+    // Use authenticated user's email and token
+    const userEmail = email || user?.email;
+    const authTokenToUse = token || authToken;
+
+    if (!userEmail) {
+      setError('No user email available');
       setLoading(false);
+      setShowAuthModal(true);
       return;
     }
 
-    if (!token) {
+    if (!authTokenToUse) {
       setError('Authentication required');
       setLoading(false);
       setShowAuthModal(true);
@@ -103,10 +108,11 @@ const IntelligenceFeed = () => {
     }
 
     try {
+      setLoading(true);
       const response = await axios.get(`${API}/status`, {
-        params: { email: email },
+        params: { email: userEmail },
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authTokenToUse}`,
           'Content-Type': 'application/json'
         }
       });
@@ -116,6 +122,7 @@ const IntelligenceFeed = () => {
     } catch (error) {
       if (error.response?.status === 401) {
         // Token expired or invalid
+        setError('Session expired. Please sign in again.');
         handleLogout();
         return;
       }
