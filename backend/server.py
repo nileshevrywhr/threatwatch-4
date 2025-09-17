@@ -52,6 +52,16 @@ class UserStatus(BaseModel):
     subscriptions: List[Subscription]
     intelligence_matches: List[IntelligenceMatch]
 
+class QuickScanRequest(BaseModel):
+    query: str
+
+class QuickScanResult(BaseModel):
+    query: str
+    summary: str
+    key_threats: List[str]
+    sources: List[str]
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # Mock intelligence data
 mock_intelligence_data = [
     {
