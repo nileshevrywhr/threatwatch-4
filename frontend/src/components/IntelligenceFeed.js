@@ -425,31 +425,199 @@ const IntelligenceFeed = () => {
 
         {/* Intelligence Matches Section */}
         <section>
-          <h2 className="text-xl font-semibold text-white mb-4">
-            {quickScanResult ? 'Continuous Monitoring Matches' : 'Recent Intelligence Matches'}
-          </h2>
-          {userData?.intelligence_matches?.length > 0 ? (
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-white">
+              All Intelligence Matches ({getFilteredAndSortedMatches().length})
+            </h2>
+            <div className="flex items-center space-x-2">
+              <Button
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                variant="outline"
+                size="sm"
+                className="border-gray-600 text-gray-300 hover:bg-gray-800"
+              >
+                {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+
+          {/* Filter Controls */}
+          <div className="mb-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Search Filter */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search threats..."
+                  value={filterTerm}
+                  onChange={(e) => setFilterTerm(e.target.value)}
+                  className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                />
+              </div>
+
+              {/* Severity Filter */}
+              <div>
+                <select
+                  value={severityFilter}
+                  onChange={(e) => setSeverityFilter(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:border-cyan-400"
+                >
+                  <option value="all">All Severities</option>
+                  <option value="critical">Critical</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+
+              {/* Source Filter */}
+              <div>
+                <select
+                  value={sourceFilter}
+                  onChange={(e) => setSourceFilter(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:border-cyan-400"
+                >
+                  <option value="all">All Sources</option>
+                  <option value="quick-scan">Quick Scan Results</option>
+                  <option value="monitoring">Continuous Monitoring</option>
+                  {getUniqueSourcesForFilter().slice(0, 5).map(source => (
+                    <option key={source} value={source}>{source}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sort By Filter */}
+              <div>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:border-cyan-400"
+                >
+                  <option value="date">Sort by Date</option>
+                  <option value="severity">Sort by Severity</option>
+                  <option value="title">Sort by Title</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Active Filters Display */}
+            {(filterTerm || severityFilter !== 'all' || sourceFilter !== 'all') && (
+              <div className="flex items-center space-x-2">
+                <Filter className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-400">Active filters:</span>
+                {filterTerm && (
+                  <Badge variant="outline" className="border-cyan-400 text-cyan-400">
+                    Search: {filterTerm}
+                  </Badge>
+                )}
+                {severityFilter !== 'all' && (
+                  <Badge variant="outline" className="border-yellow-400 text-yellow-400">
+                    Severity: {severityFilter}
+                  </Badge>
+                )}
+                {sourceFilter !== 'all' && (
+                  <Badge variant="outline" className="border-green-400 text-green-400">
+                    Source: {sourceFilter}
+                  </Badge>
+                )}
+                <Button
+                  onClick={() => {
+                    setFilterTerm('');
+                    setSeverityFilter('all');
+                    setSourceFilter('all');
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="border-red-400 text-red-400 hover:bg-red-900/20"
+                >
+                  Clear All
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Intelligence Matches Display */}
+          {getFilteredAndSortedMatches().length > 0 ? (
             <div className="space-y-4">
-              {userData.intelligence_matches.map((match, index) => (
-                <Card key={`${match.id}-${index}`} className="glass border-gray-700 hover-glow">
+              {getFilteredAndSortedMatches().map((match, index) => (
+                <Card key={`${match.id}-${index}`} className={`glass hover-glow ${
+                  match.type === 'quick-scan-summary' ? 'border-orange-400/30' : 
+                  match.type === 'discovered-link' ? 'border-blue-400/30' : 'border-gray-700'
+                }`}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
-                          <Badge variant="outline" className="border-cyan-400 text-cyan-400">
+                          <Badge variant="outline" className={
+                            match.type === 'quick-scan-summary' ? 'border-orange-400 text-orange-400' :
+                            match.type === 'discovered-link' ? 'border-blue-400 text-blue-400' :
+                            'border-cyan-400 text-cyan-400'
+                          }>
                             {match.term}
                           </Badge>
                           {getSeverityBadge(match.severity)}
+                          {match.type === 'quick-scan-summary' && (
+                            <Badge className="bg-orange-500/20 text-orange-300 border-orange-400">
+                              <Zap className="h-3 w-3 mr-1" />
+                              AI Analysis
+                            </Badge>
+                          )}
+                          {match.type === 'discovered-link' && (
+                            <Badge className="bg-blue-500/20 text-blue-300 border-blue-400">
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              Discovered Link
+                            </Badge>
+                          )}
                         </div>
-                        <CardTitle className="text-white text-lg">{match.incident_title}</CardTitle>
+                        <CardTitle className="text-white text-lg">
+                          {match.url ? (
+                            <a 
+                              href={match.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="hover:text-cyan-400 transition-colors duration-200"
+                            >
+                              {match.incident_title}
+                            </a>
+                          ) : (
+                            match.incident_title
+                          )}
+                        </CardTitle>
                         <CardDescription className="text-gray-400 mt-2">
                           <div className="flex items-center justify-between text-sm">
                             <span>Source: {match.source}</span>
                             <span>{formatDate(match.date)}</span>
                           </div>
+                          {match.snippet && (
+                            <div className="mt-2 text-gray-300 text-sm">
+                              {match.snippet}
+                            </div>
+                          )}
                         </CardDescription>
+                        
+                        {/* Show full summary for AI analysis */}
+                        {match.type === 'quick-scan-summary' && match.summary && (
+                          <div className="mt-4 bg-gray-800/50 rounded-lg p-4">
+                            <pre className="text-gray-300 text-sm whitespace-pre-wrap font-sans leading-relaxed">
+                              {match.summary}
+                            </pre>
+                          </div>
+                        )}
                       </div>
-                      <ExternalLink className="h-5 w-5 text-gray-400 ml-4 flex-shrink-0" />
+                      {match.url ? (
+                        <a 
+                          href={match.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="ml-4 flex-shrink-0"
+                        >
+                          <ExternalLink className="h-5 w-5 text-gray-400 hover:text-cyan-400 transition-colors" />
+                        </a>
+                      ) : match.type === 'quick-scan-summary' ? (
+                        <Zap className="h-5 w-5 text-orange-400 ml-4 flex-shrink-0" />
+                      ) : (
+                        <ExternalLink className="h-5 w-5 text-gray-400 ml-4 flex-shrink-0" />
+                      )}
                     </div>
                   </CardHeader>
                 </Card>
@@ -460,15 +628,15 @@ const IntelligenceFeed = () => {
               <CardContent className="p-6 text-center">
                 <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-400 mb-2">
-                  {quickScanResult 
-                    ? 'No continuous monitoring subscriptions yet.' 
+                  {filterTerm || severityFilter !== 'all' || sourceFilter !== 'all'
+                    ? 'No intelligence matches found for the current filters.'
                     : 'No intelligence matches found yet.'
                   }
                 </p>
                 <p className="text-sm text-gray-500">
-                  {quickScanResult
-                    ? 'Subscribe to the Quick Scan results above to start continuous monitoring.'
-                    : "We'll notify you as soon as we detect threats related to your subscribed terms."
+                  {filterTerm || severityFilter !== 'all' || sourceFilter !== 'all'
+                    ? 'Try adjusting your filters or perform a Quick Scan to discover new threats.'
+                    : "Perform a Quick Scan or set up monitoring to start discovering threats."
                   }
                 </p>
               </CardContent>
