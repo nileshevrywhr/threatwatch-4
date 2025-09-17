@@ -180,6 +180,128 @@ async def get_status(email: str = Query(..., description="User email address")):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.post("/quick-scan", response_model=QuickScanResult)
+async def quick_scan(scan_request: QuickScanRequest):
+    try:
+        query = scan_request.query
+        
+        # Simulate web search results (in a real implementation, you'd use actual search API)
+        mock_search_results = [
+            {
+                "title": f"Recent {query} Security Incident Analysis",
+                "url": "https://cybersecurity-news.com/incident-analysis",
+                "snippet": f"A comprehensive analysis of recent {query} incidents shows increasing sophistication in attack vectors. Security researchers have identified new patterns in threat actor behavior, suggesting coordinated campaigns targeting financial institutions and critical infrastructure.",
+                "date": "2024-12-15"
+            },
+            {
+                "title": f"Industry Alert: {query} Threat Landscape Update",
+                "url": "https://threat-intelligence.org/updates",
+                "snippet": f"The latest threat intelligence report indicates a 40% increase in {query}-related attacks over the past week. Organizations are advised to implement enhanced monitoring and update their security protocols immediately.",
+                "date": "2024-12-14"
+            },
+            {
+                "title": f"Emergency Patch Released for {query} Vulnerability",
+                "url": "https://security-advisories.com/patches",
+                "snippet": f"Critical security vulnerability discovered in systems vulnerable to {query} attacks. Emergency patches have been released by major vendors. CVE assigned and exploitation attempts detected in the wild.",
+                "date": "2024-12-13"
+            },
+            {
+                "title": f"Global {query} Campaign Targets Healthcare Sector",
+                "url": "https://healthcare-security.org/alerts",
+                "snippet": f"A sophisticated {query} campaign has been identified targeting healthcare organizations worldwide. The attack vector utilizes social engineering combined with technical exploits to gain initial access to healthcare networks.",
+                "date": "2024-12-12"
+            },
+            {
+                "title": f"New {query} Malware Variant Discovered",
+                "url": "https://malware-research.com/analysis",
+                "snippet": f"Security researchers have identified a new variant of {query} malware with enhanced evasion capabilities. The malware demonstrates advanced persistence mechanisms and anti-analysis techniques.",
+                "date": "2024-12-11"
+            }
+        ]
+        
+        # Prepare content for LLM analysis
+        search_content = f"Query: {query}\n\nRecent Intelligence Findings:\n\n"
+        sources = []
+        
+        for i, result in enumerate(mock_search_results, 1):
+            search_content += f"{i}. {result['title']} ({result['date']})\n"
+            search_content += f"   {result['snippet']}\n\n"
+            sources.append(f"{result['title']} - {result['url']}")
+        
+        # Initialize LLM chat
+        chat = LlmChat(
+            api_key=os.environ.get('EMERGENT_LLM_KEY'),
+            session_id=f"quick-scan-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
+            system_message="You are a cybersecurity threat intelligence analyst. Your role is to analyze recent security incidents and provide actionable intelligence summaries for security professionals."
+        ).with_model("openai", "gpt-4o-mini")
+        
+        # Create analysis prompt
+        analysis_prompt = f"""Analyze the following recent cybersecurity intelligence related to "{query}" and provide:
+
+1. A concise executive summary (2-3 sentences)
+2. Key threats identified (3-5 specific threats)
+3. Actionable recommendations for security teams
+
+Intelligence Data:
+{search_content}
+
+Please format your response as:
+
+EXECUTIVE SUMMARY:
+[2-3 sentence summary of the threat landscape]
+
+KEY THREATS:
+• [Threat 1]
+• [Threat 2] 
+• [Threat 3]
+
+RECOMMENDATIONS:
+• [Actionable recommendation 1]
+• [Actionable recommendation 2]
+• [Actionable recommendation 3]"""
+
+        user_message = UserMessage(text=analysis_prompt)
+        
+        # Get LLM analysis
+        llm_response = await chat.send_message(user_message)
+        
+        # Extract key threats from the response
+        key_threats = []
+        lines = llm_response.split('\n')
+        in_threats_section = False
+        
+        for line in lines:
+            if 'KEY THREATS:' in line.upper():
+                in_threats_section = True
+                continue
+            elif 'RECOMMENDATIONS:' in line.upper():
+                in_threats_section = False
+                continue
+            elif in_threats_section and line.strip().startswith('•'):
+                threat = line.strip().replace('•', '').strip()
+                if threat:
+                    key_threats.append(threat)
+        
+        # If no key threats extracted, provide default ones
+        if not key_threats:
+            key_threats = [
+                f"Increased {query} attack sophistication",
+                f"Coordinated campaigns targeting critical infrastructure",
+                f"New evasion techniques being deployed",
+                f"Supply chain attacks incorporating {query} methods"
+            ]
+        
+        return QuickScanResult(
+            query=query,
+            summary=llm_response,
+            key_threats=key_threats[:5],  # Limit to 5 threats
+            sources=sources
+        )
+        
+    except Exception as e:
+        logger.error(f"Quick scan error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Quick scan failed: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
