@@ -338,49 +338,7 @@ async def get_payment_status(
             message=f"Error checking payment status: {str(e)}"
         )
 
-@payment_router.post("/webhook/stripe")
-async def stripe_webhook(
-    request: Request,
-    auth_db: Session = Depends(get_auth_db)
-):
-    """Handle Stripe webhooks"""
-    
-    try:
-        api_key = os.environ.get('STRIPE_API_KEY')
-        stripe_checkout = StripeCheckout(api_key=api_key, webhook_url="")
-        
-        body = await request.body()
-        signature = request.headers.get("Stripe-Signature")
-        
-        webhook_response = await stripe_checkout.handle_webhook(body, signature)
-        
-        if webhook_response.event_type == "checkout.session.completed":
-            # Find and update transaction
-            transaction = auth_db.query(PaymentTransaction).filter(
-                PaymentTransaction.session_id == webhook_response.session_id
-            ).first()
-            
-            if transaction and transaction.transaction_status != "completed":
-                # Update transaction
-                transaction.payment_status = webhook_response.payment_status
-                transaction.transaction_status = "completed"
-                
-                # Upgrade user subscription
-                user = auth_db.query(User).filter(User.id == transaction.user_id).first()
-                if user:
-                    SubscriptionService.upgrade_user_subscription(
-                        auth_db,
-                        user,
-                        transaction.subscription_tier
-                    )
-                
-                auth_db.commit()
-        
-        return {"status": "success"}
-        
-    except Exception as e:
-        logging.error(f"Webhook error: {str(e)}")
-        return {"status": "error", "message": str(e)}
+# Webhook endpoint removed - using direct payment status checking instead
 
 # Enhanced subscription endpoint with tier checking
 @api_router.post("/subscribe", response_model=SubscriptionResponse)
