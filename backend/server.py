@@ -218,52 +218,61 @@ async def create_checkout_session(
     stripe_price_id = price_ids[checkout_data.plan]
     amount = price_amounts[checkout_data.plan]
     
-    # Initialize Stripe checkout
-    api_key = os.environ.get('STRIPE_API_KEY')
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
+    # Set Stripe API key
+    stripe.api_key = os.environ.get('STRIPE_API_KEY')
     
-    stripe_checkout = StripeCheckout(api_key=api_key, webhook_url=webhook_url)
-    
-    # Create checkout session request for subscription
-    checkout_request = CheckoutSessionRequest(
-        stripe_price_id=stripe_price_id,
-        quantity=1,
-        mode="subscription",  # Use subscription mode for recurring payments
-        success_url=checkout_data.success_url,
-        cancel_url=checkout_data.cancel_url,
-        customer_email=current_user.email,
-        metadata={
-            "user_id": str(current_user.id),
-            "user_email": current_user.email,
-            "subscription_tier": checkout_data.plan,
-            "amount": str(amount)
-        }
-    )
-    
-    # Create session
-    session: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_request)
-    
-    # Create payment transaction record
-    transaction = PaymentTransaction(
-        user_id=current_user.id,
-        session_id=session.session_id,
-        stripe_price_id=stripe_price_id,
-        amount=int(amount * 100),  # Convert to cents
-        currency="usd",
-        payment_status="pending",
-        transaction_status="initiated",
-        subscription_tier=checkout_data.plan,
-        transaction_metadata=json.dumps(checkout_request.metadata)
-    )
-    
-    auth_db.add(transaction)
-    auth_db.commit()
-    
-    return CheckoutResponse(
-        url=session.url,
-        session_id=session.session_id
-    )
+    try:
+        # Create Stripe checkout session
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price': stripe_price_id,
+                'quantity': 1,
+            }],
+            mode='subscription',  # Use subscription mode for recurring payments
+            success_url=checkout_data.success_url,
+            cancel_url=checkout_data.cancel_url,
+            customer_email=current_user.email,
+            metadata={
+                "user_id": str(current_user.id),
+                "user_email": current_user.email,
+                "subscription_tier": checkout_data.plan,
+                "amount": str(amount)
+            }
+        )
+        
+        # Create payment transaction record
+        transaction = PaymentTransaction(
+            user_id=current_user.id,
+            session_id=checkout_session.id,
+            stripe_price_id=stripe_price_id,
+            amount=int(amount * 100),  # Convert to cents
+            currency="usd",
+            payment_status="pending",
+            transaction_status="initiated",
+            subscription_tier=checkout_data.plan,
+            transaction_metadata=json.dumps({
+                "user_id": str(current_user.id),
+                "user_email": current_user.email,
+                "subscription_tier": checkout_data.plan,
+                "amount": str(amount)
+            })
+        )
+        
+        auth_db.add(transaction)
+        auth_db.commit()
+        
+        return CheckoutResponse(
+            url=checkout_session.url,
+            session_id=checkout_session.id
+        )
+        
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Payment processing error: {str(e)}")
+    except Exception as e:
+        logger.error(f"Checkout error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create checkout session")
 
 @payment_router.get("/status/{session_id}", response_model=PaymentStatusResponse)
 async def get_payment_status(
