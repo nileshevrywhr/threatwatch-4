@@ -17,6 +17,11 @@ const IntelligenceFeed = () => {
   const [error, setError] = useState('');
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [quickScanResult, setQuickScanResult] = useState(null);
+  const [filterTerm, setFilterTerm] = useState('');
+  const [severityFilter, setSeverityFilter] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('date');
+  const [sortOrder, setSortOrder] = useState('desc');
   const navigate = useNavigate();
 
   const userEmail = searchParams.get('email');
