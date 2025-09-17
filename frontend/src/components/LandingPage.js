@@ -74,7 +74,6 @@ const LandingPage = () => {
     }
 
     setQuickScanLoading(true);
-    setQuickScanResult(null);
     setMessage('');
 
     try {
@@ -82,15 +81,14 @@ const LandingPage = () => {
         query: formData.term
       });
 
-      setQuickScanResult(response.data);
-      setMessage('Quick scan completed successfully!');
-      setMessageType('success');
+      // Redirect to intelligence feed with quick scan results
+      const quickScanData = encodeURIComponent(JSON.stringify(response.data));
+      navigate(`/feed?quickScan=${quickScanData}&email=${encodeURIComponent(formData.email || 'quick-scan@temp.com')}`);
 
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Quick scan failed. Please try again.';
       setMessage(errorMessage);
       setMessageType('error');
-    } finally {
       setQuickScanLoading(false);
     }
   };
