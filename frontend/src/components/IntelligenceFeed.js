@@ -135,8 +135,9 @@ const IntelligenceFeed = () => {
   };
 
   useEffect(() => {
-    // Don't fetch data until authentication is initialized
+    // Only proceed if authentication check is complete (user is set or explicitly null)
     if (user && authToken) {
+      // User is authenticated - fetch data
       fetchUserData();
       
       // Clean up any stale Quick Scan results from other users in sessionStorage
@@ -178,12 +179,9 @@ const IntelligenceFeed = () => {
       // Auto-refresh every 30 seconds
       const interval = setInterval(() => fetchUserData(user.email, authToken), 30000);
       return () => clearInterval(interval);
-    } else if (!user && !authToken) {
-      // No authentication - show auth modal
-      setError('Authentication required to view intelligence feed');
-      setLoading(false);
-      setShowAuthModal(true);
     }
+    // Removed the else condition that was immediately showing auth modal
+    // The auth modal will only show if explicitly set in the first useEffect
   }, [user, authToken, hasQuickScan]);
 
   const getSeverityBadge = (severity) => {
