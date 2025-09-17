@@ -21,6 +21,8 @@ const LandingPage = () => {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [quickScanLoading, setQuickScanLoading] = useState(false);
+  const [feedEmail, setFeedEmail] = useState('');
+  const [feedLoading, setFeedLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
