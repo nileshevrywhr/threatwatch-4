@@ -74,6 +74,9 @@ const IntelligenceFeed = () => {
       } catch (error) {
         console.error('Failed to parse quick scan data:', error);
       }
+    } else if (!hasQuickScan && userEmail) {
+      // User accessed feed directly (View My Feed) - ensure no lingering Quick Scan results
+      setQuickScanResult(null);
     }
     
     // Auto-refresh every 30 seconds
