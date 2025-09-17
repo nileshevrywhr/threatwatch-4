@@ -339,7 +339,8 @@ RECOMMENDATIONS:
             query=query,
             summary=llm_response,
             key_threats=key_threats[:5],  # Limit to 5 threats
-            sources=sources
+            sources=sources,
+            discovered_links=discovered_links
         )
         
     except Exception as e:
