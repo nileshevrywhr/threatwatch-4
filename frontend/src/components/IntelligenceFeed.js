@@ -20,7 +20,7 @@ const IntelligenceFeed = () => {
   const navigate = useNavigate();
 
   const userEmail = searchParams.get('email');
-  const quickScanData = searchParams.get('quickScan');
+  const hasQuickScan = searchParams.get('quickScan') === 'true';
 
   const fetchUserData = async () => {
     if (!userEmail) {
