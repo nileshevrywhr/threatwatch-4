@@ -242,7 +242,7 @@ async def create_checkout_session(
         payment_status="pending",
         transaction_status="initiated",
         subscription_tier=checkout_data.plan,
-        metadata=json.dumps(checkout_request.metadata)
+        transaction_metadata=json.dumps(checkout_request.metadata)
     )
     
     auth_db.add(transaction)
