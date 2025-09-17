@@ -26,6 +26,13 @@ const IntelligenceFeed = () => {
   const [sourceFilter, setSourceFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date');
   const [sortOrder, setSortOrder] = useState('desc');
+  
+  // Authentication state
+  const [user, setUser] = useState(null);
+  const [authToken, setAuthToken] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showSubscriptionPlans, setShowSubscriptionPlans] = useState(false);
+  
   const navigate = useNavigate();
 
   const userEmail = searchParams.get('email');
