@@ -148,8 +148,10 @@ const LandingPage = () => {
             </div>
           </div>
 
-          {/* Subscription Form */}
-          <div className="max-w-md mx-auto">
+          {/* Action Cards */}
+          <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
+            
+            {/* Start New Monitoring */}
             <Card className="glass border-gray-700">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl text-white">Start Monitoring</CardTitle>
