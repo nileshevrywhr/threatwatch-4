@@ -216,22 +216,43 @@ const LandingPage = () => {
                     </Alert>
                   )}
 
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-3 transition-all duration-300"
-                  >
-                    {loading ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="animate-pulse">Setting up monitoring...</div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center space-x-2">
-                        <span>Start Monitoring</span>
-                        <ArrowRight className="h-4 w-4" />
-                      </div>
-                    )}
-                  </Button>
+                  <div className="space-y-3">
+                    <Button
+                      type="submit"
+                      disabled={loading || quickScanLoading}
+                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-3 transition-all duration-300"
+                    >
+                      {loading ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="animate-pulse">Setting up monitoring...</div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <span>Start Monitoring</span>
+                          <ArrowRight className="h-4 w-4" />
+                        </div>
+                      )}
+                    </Button>
+
+                    <Button
+                      type="button"
+                      onClick={handleQuickScan}
+                      disabled={loading || quickScanLoading}
+                      variant="outline"
+                      className="w-full border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white font-semibold py-3 transition-all duration-300"
+                    >
+                      {quickScanLoading ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="animate-pulse">Scanning latest threats...</div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <Zap className="h-4 w-4" />
+                          <span>Quick Scan (AI-Powered)</span>
+                        </div>
+                      )}
+                    </Button>
+                  </div>
                 </form>
               </CardContent>
             </Card>
