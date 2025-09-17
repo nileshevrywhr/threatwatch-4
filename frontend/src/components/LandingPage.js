@@ -312,36 +312,56 @@ const LandingPage = () => {
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="email" className="text-gray-300">
-                      Email Address *
-                    </Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="your@email.com"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
-                      required
-                    />
-                  </div>
+                  {user && (
+                    <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-600">
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="h-4 w-4 text-green-400" />
+                        <span className="text-sm text-gray-300">
+                          Monitoring for: <span className="text-white font-semibold">{user.email}</span>
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {user.subscription_tier === 'free' && `${user.monitoring_terms_count || 0}/0 monitoring terms (upgrade to add more)`}
+                        {user.subscription_tier === 'pro' && `${user.monitoring_terms_count || 0}/10 monitoring terms used`}
+                        {user.subscription_tier === 'enterprise' && `${user.monitoring_terms_count || 0}/50 monitoring terms used`}
+                      </div>
+                    </div>
+                  )}
 
-                  <div>
-                    <Label htmlFor="phone" className="text-gray-300">
-                      Phone Number (optional)
-                    </Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="+1 (555) 123-4567"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
-                    />
-                  </div>
+                  {!user && (
+                    <>
+                      <div>
+                        <Label htmlFor="email" className="text-gray-300">
+                          Email Address *
+                        </Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          placeholder="your@email.com"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="phone" className="text-gray-300">
+                          Phone Number (optional)
+                        </Label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          placeholder="+1 (555) 123-4567"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                        />
+                      </div>
+                    </>
+                  )}
 
                   {message && (
                     <Alert className={messageType === 'success' ? 'border-green-500 bg-green-900/20' : 'border-red-500 bg-red-900/20'}>
