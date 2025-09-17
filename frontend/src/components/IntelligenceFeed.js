@@ -406,11 +406,31 @@ const IntelligenceFeed = () => {
                 <Plus className="h-4 w-4 mr-2" />
                 Add Keyword
               </Button>
+              
+              {/* Authentication Section */}
+              {user ? (
+                <UserMenu 
+                  user={user} 
+                  onLogout={handleLogout}
+                  onShowSubscriptionPlans={() => setShowSubscriptionPlans(true)}
+                />
+              ) : (
+                <Button
+                  onClick={() => setShowAuthModal(true)}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                >
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Sign In
+                </Button>
+              )}
             </div>
           </div>
           
           <h1 className="text-3xl font-bold text-white">My Intelligence Feed</h1>
-          <p className="text-gray-400 mt-2">Monitoring threats for: {userEmail}</p>
+          <p className="text-gray-400 mt-2">
+            Monitoring threats for: {user?.email || userEmail || 'Please sign in'}
+          </p>
         </div>
       </header>
 
