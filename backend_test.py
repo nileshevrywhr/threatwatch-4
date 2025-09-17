@@ -310,6 +310,12 @@ def main():
         ("Status with Valid Email", tester.test_status_valid_email),
         ("Status with Non-existent Email", tester.test_status_nonexistent_email),
         ("Status Missing Email Parameter", tester.test_status_missing_email_param),
+        ("Quick Scan - Ransomware", tester.test_quick_scan_ransomware),
+        ("Quick Scan - Malware", tester.test_quick_scan_malware),
+        ("Quick Scan - Phishing", tester.test_quick_scan_phishing),
+        ("Quick Scan - Zero-day", tester.test_quick_scan_zero_day),
+        ("Quick Scan - Empty Query", tester.test_quick_scan_empty_query),
+        ("Quick Scan - Missing Query", tester.test_quick_scan_missing_query),
     ]
     
     for test_name, test_func in tests:
