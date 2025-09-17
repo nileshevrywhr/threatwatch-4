@@ -307,12 +307,17 @@ const IntelligenceFeed = () => {
   };
 
   const handleSubscribeToQuickScan = async () => {
-    if (!quickScanResult) return;
+    if (!quickScanResult || !authToken) return;
     
     try {
       const response = await axios.post(`${API}/subscribe`, {
         term: quickScanResult.query,
-        email: userEmail,
+        email: user?.email || userEmail,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        }
       });
       
       // Refresh data to show the new subscription
@@ -320,8 +325,8 @@ const IntelligenceFeed = () => {
       
       // Clear quick scan result and show success message
       setQuickScanResult(null);
-      if (userEmail) {
-        sessionStorage.removeItem(`quickScanResult_${userEmail}`);
+      if (user?.email || userEmail) {
+        sessionStorage.removeItem(`quickScanResult_${user?.email || userEmail}`);
       }
       // Remove quick scan from URL
       const newUrl = new URL(window.location);
@@ -330,6 +335,9 @@ const IntelligenceFeed = () => {
       
     } catch (error) {
       console.error('Failed to subscribe:', error);
+      if (error.response?.status === 401) {
+        handleLogout();
+      }
     }
   };
 
