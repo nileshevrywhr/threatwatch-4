@@ -26,6 +26,13 @@ const LandingPage = () => {
   const [quickScanLoading, setQuickScanLoading] = useState(false);
   const [feedEmail, setFeedEmail] = useState('');
   const [feedLoading, setFeedLoading] = useState(false);
+  
+  // Authentication state
+  const [user, setUser] = useState(null);
+  const [authToken, setAuthToken] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showSubscriptionPlans, setShowSubscriptionPlans] = useState(false);
+  
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
