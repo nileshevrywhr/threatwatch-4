@@ -66,6 +66,35 @@ const LandingPage = () => {
     }
   };
 
+  const handleQuickScan = async () => {
+    if (!formData.term) {
+      setMessage('Please enter a keyword to scan');
+      setMessageType('error');
+      return;
+    }
+
+    setQuickScanLoading(true);
+    setQuickScanResult(null);
+    setMessage('');
+
+    try {
+      const response = await axios.post(`${API}/quick-scan`, {
+        query: formData.term
+      });
+
+      setQuickScanResult(response.data);
+      setMessage('Quick scan completed successfully!');
+      setMessageType('success');
+
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || 'Quick scan failed. Please try again.';
+      setMessage(errorMessage);
+      setMessageType('error');
+    } finally {
+      setQuickScanLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
       {/* Header */}
