@@ -256,11 +256,21 @@ async def quick_scan(scan_request: QuickScanRequest):
         # Prepare content for LLM analysis
         search_content = f"Query: {query}\n\nRecent Intelligence Findings:\n\n"
         sources = []
+        discovered_links = []
         
         for i, result in enumerate(mock_search_results, 1):
             search_content += f"{i}. {result['title']} ({result['date']})\n"
             search_content += f"   {result['snippet']}\n\n"
             sources.append(f"{result['title']} - {result['url']}")
+            
+            # Add to discovered links
+            discovered_links.append(DiscoveredLink(
+                title=result['title'],
+                url=result['url'],
+                snippet=result['snippet'],
+                date=result['date'],
+                severity=result['severity']
+            ))
         
         # Initialize LLM chat
         chat = LlmChat(
