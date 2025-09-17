@@ -55,7 +55,17 @@ async def get_current_user(
             detail="Could not validate credentials"
         )
     
-    user = auth_db.query(User).filter(User.id == user_id).first()
+    # Convert string UUID to UUID object for database query
+    try:
+        import uuid as uuid_module
+        user_uuid = uuid_module.UUID(user_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid user ID format"
+        )
+    
+    user = auth_db.query(User).filter(User.id == user_uuid).first()
     if user is None:
         raise HTTPException(
             status_code=401,
