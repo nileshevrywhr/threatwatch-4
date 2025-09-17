@@ -80,10 +80,10 @@ const LandingPage = () => {
         query: formData.term
       });
 
-      // Redirect to intelligence feed with quick scan results
-      const quickScanData = encodeURIComponent(JSON.stringify(response.data));
-      const userEmail = encodeURIComponent(formData.email || 'quick-scan@temp.com');
-      navigate(`/feed?email=${userEmail}&quickScan=${quickScanData}`);
+      // Store quick scan results in sessionStorage and redirect
+      sessionStorage.setItem('quickScanResult', JSON.stringify(response.data));
+      const userEmail = formData.email || 'quick-scan@temp.com';
+      navigate(`/feed?email=${encodeURIComponent(userEmail)}&quickScan=true`);
 
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Quick scan failed. Please try again.';
