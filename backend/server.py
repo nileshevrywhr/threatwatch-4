@@ -34,20 +34,8 @@ DB_NAME = os.environ['DB_NAME']
 mongo_client = AsyncIOMotorClient(MONGO_URL)
 mongo_db = mongo_client[DB_NAME]
 
-# SQLite setup for user authentication
-SQLITE_URL = "sqlite:///./auth.db"
-engine = create_engine(SQLITE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 # Create all tables
 Base.metadata.create_all(bind=engine)
-
-def get_auth_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 # Security
 security = HTTPBearer()
