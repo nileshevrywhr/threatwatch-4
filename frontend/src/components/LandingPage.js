@@ -95,6 +95,35 @@ const LandingPage = () => {
     }
   };
 
+  const handleViewFeed = async (e) => {
+    e.preventDefault();
+    if (!feedEmail) {
+      setMessage('Please enter your email address');
+      setMessageType('feed-error');
+      return;
+    }
+
+    setFeedLoading(true);
+    setMessage('');
+
+    try {
+      // Check if user has any subscriptions by calling the status endpoint
+      const response = await axios.get(`${API}/status`, {
+        params: { email: feedEmail }
+      });
+
+      // Navigate to feed regardless of whether they have subscriptions
+      // This allows users to see their empty feed and add subscriptions
+      navigate(`/feed?email=${encodeURIComponent(feedEmail)}`);
+
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || 'Failed to load feed. Please try again.';
+      setMessage(errorMessage);
+      setMessageType('feed-error');
+      setFeedLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
       {/* Header */}
