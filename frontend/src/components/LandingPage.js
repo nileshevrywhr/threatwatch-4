@@ -183,15 +183,45 @@ const LandingPage = () => {
             <Shield className="h-8 w-8 text-cyan-400" />
             <span className="text-2xl font-bold text-white font-mono">ThreatWatch</span>
           </div>
-          <div className="hidden md:flex items-center space-x-6 text-gray-300">
-            <div className="flex items-center space-x-2">
-              <Eye className="h-4 w-4" />
-              <span className="text-sm">Real-time Monitoring</span>
+          
+          <div className="flex items-center space-x-6">
+            <div className="hidden md:flex items-center space-x-6 text-gray-300">
+              <div className="flex items-center space-x-2">
+                <Eye className="h-4 w-4" />
+                <span className="text-sm">Real-time Monitoring</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Bell className="h-4 w-4" />
+                <span className="text-sm">Instant Alerts</span>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Bell className="h-4 w-4" />
-              <span className="text-sm">Instant Alerts</span>
-            </div>
+            
+            {/* Authentication Section */}
+            {user ? (
+              <UserMenu 
+                user={user} 
+                onLogout={handleLogout}
+                onShowSubscriptionPlans={() => setShowSubscriptionPlans(true)}
+              />
+            ) : (
+              <div className="flex items-center space-x-3">
+                <Button
+                  onClick={() => setShowAuthModal(true)}
+                  variant="ghost"
+                  className="text-gray-300 hover:text-white hover:bg-gray-800"
+                >
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Sign In
+                </Button>
+                <Button
+                  onClick={() => setShowAuthModal(true)}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Get Started
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </header>
