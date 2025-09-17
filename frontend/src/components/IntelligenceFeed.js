@@ -119,50 +119,56 @@ const IntelligenceFeed = () => {
   };
 
   useEffect(() => {
-    fetchUserData();
-    
-    // Clean up any stale Quick Scan results from other users in sessionStorage
-    if (userEmail) {
+    // Don't fetch data until authentication is initialized
+    if (user && authToken) {
+      fetchUserData();
+      
+      // Clean up any stale Quick Scan results from other users in sessionStorage
       const allKeys = Object.keys(sessionStorage);
       const quickScanKeys = allKeys.filter(key => key.startsWith('quickScanResult_'));
       quickScanKeys.forEach(key => {
-        if (key !== `quickScanResult_${userEmail}`) {
+        if (key !== `quickScanResult_${user.email}`) {
           // Remove Quick Scan results from other users
           sessionStorage.removeItem(key);
         }
       });
-    }
-    
-    // Handle quick scan data from sessionStorage (associated with specific email)
-    if (hasQuickScan && userEmail) {
-      try {
-        const storedQuickScan = sessionStorage.getItem(`quickScanResult_${userEmail}`);
-        if (storedQuickScan) {
-          const parsedQuickScan = JSON.parse(storedQuickScan);
-          // Verify the scan belongs to this email and is recent (within 1 hour)
-          const scanTime = new Date(parsedQuickScan.timestamp);
-          const now = new Date();
-          const hoursDiff = Math.abs(now - scanTime) / 36e5;
-          
-          if (parsedQuickScan.userEmail === userEmail && hoursDiff < 1) {
-            setQuickScanResult(parsedQuickScan);
-          } else {
-            // Clean up old or mismatched scan results
-            sessionStorage.removeItem(`quickScanResult_${userEmail}`);
+      
+      // Handle quick scan data from sessionStorage (associated with specific email)
+      if (hasQuickScan) {
+        try {
+          const storedQuickScan = sessionStorage.getItem(`quickScanResult_${user.email}`);
+          if (storedQuickScan) {
+            const parsedQuickScan = JSON.parse(storedQuickScan);
+            // Verify the scan belongs to this email and is recent (within 1 hour)
+            const scanTime = new Date(parsedQuickScan.timestamp);
+            const now = new Date();
+            const hoursDiff = Math.abs(now - scanTime) / 36e5;
+            
+            if (parsedQuickScan.userEmail === user.email && hoursDiff < 1) {
+              setQuickScanResult(parsedQuickScan);
+            } else {
+              // Clean up old or mismatched scan results
+              sessionStorage.removeItem(`quickScanResult_${user.email}`);
+            }
           }
+        } catch (error) {
+          console.error('Failed to parse quick scan data:', error);
         }
-      } catch (error) {
-        console.error('Failed to parse quick scan data:', error);
+      } else {
+        // User accessed feed directly (View My Feed) - ensure no lingering Quick Scan results
+        setQuickScanResult(null);
       }
-    } else if (!hasQuickScan && userEmail) {
-      // User accessed feed directly (View My Feed) - ensure no lingering Quick Scan results
-      setQuickScanResult(null);
+      
+      // Auto-refresh every 30 seconds
+      const interval = setInterval(() => fetchUserData(user.email, authToken), 30000);
+      return () => clearInterval(interval);
+    } else if (!user && !authToken) {
+      // No authentication - show auth modal
+      setError('Authentication required to view intelligence feed');
+      setLoading(false);
+      setShowAuthModal(true);
     }
-    
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchUserData, 30000);
-    return () => clearInterval(interval);
-  }, [userEmail, hasQuickScan]);
+  }, [user, authToken, hasQuickScan]);
 
   const getSeverityBadge = (severity) => {
     const severityClasses = {
