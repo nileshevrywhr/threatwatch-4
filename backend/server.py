@@ -130,6 +130,9 @@ async def subscribe(subscription_data: SubscriptionCreate):
         
         await db.subscriptions.insert_one(subscription_dict)
         return subscription
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
