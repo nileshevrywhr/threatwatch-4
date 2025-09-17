@@ -82,9 +82,14 @@ const LandingPage = () => {
         query: formData.term
       });
 
-      // Store quick scan results in sessionStorage and redirect
-      sessionStorage.setItem('quickScanResult', JSON.stringify(response.data));
+      // Store quick scan results with email association and redirect
       const userEmail = formData.email || 'quick-scan@temp.com';
+      const quickScanData = {
+        ...response.data,
+        userEmail: userEmail,
+        timestamp: new Date().toISOString()
+      };
+      sessionStorage.setItem(`quickScanResult_${userEmail}`, JSON.stringify(quickScanData));
       navigate(`/feed?email=${encodeURIComponent(userEmail)}&quickScan=true`);
 
     } catch (error) {
