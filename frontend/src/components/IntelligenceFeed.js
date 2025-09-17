@@ -149,8 +149,14 @@ const IntelligenceFeed = () => {
 
   const getAllIntelligenceMatches = () => {
     const regularMatches = userData?.intelligence_matches || [];
-    const quickScanMatches = quickScanResult ? convertQuickScanToMatches(quickScanResult) : [];
-    const discoveredLinks = quickScanResult ? convertDiscoveredLinksToMatches(quickScanResult) : [];
+    
+    // Only include Quick Scan results if they belong to the current user
+    const quickScanMatches = (quickScanResult && quickScanResult.userEmail === userEmail) 
+      ? convertQuickScanToMatches(quickScanResult) 
+      : [];
+    const discoveredLinks = (quickScanResult && quickScanResult.userEmail === userEmail) 
+      ? convertDiscoveredLinksToMatches(quickScanResult) 
+      : [];
     
     return [...quickScanMatches, ...discoveredLinks, ...regularMatches];
   };
