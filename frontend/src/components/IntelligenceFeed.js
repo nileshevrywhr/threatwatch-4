@@ -6,7 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Badge } from './ui/badge';
 import { Alert, AlertDescription } from './ui/alert';
 import { Input } from './ui/input';
-import { Shield, Plus, RefreshCw, Clock, ExternalLink, AlertTriangle, Zap, CheckCircle, Search, Filter, SortAsc, SortDesc } from 'lucide-react';
+import { Shield, Plus, RefreshCw, Clock, ExternalLink, AlertTriangle, Zap, CheckCircle, Search, Filter, SortAsc, SortDesc, LogIn, User } from 'lucide-react';
+import AuthModal from './AuthModal';
+import SubscriptionPlans from './SubscriptionPlans';
+import UserMenu from './UserMenu';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
