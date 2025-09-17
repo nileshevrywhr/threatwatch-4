@@ -185,6 +185,116 @@ class OSINTAPITester:
             params={}
         )[0]
 
+    def test_quick_scan_ransomware(self):
+        """Test Quick Scan with ransomware query"""
+        test_data = {"query": "ransomware"}
+        
+        success, response = self.run_test(
+            "Quick Scan - Ransomware",
+            "POST",
+            "quick-scan",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['query', 'summary', 'key_threats', 'sources', 'timestamp']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if missing_fields:
+                print(f"❌ Response missing required fields: {missing_fields}")
+                return False
+            
+            print("✅ Response has correct structure")
+            print(f"✅ Query: {response['query']}")
+            print(f"✅ Key threats count: {len(response['key_threats'])}")
+            print(f"✅ Sources count: {len(response['sources'])}")
+            
+            # Check if summary contains meaningful content
+            if len(response['summary']) > 50:
+                print("✅ Summary has meaningful content")
+            else:
+                print("⚠️  Summary seems too short")
+                
+            return True
+        return False
+
+    def test_quick_scan_malware(self):
+        """Test Quick Scan with malware query"""
+        test_data = {"query": "malware"}
+        
+        success, response = self.run_test(
+            "Quick Scan - Malware",
+            "POST",
+            "quick-scan",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            # Verify key threats are extracted
+            if response.get('key_threats') and len(response['key_threats']) > 0:
+                print(f"✅ Found {len(response['key_threats'])} key threats:")
+                for i, threat in enumerate(response['key_threats'][:3], 1):
+                    print(f"   {i}. {threat}")
+                return True
+            else:
+                print("⚠️  No key threats found")
+                return False
+        return False
+
+    def test_quick_scan_phishing(self):
+        """Test Quick Scan with phishing query"""
+        test_data = {"query": "phishing"}
+        
+        return self.run_test(
+            "Quick Scan - Phishing",
+            "POST",
+            "quick-scan",
+            200,
+            data=test_data
+        )[0]
+
+    def test_quick_scan_zero_day(self):
+        """Test Quick Scan with zero-day query"""
+        test_data = {"query": "zero-day"}
+        
+        return self.run_test(
+            "Quick Scan - Zero-day",
+            "POST",
+            "quick-scan",
+            200,
+            data=test_data
+        )[0]
+
+    def test_quick_scan_empty_query(self):
+        """Test Quick Scan with empty query"""
+        test_data = {"query": ""}
+        
+        # This should either return 422 for validation error or 200 with empty results
+        success, response = self.run_test(
+            "Quick Scan - Empty Query",
+            "POST",
+            "quick-scan",
+            200,  # Assuming it handles empty queries gracefully
+            data=test_data
+        )
+        
+        return success
+
+    def test_quick_scan_missing_query(self):
+        """Test Quick Scan with missing query field"""
+        test_data = {}
+        
+        return self.run_test(
+            "Quick Scan - Missing Query Field",
+            "POST",
+            "quick-scan",
+            422,  # Validation error
+            data=test_data
+        )[0]
+
 def main():
     print("🚀 Starting OSINT Threat Monitoring API Tests")
     print("=" * 60)
