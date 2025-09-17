@@ -38,21 +38,79 @@ const IntelligenceFeed = () => {
   const userEmail = searchParams.get('email');
   const hasQuickScan = searchParams.get('quickScan') === 'true';
 
-  const fetchUserData = async () => {
-    if (!userEmail) {
+  // Check for existing authentication on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const userData = localStorage.getItem('user');
+    
+    if (token && userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        setAuthToken(token);
+      } catch (error) {
+        console.error('Failed to parse user data:', error);
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+      }
+    }
+  }, []);
+
+  const handleAuthSuccess = (userData, token) => {
+    setUser(userData);
+    setAuthToken(token);
+    setShowAuthModal(false);
+    // Refresh user data after authentication
+    if (userData.email) {
+      fetchUserData(userData.email, token);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    setUser(null);
+    setAuthToken(null);
+    
+    // Clear any session storage
+    const quickScanKeys = Object.keys(sessionStorage).filter(key => key.startsWith('quickScanResult_'));
+    quickScanKeys.forEach(key => sessionStorage.removeItem(key));
+    
+    // Navigate back to landing page
+    navigate('/');
+  };
+
+  const fetchUserData = async (email = userEmail, token = authToken) => {
+    if (!email) {
       setError('No email provided');
       setLoading(false);
       return;
     }
 
+    if (!token) {
+      setError('Authentication required');
+      setLoading(false);
+      setShowAuthModal(true);
+      return;
+    }
+
     try {
       const response = await axios.get(`${API}/status`, {
-        params: { email: userEmail }
+        params: { email: email },
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
       setUserData(response.data);
       setError('');
       setLastRefresh(new Date());
     } catch (error) {
+      if (error.response?.status === 401) {
+        // Token expired or invalid
+        handleLogout();
+        return;
+      }
       const errorMessage = error.response?.data?.detail || 'Failed to fetch intelligence data';
       setError(errorMessage);
     } finally {
