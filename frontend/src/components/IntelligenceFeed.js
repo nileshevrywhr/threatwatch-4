@@ -369,14 +369,16 @@ const IntelligenceFeed = () => {
     }
   };
 
-  if (loading) {
+  if (authChecking || (loading && !user)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-pulse text-cyan-400 mb-4">
             <Shield className="h-16 w-16 mx-auto" />
           </div>
-          <p className="text-gray-300">Loading intelligence feed...</p>
+          <p className="text-gray-300">
+            {authChecking ? 'Checking authentication...' : 'Loading intelligence feed...'}
+          </p>
         </div>
       </div>
     );
