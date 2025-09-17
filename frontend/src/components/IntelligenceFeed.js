@@ -48,6 +48,7 @@ const IntelligenceFeed = () => {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
         setAuthToken(token);
+        setLoading(false); // Set loading to false when auth is found
       } catch (error) {
         console.error('Failed to parse user data:', error);
         localStorage.removeItem('authToken');
