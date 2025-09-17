@@ -16,9 +16,11 @@ const IntelligenceFeed = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [quickScanResult, setQuickScanResult] = useState(null);
   const navigate = useNavigate();
 
   const userEmail = searchParams.get('email');
+  const quickScanData = searchParams.get('quickScan');
 
   const fetchUserData = async () => {
     if (!userEmail) {
