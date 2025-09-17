@@ -88,6 +88,65 @@ const IntelligenceFeed = () => {
     });
   };
 
+  const convertQuickScanToMatches = (quickScan) => {
+    if (!quickScan) return [];
+    
+    const matches = [];
+    
+    // Add AI Summary as main intelligence match
+    matches.push({
+      id: `quick-scan-summary-${Date.now()}`,
+      term: quickScan.query,
+      incident_title: `AI Threat Intelligence Analysis: ${quickScan.query}`,
+      source: 'AI-Powered Quick Scan',
+      date: quickScan.timestamp,
+      severity: 'High',
+      type: 'quick-scan-summary',
+      summary: quickScan.summary
+    });
+    
+    // Add each key threat as separate intelligence matches
+    if (quickScan.key_threats && quickScan.key_threats.length > 0) {
+      quickScan.key_threats.forEach((threat, index) => {
+        matches.push({
+          id: `quick-scan-threat-${Date.now()}-${index}`,
+          term: quickScan.query,
+          incident_title: threat,
+          source: 'AI Threat Extraction',
+          date: quickScan.timestamp,
+          severity: 'Medium',
+          type: 'quick-scan-threat'
+        });
+      });
+    }
+    
+    return matches;
+  };
+
+  const handleSubscribeToQuickScan = async () => {
+    if (!quickScanResult) return;
+    
+    try {
+      const response = await axios.post(`${API}/subscribe`, {
+        term: quickScanResult.query,
+        email: userEmail,
+      });
+      
+      // Refresh data to show the new subscription
+      fetchUserData();
+      
+      // Clear quick scan result and show success message
+      setQuickScanResult(null);
+      // Remove quick scan from URL
+      const newUrl = new URL(window.location);
+      newUrl.searchParams.delete('quickScan');
+      window.history.replaceState({}, '', newUrl);
+      
+    } catch (error) {
+      console.error('Failed to subscribe:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
