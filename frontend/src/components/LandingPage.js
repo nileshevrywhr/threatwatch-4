@@ -79,9 +79,17 @@ const LandingPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.term || !formData.email) {
-      setMessage('Please fill in required fields');
+    if (!formData.term) {
+      setMessage('Please enter a keyword to monitor');
       setMessageType('error');
+      return;
+    }
+
+    // Check if user is authenticated
+    if (!user || !authToken) {
+      setMessage('Please sign in to set up monitoring');
+      setMessageType('error');
+      setShowAuthModal(true);
       return;
     }
 
@@ -91,16 +99,20 @@ const LandingPage = () => {
     try {
       const response = await axios.post(`${API}/subscribe`, {
         term: formData.term,
-        email: formData.email,
-        phone: formData.phone || undefined
+        email: user.email
+      }, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        }
       });
 
-      setMessage(`Now monitoring attacks related to "${formData.term}". You'll receive alerts via email${formData.phone ? '/SMS' : ''}.`);
+      setMessage(`Now monitoring attacks related to "${formData.term}". You'll receive alerts via email.`);
       setMessageType('success');
       
       // Redirect to intelligence feed after 2 seconds
       setTimeout(() => {
-        navigate(`/feed?email=${encodeURIComponent(formData.email)}`);
+        navigate(`/feed?email=${encodeURIComponent(user.email)}`);
       }, 2000);
 
     } catch (error) {
