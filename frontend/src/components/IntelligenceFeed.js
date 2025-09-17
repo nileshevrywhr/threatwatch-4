@@ -41,29 +41,36 @@ const IntelligenceFeed = () => {
 
   // Check for existing authentication on component mount
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('user');
-    
-    if (token && userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-        setAuthToken(token);
-        setLoading(false); // Set loading to false when auth is found
-      } catch (error) {
-        console.error('Failed to parse user data:', error);
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-        setError('Authentication failed. Please sign in again.');
+    const checkAuthentication = () => {
+      const token = localStorage.getItem('authToken');
+      const userData = localStorage.getItem('user');
+      
+      if (token && userData) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          setUser(parsedUser);
+          setAuthToken(token);
+          setAuthChecking(false);
+        } catch (error) {
+          console.error('Failed to parse user data:', error);
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+          setError('Authentication failed. Please sign in again.');
+          setAuthChecking(false);
+          setLoading(false);
+          setShowAuthModal(true);
+        }
+      } else {
+        // No stored authentication
+        setError('Please sign in to view your intelligence feed');
+        setAuthChecking(false);
         setLoading(false);
         setShowAuthModal(true);
       }
-    } else {
-      // No stored authentication
-      setError('Please sign in to view your intelligence feed');
-      setLoading(false);
-      setShowAuthModal(true);
-    }
+    };
+
+    // Add a small delay to ensure localStorage is ready
+    setTimeout(checkAuthentication, 100);
   }, []);
 
   const handleAuthSuccess = (userData, token) => {
