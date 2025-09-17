@@ -259,9 +259,91 @@ const IntelligenceFeed = () => {
           )}
         </section>
 
+        {/* Quick Scan Results Section */}
+        {quickScanResult && (
+          <section className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-white flex items-center space-x-2">
+                <Zap className="h-5 w-5 text-orange-400" />
+                <span>Quick Scan Results</span>
+              </h2>
+              <Button
+                onClick={handleSubscribeToQuickScan}
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Subscribe to Monitor
+              </Button>
+            </div>
+            
+            <div className="space-y-4">
+              {convertQuickScanToMatches(quickScanResult).map((match, index) => (
+                <Card key={`${match.id}-${index}`} className={`glass ${match.type === 'quick-scan-summary' ? 'border-orange-400/30' : 'border-yellow-400/30'} hover-glow`}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <Badge variant="outline" className="border-orange-400 text-orange-400">
+                            {match.term}
+                          </Badge>
+                          {getSeverityBadge(match.severity)}
+                          {match.type === 'quick-scan-summary' && (
+                            <Badge className="bg-orange-500/20 text-orange-300 border-orange-400">
+                              <Zap className="h-3 w-3 mr-1" />
+                              AI Analysis
+                            </Badge>
+                          )}
+                        </div>
+                        <CardTitle className="text-white text-lg">{match.incident_title}</CardTitle>
+                        <CardDescription className="text-gray-400 mt-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span>Source: {match.source}</span>
+                            <span>{formatDate(match.date)}</span>
+                          </div>
+                        </CardDescription>
+                        
+                        {/* Show full summary for AI analysis */}
+                        {match.type === 'quick-scan-summary' && match.summary && (
+                          <div className="mt-4 bg-gray-800/50 rounded-lg p-4">
+                            <pre className="text-gray-300 text-sm whitespace-pre-wrap font-sans leading-relaxed">
+                              {match.summary}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                      {match.type === 'quick-scan-summary' ? (
+                        <Zap className="h-5 w-5 text-orange-400 ml-4 flex-shrink-0" />
+                      ) : (
+                        <ExternalLink className="h-5 w-5 text-gray-400 ml-4 flex-shrink-0" />
+                      )}
+                    </div>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+            
+            {/* Success message for quick scan */}
+            <Card className="glass border-green-500/30 mt-4">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="h-5 w-5 text-green-400" />
+                  <div>
+                    <p className="text-green-300 font-semibold">Quick Scan Completed</p>
+                    <p className="text-gray-400 text-sm">
+                      AI analysis of "{quickScanResult.query}" threats completed. Click "Subscribe to Monitor" for ongoing surveillance.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
         {/* Intelligence Matches Section */}
         <section>
-          <h2 className="text-xl font-semibold text-white mb-4">Recent Intelligence Matches</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">
+            {quickScanResult ? 'Continuous Monitoring Matches' : 'Recent Intelligence Matches'}
+          </h2>
           {userData?.intelligence_matches?.length > 0 ? (
             <div className="space-y-4">
               {userData.intelligence_matches.map((match, index) => (
@@ -293,9 +375,17 @@ const IntelligenceFeed = () => {
             <Card className="glass border-gray-700">
               <CardContent className="p-6 text-center">
                 <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-400 mb-2">No intelligence matches found yet.</p>
+                <p className="text-gray-400 mb-2">
+                  {quickScanResult 
+                    ? 'No continuous monitoring subscriptions yet.' 
+                    : 'No intelligence matches found yet.'
+                  }
+                </p>
                 <p className="text-sm text-gray-500">
-                  We'll notify you as soon as we detect threats related to your subscribed terms.
+                  {quickScanResult
+                    ? 'Subscribe to the Quick Scan results above to start continuous monitoring.'
+                    : "We'll notify you as soon as we detect threats related to your subscribed terms."
+                  }
                 </p>
               </CardContent>
             </Card>
