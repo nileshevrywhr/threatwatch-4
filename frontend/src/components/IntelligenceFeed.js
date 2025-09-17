@@ -774,6 +774,21 @@ const IntelligenceFeed = () => {
           )}
         </section>
       </div>
+
+      {/* Authentication Modal */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
+
+      {/* Subscription Plans Modal */}
+      <SubscriptionPlans
+        isOpen={showSubscriptionPlans}
+        onClose={() => setShowSubscriptionPlans(false)}
+        currentUser={user}
+        authToken={authToken}
+      />
     </div>
   );
 };
