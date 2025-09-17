@@ -119,16 +119,29 @@ const LandingPage = () => {
       return;
     }
 
+    // Check if user is authenticated
+    if (!user || !authToken) {
+      setMessage('Please sign in to perform Quick Scans');
+      setMessageType('error');
+      setShowAuthModal(true);
+      return;
+    }
+
     setQuickScanLoading(true);
     setMessage('');
 
     try {
       const response = await axios.post(`${API}/quick-scan`, {
         query: formData.term
+      }, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        }
       });
 
       // Store quick scan results with email association and redirect
-      const userEmail = formData.email || 'quick-scan@temp.com';
+      const userEmail = user.email;
       const quickScanData = {
         ...response.data,
         userEmail: userEmail,
