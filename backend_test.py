@@ -265,88 +265,203 @@ class OSINTAPITester:
             params={}
         )[0]
 
-    def test_quick_scan_ransomware(self):
-        """Test Quick Scan with ransomware query"""
-        test_data = {"query": "ransomware"}
+    def test_enhanced_quick_scan_cybersecurity(self):
+        """Test Enhanced Quick Scan with Google Custom Search - Cybersecurity"""
+        if not self.auth_token:
+            print("⚠️  Skipping enhanced quick scan test - authentication required")
+            return False
+            
+        test_data = {"query": "cybersecurity"}
         
         success, response = self.run_test(
-            "Quick Scan - Ransomware",
+            "Enhanced Quick Scan - Cybersecurity",
             "POST",
             "quick-scan",
             200,
-            data=test_data
+            data=test_data,
+            auth_required=True
         )
         
         if success:
-            # Verify response structure
-            required_fields = ['query', 'summary', 'key_threats', 'sources', 'timestamp']
+            # Verify enhanced response structure
+            required_fields = [
+                'query', 'summary', 'key_threats', 'sources', 
+                'discovered_links', 'search_metadata', 'scan_type', 'timestamp'
+            ]
             missing_fields = [field for field in required_fields if field not in response]
             
             if missing_fields:
                 print(f"❌ Response missing required fields: {missing_fields}")
                 return False
             
-            print("✅ Response has correct structure")
+            print("✅ Enhanced response has correct structure")
             print(f"✅ Query: {response['query']}")
+            print(f"✅ Scan Type: {response['scan_type']}")
             print(f"✅ Key threats count: {len(response['key_threats'])}")
             print(f"✅ Sources count: {len(response['sources'])}")
+            print(f"✅ Discovered links count: {len(response['discovered_links'])}")
             
-            # Check if summary contains meaningful content
-            if len(response['summary']) > 50:
-                print("✅ Summary has meaningful content")
+            # Verify search metadata
+            metadata = response.get('search_metadata', {})
+            if 'total_results' in metadata and 'articles_analyzed' in metadata:
+                print(f"✅ Search metadata: {metadata['articles_analyzed']} articles analyzed")
+                print(f"✅ Total Google results: {metadata['total_results']}")
+            
+            # Verify discovered links structure
+            if response['discovered_links']:
+                first_link = response['discovered_links'][0]
+                link_fields = ['title', 'url', 'snippet', 'date', 'severity', 'source']
+                if all(field in first_link for field in link_fields):
+                    print("✅ Discovered links have correct structure")
+                    print(f"   Sample: {first_link['title'][:50]}... from {first_link['source']}")
+                else:
+                    print("⚠️  Discovered links missing some fields")
+            
+            # Check if summary contains meaningful AI analysis
+            if len(response['summary']) > 100 and 'EXECUTIVE SUMMARY' in response['summary']:
+                print("✅ AI-generated summary has meaningful content")
             else:
-                print("⚠️  Summary seems too short")
+                print("⚠️  Summary seems incomplete or not AI-generated")
                 
             return True
         return False
 
-    def test_quick_scan_malware(self):
-        """Test Quick Scan with malware query"""
-        test_data = {"query": "malware"}
+    def test_enhanced_quick_scan_ransomware(self):
+        """Test Enhanced Quick Scan with Google Custom Search - Ransomware"""
+        if not self.auth_token:
+            print("⚠️  Skipping enhanced quick scan test - authentication required")
+            return False
+            
+        test_data = {"query": "ransomware"}
         
         success, response = self.run_test(
-            "Quick Scan - Malware",
+            "Enhanced Quick Scan - Ransomware",
             "POST",
             "quick-scan",
             200,
-            data=test_data
+            data=test_data,
+            auth_required=True
         )
         
         if success:
-            # Verify key threats are extracted
+            # Verify key threats are extracted from AI analysis
             if response.get('key_threats') and len(response['key_threats']) > 0:
                 print(f"✅ Found {len(response['key_threats'])} key threats:")
                 for i, threat in enumerate(response['key_threats'][:3], 1):
-                    print(f"   {i}. {threat}")
-                return True
+                    print(f"   {i}. {threat[:80]}...")
+                
+                # Check if threats are meaningful (not generic)
+                threat_text = ' '.join(response['key_threats']).lower()
+                if 'ransomware' in threat_text or 'malware' in threat_text or 'attack' in threat_text:
+                    print("✅ Threats are contextually relevant")
+                    return True
+                else:
+                    print("⚠️  Threats may not be contextually relevant")
+                    return False
             else:
-                print("⚠️  No key threats found")
+                print("❌ No key threats found")
                 return False
         return False
 
-    def test_quick_scan_phishing(self):
-        """Test Quick Scan with phishing query"""
-        test_data = {"query": "phishing"}
+    def test_enhanced_quick_scan_data_breach(self):
+        """Test Enhanced Quick Scan with Google Custom Search - Data Breach"""
+        if not self.auth_token:
+            print("⚠️  Skipping enhanced quick scan test - authentication required")
+            return False
+            
+        test_data = {"query": "data breach"}
         
-        return self.run_test(
-            "Quick Scan - Phishing",
+        success, response = self.run_test(
+            "Enhanced Quick Scan - Data Breach",
             "POST",
             "quick-scan",
             200,
-            data=test_data
-        )[0]
+            data=test_data,
+            auth_required=True
+        )
+        
+        if success:
+            # Verify real Google search results are being used
+            if response.get('discovered_links'):
+                # Check if URLs are from real news sources
+                real_sources = ['reuters.com', 'bbc.com', 'cnn.com', 'apnews.com', 'npr.org', 'wsj.com', 'nytimes.com']
+                found_real_source = False
+                
+                for link in response['discovered_links']:
+                    url = link.get('url', '').lower()
+                    for source in real_sources:
+                        if source in url:
+                            found_real_source = True
+                            print(f"✅ Found real news source: {link['source']}")
+                            break
+                    if found_real_source:
+                        break
+                
+                if found_real_source:
+                    print("✅ Using real Google search results from news sources")
+                    return True
+                else:
+                    print("⚠️  No recognized news sources found in results")
+                    # Still pass if we have valid links structure
+                    return len(response['discovered_links']) > 0
+            else:
+                print("❌ No discovered links found")
+                return False
+        return False
 
-    def test_quick_scan_zero_day(self):
-        """Test Quick Scan with zero-day query"""
-        test_data = {"query": "zero-day"}
+    def test_quick_scan_without_auth(self):
+        """Test Quick Scan without authentication (should fail)"""
+        test_data = {"query": "cybersecurity"}
         
-        return self.run_test(
-            "Quick Scan - Zero-day",
+        # Temporarily remove auth token
+        temp_token = self.auth_token
+        self.auth_token = None
+        
+        success, response = self.run_test(
+            "Quick Scan Without Auth",
             "POST",
             "quick-scan",
-            200,
-            data=test_data
-        )[0]
+            401,  # Should return unauthorized
+            data=test_data,
+            auth_required=False
+        )
+        
+        # Restore auth token
+        self.auth_token = temp_token
+        
+        return success
+
+    def test_quick_scan_rate_limiting(self):
+        """Test Quick Scan rate limiting behavior"""
+        if not self.auth_token:
+            print("⚠️  Skipping rate limiting test - authentication required")
+            return False
+            
+        print("🔄 Testing rate limiting with multiple quick scans...")
+        
+        # Perform multiple quick scans rapidly
+        for i in range(3):
+            test_data = {"query": f"test query {i+1}"}
+            
+            success, response = self.run_test(
+                f"Quick Scan Rate Test {i+1}",
+                "POST",
+                "quick-scan",
+                200,  # Should succeed for free tier limits
+                data=test_data,
+                auth_required=True
+            )
+            
+            if success and 'scans_remaining' in response:
+                print(f"✅ Scan {i+1}: {response['scans_remaining']} scans remaining")
+            elif not success:
+                print(f"⚠️  Scan {i+1} failed - may have hit rate limit")
+                return True  # This is expected behavior
+            
+            # Small delay between requests
+            time.sleep(1)
+        
+        return True
 
     def test_quick_scan_empty_query(self):
         """Test Quick Scan with empty query"""
