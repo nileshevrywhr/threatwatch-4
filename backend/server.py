@@ -762,6 +762,11 @@ async def cleanup_old_reports(
             detail=f"Failed to cleanup reports: {str(e)}"
         )
 
+# Include all routers
+api_router.include_router(auth_router)
+api_router.include_router(payment_router)
+app.include_router(api_router)
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
