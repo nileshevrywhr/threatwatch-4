@@ -1,0 +1,53 @@
+<analysis>
+The previous AI engineer developed an OSINT threat monitoring application from scratch. The initial build included a landing page for subscriptions and an intelligence feed displaying monitored threats, using React, FastAPI, and MongoDB. Subsequent iterations introduced an AI-powered Quick Scan feature for instant threat intelligence, which was refined to display results within the main intelligence feed with filtering capabilities. A View My Feed option was added for direct access via email. Critical privacy concerns regarding cross-user data bleeding for Quick Scan results were addressed by implementing email-specific  and timed expiration. The most significant recent enhancement involved integrating user authentication (Emergent Auth with email/password) and Stripe for monthly subscriptions (Free, Pro, Enterprise tiers). This required extensive backend and frontend modifications, including setting up SQLAlchemy for user management and fixing multiple integration and authentication flow bugs, culminating in the current state where a persistent login issue on the intelligence feed page is being debugged.
+</analysis>
+
+<product_requirements>
+The goal is to build a minimal OSINT threat monitoring website.
+1.  **Landing Page**: Track attacks on industry/competitors. Features input form for keyword/product, user email, optional phone, and Start Monitoring button. Submits POST to  and redirects to My Intelligence Feed.
+2.  **My Intelligence Feed Page**: Fetches data from GET . Displays a table of intelligence matches (Term, Title, Source, Date, Severity), user's subscribed keywords, and auto-refreshes every 30 seconds. Includes a Add another keyword button.
+3.  **Success/Error Handling**: Clear messages for subscription success/failure.
+4.  **Quick Scan Feature**: A frontend button. On click, performs a Google search for recent results, summarizes articles using Emergent LLM (GPT-4o-mini), and presents actionable intelligence. Results should be integrated into the intelligence feed with links and filtering.
+5.  **Direct Feed Access**: Users should be able to access their intelligence feed directly with only their email from the landing page.
+6.  **Quick Scan Privacy**: Quick Scan results must be isolated per user and stored temporarily.
+7.  **Payment Integration**: Implement Stripe for long-term monitoring with monthly subscriptions (Free, Pro (), Enterprise (9)). Requires user authentication.
+8.  **User Authentication**: Implement user registration and login using Emergent Authentication (email/password). Tiers: Free (limited Quick Scans), Pro, Enterprise (unlimited features).
+</product_requirements>
+
+<key_technical_concepts>
+-   **Full-stack**: React, FastAPI, MongoDB.
+-   **UI/UX**: Tailwind CSS, Shadcn UI components, responsive design.
+-   **Backend**: Python, Pydantic, SQLAlchemy (for auth),  (LLM proxy),  (payment).
+-   **Authentication**: JWT, ,  (frontend),  (temporary Quick Scan results).
+-   **LLM**: Emergent LLM (GPT-4o-mini) for summarization.
+-   **Payments**: Stripe Checkout for recurring subscriptions.
+-   **Deployment**: Kubernetes container environment, supervisor for service control.
+</key_technical_concepts>
+
+<code_architecture>
+The application follows a standard full-stack architecture with React for the frontend and FastAPI for the backend, supported by a MongoDB database for application data and SQLite for user authentication data.
+
+
+-   **backend/server.py**: The core FastAPI application that orchestrates all backend logic, API routes, and integrates with MongoDB for threat data and SQLAlchemy for user/auth data.
+-   **backend/auth\_routes.py**: Defines all authentication-related API endpoints (signup, login, user profile, subscription management, Stripe checkout).
+-   **backend/database.py**: Centralizes database connection for SQLAlchemy, ensuring proper session management and a clean separation of concerns.
+-   **frontend/src/App.js**: Sets up the React Router for navigation and provides the  to manage user authentication state across the application.
+-   **frontend/src/components/LandingPage.js**: Serves as the primary entry point, handling new subscriptions, quick scans, and direct feed access. It's crucial for initial user interaction.
+-   **frontend/src/components/IntelligenceFeed.js**: Displays all intelligence data, including persistent subscriptions and temporary Quick Scan results, with filtering and sorting capabilities. It's central to the application's value proposition.
+-   **frontend/src/components/AuthModal.js**: Essential for user lifecycle management, providing UI for sign-up and login, crucial for the new payment-gated features.
+</code_architecture>
+
+<pending_tasks>
+-   Debug the persistent login/signup modal appearing on the Intelligence Feed page even when the user is already logged in. This involves correctly loading/validating authentication state from .
+</pending_tasks>
+
+<current_work>
+Immediately before this summary request, the AI engineer was addressing a bug where the login/signup modal erroneously appeared on the  page, even when the user was authenticated. This was diagnosed as a timing issue where the component's authentication state was not fully initialized before the modal was rendered.
+
+The engineer modified  to refine the authentication checking logic, introducing a  state variable to conditionally prevent the modal from rendering prematurely. However, subsequent testing showed that while the modal no longer appeared, the  page displayed a Please sign in to view your intelligence feed error, even after a user should have been logged in. Additionally, the  component was observed not to reflect the authenticated user state. The problem indicates a deeper issue with  data retrieval or JWT token validation on the frontend.
+</current_work>
+
+<optional_next_step>
+Get a fresh token and add debugging to investigate  reading and token validation issues on the Intelligence Feed page.
+</optional_next_step>
+
