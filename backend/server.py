@@ -678,7 +678,7 @@ async def generate_pdf_report(
         return {
             "status": "success",
             "message": "PDF report generated successfully",
-            "download_url": f"/api/download-report/{Path(pdf_path).stem}",
+            "download_url": f"/download-report/{Path(pdf_path).stem}",
             "filename": public_filename,
             "generated_at": datetime.now(timezone.utc).isoformat()
         }
