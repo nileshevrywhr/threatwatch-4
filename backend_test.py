@@ -12,10 +12,14 @@ class OSINTAPITester:
         self.tests_passed = 0
         self.auth_token = None
 
-    def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
+    def run_test(self, name, method, endpoint, expected_status, data=None, params=None, auth_required=False):
         """Run a single API test"""
         url = f"{self.api_url}/{endpoint}" if endpoint else self.api_url
         headers = {'Content-Type': 'application/json'}
+        
+        # Add authentication header if required
+        if auth_required and self.auth_token:
+            headers['Authorization'] = f'Bearer {self.auth_token}'
 
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
@@ -24,12 +28,14 @@ class OSINTAPITester:
             print(f"   Data: {json.dumps(data, indent=2)}")
         if params:
             print(f"   Params: {params}")
+        if auth_required:
+            print(f"   Auth: {'✓' if self.auth_token else '✗'}")
         
         try:
             if method == 'GET':
-                response = requests.get(url, headers=headers, params=params)
+                response = requests.get(url, headers=headers, params=params, timeout=60)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=headers)
+                response = requests.post(url, json=data, headers=headers, timeout=60)
 
             print(f"   Response Status: {response.status_code}")
             
