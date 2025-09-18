@@ -147,7 +147,33 @@ const LandingPage = () => {
     setQuickScanLoading(true);
     setMessage('');
 
+    // Progress stages
+    const stages = [
+      { message: 'Preparing search query...', progress: 10 },
+      { message: 'Searching Google for recent news...', progress: 30 },
+      { message: 'Analyzing discovered articles...', progress: 60 },
+      { message: 'Generating AI-powered insights...', progress: 85 },
+      { message: 'Finalizing results...', progress: 100 }
+    ];
+
     try {
+      // Simulate progress updates
+      for (let i = 0; i < stages.length - 1; i++) {
+        setQuickScanProgress({
+          stage: i,
+          message: stages[i].message,
+          progress: stages[i].progress
+        });
+        await new Promise(resolve => setTimeout(resolve, 800)); // 800ms between stages
+      }
+
+      // Set final stage before API call
+      setQuickScanProgress({
+        stage: stages.length - 2,
+        message: stages[stages.length - 2].message,
+        progress: stages[stages.length - 2].progress
+      });
+
       const response = await axios.post(`${API}/quick-scan`, {
         query: formData.term
       }, {
@@ -157,7 +183,17 @@ const LandingPage = () => {
         }
       });
 
-      // Store quick scan results with email association and redirect
+      // Complete progress
+      setQuickScanProgress({
+        stage: stages.length - 1,
+        message: stages[stages.length - 1].message,
+        progress: stages[stages.length - 1].progress
+      });
+
+      // Short delay before redirect to show completion
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Store enhanced quick scan results with email association and redirect
       const userEmail = user.email;
       const quickScanData = {
         ...response.data,
@@ -172,6 +208,7 @@ const LandingPage = () => {
       setMessage(errorMessage);
       setMessageType('error');
       setQuickScanLoading(false);
+      setQuickScanProgress({ stage: 0, message: '', progress: 0 });
     }
   };
 
