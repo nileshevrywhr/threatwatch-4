@@ -379,6 +379,7 @@ const IntelligenceFeed = () => {
     setPdfGenerating(scanData.query);
     
     try {
+      // Step 1: Generate the PDF report
       const response = await axios.post(`${API}/generate-report`, scanData, {
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -387,13 +388,9 @@ const IntelligenceFeed = () => {
       });
       
       if (response.data.status === 'success') {
-        // Trigger download
+        // Step 2: Download the generated PDF
         const downloadUrl = `${API}${response.data.download_url}`;
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = response.data.filename;
         
-        // Add auth header for download (create a new request)
         try {
           const downloadResponse = await axios.get(downloadUrl, {
             headers: {
@@ -402,27 +399,55 @@ const IntelligenceFeed = () => {
             responseType: 'blob'
           });
           
-          // Create blob URL and download
+          // Create blob and trigger download
           const blob = new Blob([downloadResponse.data], { type: 'application/pdf' });
           const blobUrl = window.URL.createObjectURL(blob);
           
+          // Create temporary download link
+          const link = document.createElement('a');
           link.href = blobUrl;
+          link.download = response.data.filename || 'ThreatWatch_Report.pdf';
+          link.style.display = 'none';
+          
+          // Trigger download
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
           
           // Clean up blob URL
-          window.URL.revokeObjectURL(blobUrl);
+          setTimeout(() => {
+            window.URL.revokeObjectURL(blobUrl);
+          }, 100);
+          
+          console.log('✅ PDF download completed successfully');
           
         } catch (downloadError) {
           console.error('Download failed:', downloadError);
-          // Fallback: open in new tab
-          window.open(downloadUrl, '_blank');
+          
+          // Fallback: direct link approach
+          const downloadUrl = `${API}${response.data.download_url}`;
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = response.data.filename || 'ThreatWatch_Report.pdf';
+          link.target = '_blank';
+          link.style.display = 'none';
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
         }
       }
     } catch (error) {
       console.error('PDF generation failed:', error);
-      // You could add a toast notification here
+      
+      // Show user-friendly error message
+      if (error.response?.status === 401) {
+        console.error('Authentication required for PDF download');
+      } else if (error.response?.status === 404) {
+        console.error('PDF report not found or expired');
+      } else {
+        console.error('Failed to generate PDF report');
+      }
     } finally {
       setPdfGenerating(null);
     }
