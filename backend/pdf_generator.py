@@ -267,7 +267,7 @@ class ThreatWatchPDFGenerator:
         metrics_data = [
             ['Metric', 'Value', 'Description'],
             ['Articles Analyzed', str(articles_analyzed), 'News articles processed by AI'],
-            ['Total Search Results', f"{total_results:,}" if str(total_results).isdigit() else total_results, 'Total Google search matches'],
+            ['Total Search Results', f"{int(total_results):,}" if str(total_results).isdigit() else str(total_results), 'Total Google search matches'],
             ['Key Threats Identified', str(key_threats_count), 'Critical threats extracted from analysis'],
             ['Search Timeframe', '7 days', 'Recent articles from past week'],
             ['Analysis Method', 'AI-Powered (GPT-4o)', 'Advanced language model analysis']
