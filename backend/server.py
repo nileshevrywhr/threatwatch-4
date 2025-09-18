@@ -640,6 +640,21 @@ async def get_status(
         intelligence_matches=intelligence_matches
     )
 
+@api_router.get("/health/google-search")
+async def google_search_health():
+    """Health check for Google Custom Search API integration"""
+    try:
+        from google_search_client import GoogleCustomSearchClient
+        search_client = GoogleCustomSearchClient()
+        health_status = await search_client.health_check()
+        return health_status
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
 # Include all routers
 api_router.include_router(auth_router)
 api_router.include_router(payment_router)
