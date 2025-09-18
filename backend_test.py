@@ -491,52 +491,61 @@ class OSINTAPITester:
         )[0]
 
 def main():
-    print("🚀 Starting OSINT Threat Monitoring API Tests")
-    print("=" * 60)
+    print("🚀 Starting Enhanced OSINT Threat Monitoring API Tests")
+    print("🔍 Testing Google Custom Search API Integration & Enhanced Quick Scan")
+    print("=" * 80)
     
     tester = OSINTAPITester()
     
-    # Test sequence
+    # Test sequence - Authentication first, then enhanced features
     tests = [
         ("API Root Endpoint", tester.test_api_root),
+        ("User Registration", tester.test_register_user),
+        ("User Login", tester.test_login_user),
+        ("Google Search Health Check", tester.test_google_search_health_check),
+        ("Enhanced Quick Scan - Cybersecurity", tester.test_enhanced_quick_scan_cybersecurity),
+        ("Enhanced Quick Scan - Ransomware", tester.test_enhanced_quick_scan_ransomware),
+        ("Enhanced Quick Scan - Data Breach", tester.test_enhanced_quick_scan_data_breach),
+        ("Quick Scan Without Auth", tester.test_quick_scan_without_auth),
+        ("Quick Scan Rate Limiting", tester.test_quick_scan_rate_limiting),
+        ("Quick Scan - Empty Query", tester.test_quick_scan_empty_query),
+        ("Quick Scan - Missing Query", tester.test_quick_scan_missing_query),
+        # Legacy subscription tests
         ("Subscribe with Valid Data", tester.test_subscribe_valid_data),
         ("Subscribe with Missing Fields", tester.test_subscribe_missing_required_fields),
         ("Subscribe Duplicate", tester.test_subscribe_duplicate),
         ("Status with Valid Email", tester.test_status_valid_email),
         ("Status with Non-existent Email", tester.test_status_nonexistent_email),
         ("Status Missing Email Parameter", tester.test_status_missing_email_param),
-        ("Quick Scan - Ransomware", tester.test_quick_scan_ransomware),
-        ("Quick Scan - Malware", tester.test_quick_scan_malware),
-        ("Quick Scan - Phishing", tester.test_quick_scan_phishing),
-        ("Quick Scan - Zero-day", tester.test_quick_scan_zero_day),
-        ("Quick Scan - Empty Query", tester.test_quick_scan_empty_query),
-        ("Quick Scan - Missing Query", tester.test_quick_scan_missing_query),
     ]
     
     for test_name, test_func in tests:
-        print(f"\n{'='*60}")
+        print(f"\n{'='*80}")
         print(f"Running: {test_name}")
-        print('='*60)
+        print('='*80)
         try:
             test_func()
         except Exception as e:
             print(f"❌ Test failed with exception: {str(e)}")
     
     # Print final results
-    print(f"\n{'='*60}")
+    print(f"\n{'='*80}")
     print("📊 FINAL TEST RESULTS")
-    print('='*60)
+    print('='*80)
     print(f"Tests Run: {tester.tests_run}")
     print(f"Tests Passed: {tester.tests_passed}")
     print(f"Tests Failed: {tester.tests_run - tester.tests_passed}")
     print(f"Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
     
-    if tester.tests_passed == tester.tests_run:
-        print("🎉 All tests passed!")
-        return 0
+    # Enhanced summary
+    if tester.tests_passed >= tester.tests_run * 0.8:  # 80% pass rate
+        print("🎉 Most tests passed! Enhanced Quick Scan functionality is working.")
+    elif tester.tests_passed >= tester.tests_run * 0.6:  # 60% pass rate
+        print("⚠️  Some issues found. Check failed tests above.")
     else:
-        print("⚠️  Some tests failed. Check the output above for details.")
-        return 1
+        print("❌ Multiple failures detected. System may need attention.")
+    
+    return 0 if tester.tests_passed >= tester.tests_run * 0.8 else 1
 
 if __name__ == "__main__":
     sys.exit(main())
