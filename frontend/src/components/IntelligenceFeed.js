@@ -373,6 +373,61 @@ const IntelligenceFeed = () => {
     }
   };
 
+  const handleGeneratePDF = async (scanData) => {
+    if (!authToken || !scanData) return;
+    
+    setPdfGenerating(scanData.query);
+    
+    try {
+      const response = await axios.post(`${API}/generate-report`, scanData, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.data.status === 'success') {
+        // Trigger download
+        const downloadUrl = `${API}${response.data.download_url}`;
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = response.data.filename;
+        
+        // Add auth header for download (create a new request)
+        try {
+          const downloadResponse = await axios.get(downloadUrl, {
+            headers: {
+              'Authorization': `Bearer ${authToken}`
+            },
+            responseType: 'blob'
+          });
+          
+          // Create blob URL and download
+          const blob = new Blob([downloadResponse.data], { type: 'application/pdf' });
+          const blobUrl = window.URL.createObjectURL(blob);
+          
+          link.href = blobUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          // Clean up blob URL
+          window.URL.revokeObjectURL(blobUrl);
+          
+        } catch (downloadError) {
+          console.error('Download failed:', downloadError);
+          // Fallback: open in new tab
+          window.open(downloadUrl, '_blank');
+        }
+      }
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      // You could add a toast notification here
+    } finally {
+      setPdfGenerating(null);
+    }
+  };
+
   if (authChecking || (loading && !user)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
