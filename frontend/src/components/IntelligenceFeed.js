@@ -248,12 +248,13 @@ const IntelligenceFeed = () => {
       id: `discovered-link-${Date.now()}-${index}`,
       term: quickScan.query,
       incident_title: link.title,
-      source: new URL(link.url).hostname,
+      source: link.source || new URL(link.url).hostname,
       date: link.date,
       severity: link.severity,
       type: 'discovered-link',
       url: link.url,
-      snippet: link.snippet
+      snippet: link.snippet,
+      isRealNews: true // Flag to indicate these are real Google search results
     }));
   };
 
