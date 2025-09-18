@@ -47,23 +47,23 @@ class GoogleCustomSearchClient:
         """
         logger.info(f"Searching for news articles: query='{query[:50]}...', num_results={num_results}, days_back={days_back}")
         
-        # Enhance query for news-specific search
-        enhanced_query = f'"{query}" news OR breaking OR report OR article'
+        # Create a flexible query that searches for the term in news context
+        # Remove exact phrase matching and make it more flexible
+        base_query = f"{query} (news OR article OR report OR breaking OR security OR threat OR incident)"
         
-        # Add news site preferences to bias results toward news sources
-        news_sites = "site:reuters.com OR site:bbc.com OR site:cnn.com OR site:apnews.com OR site:npr.org OR site:wsj.com OR site:nytimes.com"
-        final_query = f"({enhanced_query}) AND ({news_sites})"
-        
+        # Add news source preferences but don't make them mandatory
+        # This will bias towards news sites but not exclude other results
         params = {
             "key": self.api_key,
             "cx": self.search_engine_id,
-            "q": final_query,
+            "q": base_query,
             "num": min(num_results, 10),  # Google API max is 10 per request
-            "dateRestrict": f"d{days_back}",  # Restrict to last N days
+            "dateRestrict": f"d{max(days_back, 30)}",  # Extend to 30 days if needed
             "sort": "date",  # Sort by date (newest first)
             "safe": "medium",  # Safe search
             "lr": "lang_en",  # English language results
-            "gl": "us"  # Geographic location bias to US
+            "gl": "us",  # Geographic location bias to US
+            "tbm": "nws"  # Search news specifically
         }
         
         timeout = httpx.Timeout(30.0)  # 30 second timeout
