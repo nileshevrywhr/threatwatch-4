@@ -758,12 +758,39 @@ const IntelligenceFeed = () => {
                           )}
                         </CardDescription>
                         
-                        {/* Show full summary for AI analysis */}
+                        {/* Show enhanced summary for AI analysis with metadata */}
                         {match.type === 'quick-scan-summary' && match.summary && (
-                          <div className="mt-4 bg-gray-800/50 rounded-lg p-4">
-                            <pre className="text-gray-300 text-sm whitespace-pre-wrap font-sans leading-relaxed">
-                              {match.summary}
-                            </pre>
+                          <div className="mt-4 space-y-4">
+                            {/* Search metadata display */}
+                            {match.search_metadata && (
+                              <div className="bg-gradient-to-r from-orange-900/30 to-orange-800/30 rounded-lg p-3 border border-orange-500/30">
+                                <div className="flex items-center space-x-4 text-sm text-orange-300">
+                                  <div className="flex items-center space-x-1">
+                                    <span>📊</span>
+                                    <span>{match.search_metadata.articles_analyzed || 0} articles analyzed</span>
+                                  </div>
+                                  <div className="flex items-center space-x-1">
+                                    <span>🔍</span>
+                                    <span>{match.search_metadata.total_results || 0} total results found</span>
+                                  </div>
+                                  <div className="flex items-center space-x-1">
+                                    <span>⚡</span>
+                                    <span>Real Google Search</span>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* AI Summary */}
+                            <div className="bg-gray-800/50 rounded-lg p-4 border border-orange-400/30">
+                              <div className="flex items-center space-x-2 mb-3">
+                                <span className="text-orange-400">🤖</span>
+                                <span className="text-orange-300 font-semibold text-sm">AI-Generated Threat Analysis</span>
+                              </div>
+                              <pre className="text-gray-300 text-sm whitespace-pre-wrap font-sans leading-relaxed">
+                                {match.summary}
+                              </pre>
+                            </div>
                           </div>
                         )}
                       </div>
