@@ -437,16 +437,36 @@ const LandingPage = () => {
                       onClick={handleQuickScan}
                       disabled={loading || quickScanLoading}
                       variant="outline"
-                      className="w-full border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white font-semibold py-3 transition-all duration-300"
+                      className="w-full border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white font-semibold py-3 transition-all duration-300 relative overflow-hidden"
                     >
                       {quickScanLoading ? (
-                        <div className="flex items-center space-x-2">
-                          <div className="animate-pulse">Scanning latest threats...</div>
+                        <div className="w-full">
+                          {/* Progress bar background */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-orange-600/20" 
+                               style={{ 
+                                 width: `${quickScanProgress.progress}%`,
+                                 transition: 'width 0.8s ease-in-out'
+                               }}>
+                          </div>
+                          
+                          {/* Progress content */}
+                          <div className="relative z-10 flex flex-col items-center space-y-1">
+                            <div className="flex items-center space-x-2">
+                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-400 border-t-transparent"></div>
+                              <span className="text-sm">{quickScanProgress.message}</span>
+                            </div>
+                            <div className="w-full bg-gray-700 rounded-full h-1.5 mt-2">
+                              <div 
+                                className="bg-gradient-to-r from-orange-400 to-orange-500 h-1.5 rounded-full transition-all duration-800 ease-out"
+                                style={{ width: `${quickScanProgress.progress}%` }}
+                              ></div>
+                            </div>
+                          </div>
                         </div>
                       ) : (
                         <div className="flex items-center space-x-2">
                           <Zap className="h-4 w-4" />
-                          <span>Quick Scan (AI-Powered)</span>
+                          <span>AI-Powered Quick Scan</span>
                         </div>
                       )}
                     </Button>
