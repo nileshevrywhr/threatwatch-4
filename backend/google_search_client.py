@@ -78,6 +78,23 @@ class GoogleCustomSearchClient:
                 items_count = len(result.get("items", []))
                 total_results = result.get("searchInformation", {}).get("totalResults", "0")
                 
+                # If no results with news search, try a broader search
+                if items_count == 0:
+                    logger.info("No results with news search, trying broader search...")
+                    fallback_params = params.copy()
+                    fallback_params["q"] = f"{query} (cybersecurity OR security OR technology OR business)"
+                    del fallback_params["tbm"]  # Remove news-only restriction
+                    fallback_params["dateRestrict"] = f"d{max(days_back, 60)}"  # Extend to 60 days
+                    
+                    response = await client.get(self.base_url, params=fallback_params)
+                    response.raise_for_status()
+                    result = response.json()
+                    items_count = len(result.get("items", []))
+                    total_results = result.get("searchInformation", {}).get("totalResults", "0")
+                    
+                    if items_count > 0:
+                        logger.info(f"Fallback search found {items_count} results")
+                
                 logger.info(f"Search completed successfully: {items_count} items returned, {total_results} total results available")
                 return result
                 
