@@ -22,6 +22,7 @@ const IntelligenceFeed = () => {
   const [error, setError] = useState('');
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [quickScanResult, setQuickScanResult] = useState(null);
+  const [pdfGenerating, setPdfGenerating] = useState(null);
   const [filterTerm, setFilterTerm] = useState('');
   const [severityFilter, setSeverityFilter] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
