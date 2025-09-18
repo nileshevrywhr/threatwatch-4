@@ -656,10 +656,111 @@ async def google_search_health():
             "timestamp": datetime.utcnow().isoformat()
         }
 
-# Include all routers
-api_router.include_router(auth_router)
-api_router.include_router(payment_router)
-app.include_router(api_router)
+# PDF Report Generation endpoints
+@api_router.post("/generate-report")
+async def generate_pdf_report(
+    scan_data: Dict[str, Any],
+    current_user: User = Depends(get_current_active_user)
+):
+    """Generate PDF report from Quick Scan results"""
+    try:
+        from pdf_generator import ThreatWatchPDFGenerator
+        
+        # Initialize PDF generator
+        pdf_generator = ThreatWatchPDFGenerator()
+        
+        # Generate PDF
+        pdf_path = pdf_generator.generate_report(scan_data)
+        
+        # Get user-friendly filename
+        public_filename = pdf_generator.get_public_filename(scan_data)
+        
+        return {
+            "status": "success",
+            "message": "PDF report generated successfully",
+            "download_url": f"/api/download-report/{Path(pdf_path).stem}",
+            "filename": public_filename,
+            "generated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"PDF generation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate PDF report: {str(e)}"
+        )
+
+@api_router.get("/download-report/{report_id}")
+async def download_pdf_report(
+    report_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Download generated PDF report"""
+    try:
+        from pdf_generator import ThreatWatchPDFGenerator
+        
+        # Initialize PDF generator to get cache directory
+        pdf_generator = ThreatWatchPDFGenerator()
+        pdf_path = pdf_generator.cache_dir / f"{report_id}.pdf"
+        
+        # Check if file exists and is valid
+        if not pdf_path.exists():
+            raise HTTPException(
+                status_code=404,
+                detail="Report not found or has expired"
+            )
+        
+        # Check if file is recent (within 48 hours)
+        if not pdf_generator._is_cache_valid(pdf_path):
+            # Clean up expired file
+            pdf_path.unlink()
+            raise HTTPException(
+                status_code=404,
+                detail="Report has expired. Please generate a new report."
+            )
+        
+        # Generate appropriate filename for download
+        timestamp = datetime.now().strftime('%Y-%m-%d')
+        filename = f"ThreatWatch_Report_{timestamp}.pdf"
+        
+        return FileResponse(
+            path=str(pdf_path),
+            filename=filename,
+            media_type='application/pdf',
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"PDF download failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to download PDF report: {str(e)}"
+        )
+
+@api_router.delete("/cleanup-reports")
+async def cleanup_old_reports(
+    current_user: User = Depends(get_current_active_user)
+):
+    """Cleanup old PDF reports (Admin only or background task)"""
+    try:
+        from pdf_generator import ThreatWatchPDFGenerator
+        
+        pdf_generator = ThreatWatchPDFGenerator()
+        pdf_generator.cleanup_old_reports()
+        
+        return {
+            "status": "success",
+            "message": "Old reports cleaned up successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Cleanup failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to cleanup reports: {str(e)}"
+        )
 
 # Add CORS middleware
 app.add_middleware(
