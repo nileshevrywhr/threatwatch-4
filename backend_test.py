@@ -71,6 +71,78 @@ class OSINTAPITester:
             200
         )
 
+    def test_register_user(self):
+        """Test user registration"""
+        timestamp = datetime.now().strftime('%H%M%S')
+        test_data = {
+            "email": f"testuser_{timestamp}@threatradar.com",
+            "password": "SecurePass123!",
+            "full_name": "Test User"
+        }
+        
+        success, response = self.run_test(
+            "User Registration",
+            "POST",
+            "auth/register",
+            201,
+            data=test_data
+        )
+        
+        if success:
+            self.test_user_email = test_data["email"]
+            self.test_user_password = test_data["password"]
+            return True, response
+        return False, {}
+
+    def test_login_user(self):
+        """Test user login"""
+        if not hasattr(self, 'test_user_email'):
+            print("⚠️  Skipping login test - no test user available")
+            return False
+            
+        test_data = {
+            "email": self.test_user_email,
+            "password": self.test_user_password
+        }
+        
+        success, response = self.run_test(
+            "User Login",
+            "POST",
+            "auth/login",
+            200,
+            data=test_data
+        )
+        
+        if success and 'token' in response:
+            self.auth_token = response['token']['access_token']
+            print(f"✅ Authentication token obtained")
+            return True, response
+        return False, {}
+
+    def test_google_search_health_check(self):
+        """Test Google Custom Search API health check"""
+        success, response = self.run_test(
+            "Google Search Health Check",
+            "GET",
+            "health/google-search",
+            200
+        )
+        
+        if success:
+            # Verify health check response structure
+            if 'status' in response:
+                print(f"✅ Health Status: {response['status']}")
+                if response['status'] == 'healthy':
+                    print("✅ Google Custom Search API is healthy")
+                    return True
+                else:
+                    print(f"⚠️  Google API Status: {response.get('error', 'Unknown error')}")
+                    return False
+            else:
+                print("❌ Invalid health check response structure")
+                return False
+        return False
+
     def test_subscribe_valid_data(self):
         """Test subscription with valid data"""
         test_data = {
