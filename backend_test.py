@@ -2,6 +2,7 @@ import requests
 import sys
 import json
 from datetime import datetime
+import time
 
 class OSINTAPITester:
     def __init__(self, base_url="https://threatradar-8.preview.emergentagent.com"):
@@ -9,6 +10,7 @@ class OSINTAPITester:
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
         self.tests_passed = 0
+        self.auth_token = None
 
     def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
         """Run a single API test"""
