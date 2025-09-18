@@ -223,17 +223,19 @@ const IntelligenceFeed = () => {
     
     const matches = [];
     
-    // Add AI Summary as main intelligence match
+    // Add AI Summary as main intelligence match with enhanced styling
     matches.push({
       id: `quick-scan-summary-${Date.now()}`,
       term: quickScan.query,
-      incident_title: `AI Threat Intelligence Analysis: ${quickScan.query}`,
-      source: 'AI-Powered Quick Scan',
+      incident_title: `🤖 AI Threat Intelligence Analysis: ${quickScan.query}`,
+      source: 'AI-Powered Analysis (Enhanced)',
       date: quickScan.timestamp,
       severity: 'High',
       type: 'quick-scan-summary',
       summary: quickScan.summary,
-      url: null
+      url: null,
+      search_metadata: quickScan.search_metadata || {},
+      scan_type: quickScan.scan_type || 'enhanced'
     });
     
     return matches;
