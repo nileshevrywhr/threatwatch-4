@@ -24,6 +24,11 @@ const LandingPage = () => {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [quickScanLoading, setQuickScanLoading] = useState(false);
+  const [quickScanProgress, setQuickScanProgress] = useState({
+    stage: 0,
+    message: '',
+    progress: 0
+  });
   const [feedEmail, setFeedEmail] = useState('');
   const [feedLoading, setFeedLoading] = useState(false);
   
