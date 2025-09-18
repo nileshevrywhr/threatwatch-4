@@ -77,6 +77,7 @@ class OSINTAPITester:
         test_data = {
             "email": f"testuser_{timestamp}@threatradar.com",
             "password": "SecurePass123!",
+            "confirm_password": "SecurePass123!",
             "full_name": "Test User"
         }
         
