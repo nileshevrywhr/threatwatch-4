@@ -570,13 +570,34 @@ const IntelligenceFeed = () => {
                 <Zap className="h-5 w-5 text-orange-400" />
                 <span>Quick Scan Results</span>
               </h2>
-              <Button
-                onClick={handleSubscribeToQuickScan}
-                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Subscribe to Monitor
-              </Button>
+              <div className="flex items-center space-x-3">
+                <Button
+                  onClick={() => handleGeneratePDF(quickScanResult)}
+                  disabled={pdfGenerating === quickScanResult.query}
+                  variant="outline"
+                  size="sm"
+                  className="border-green-500 text-green-400 hover:bg-green-500 hover:text-white"
+                >
+                  {pdfGenerating === quickScanResult.query ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-green-400 border-t-transparent"></div>
+                      <span>Generating...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <FileText className="h-4 w-4" />
+                      <span>Download Report</span>
+                    </div>
+                  )}
+                </Button>
+                <Button
+                  onClick={handleSubscribeToQuickScan}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Subscribe to Monitor
+                </Button>
+              </div>
             </div>
             
             <div className="space-y-4">
