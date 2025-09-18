@@ -755,7 +755,7 @@ const IntelligenceFeed = () => {
                           {match.type === 'discovered-link' && (
                             <Badge className="bg-blue-500/20 text-blue-300 border-blue-400">
                               <ExternalLink className="h-3 w-3 mr-1" />
-                              Discovered Link
+                              {match.isRealNews ? 'Live News Article' : 'Discovered Link'}
                             </Badge>
                           )}
                         </div>
