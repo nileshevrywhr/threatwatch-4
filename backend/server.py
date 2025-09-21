@@ -411,6 +411,17 @@ async def quick_scan(
             days_back=7
         )
         
+        # Initialize cost tracker for API usage tracking
+        cost_tracker = CostTracker()
+        
+        # Calculate Google API costs
+        api_usage = search_results.get('api_usage', {})
+        google_usage = cost_tracker.calculate_google_api_cost(
+            queries_made=api_usage.get('queries_made', 1),
+            total_results_returned=api_usage.get('results_returned', 0),
+            api_calls_count=api_usage.get('api_calls_made', 1)
+        )
+        
         # Extract structured article data
         discovered_articles = search_client.extract_article_data(search_results)
         
