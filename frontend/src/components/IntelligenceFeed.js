@@ -430,8 +430,9 @@ const IntelligenceFeed = () => {
         } catch (downloadError) {
           console.error('Download failed:', downloadError);
           
-          // Fallback: direct link approach with fixed URL
-          const downloadUrl = `${BACKEND_URL}${response.data.download_url}`;
+          // Fallback: direct link approach with properly constructed URL
+          const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+          const downloadUrl = `${backendUrl}${response.data.download_url}`;
           const link = document.createElement('a');
           link.href = downloadUrl;
           link.download = response.data.filename || 'ThreatWatch_Report.pdf';
