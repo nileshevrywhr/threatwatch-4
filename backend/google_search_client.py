@@ -43,7 +43,7 @@ class GoogleCustomSearchClient:
             days_back: Number of days to look back for articles
             
         Returns:
-            Dictionary containing search results and metadata
+            Dictionary containing search results, metadata, and API usage tracking
         """
         logger.info(f"Searching for news articles: query='{query[:50]}...', num_results={num_results}, days_back={days_back}")
         
