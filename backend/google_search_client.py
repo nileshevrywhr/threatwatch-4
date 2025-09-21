@@ -96,6 +96,16 @@ class GoogleCustomSearchClient:
                         logger.info(f"Fallback search found {items_count} results")
                 
                 logger.info(f"Search completed successfully: {items_count} items returned, {total_results} total results available")
+                
+                # Add API usage tracking for cost calculation
+                api_calls_made = 2 if items_count == 0 and 'tbm' not in fallback_params else 1
+                result['api_usage'] = {
+                    'queries_made': 1,
+                    'api_calls_made': api_calls_made,
+                    'results_returned': items_count,
+                    'total_results_available': int(total_results) if total_results.isdigit() else 0
+                }
+                
                 return result
                 
             except httpx.HTTPStatusError as e:
