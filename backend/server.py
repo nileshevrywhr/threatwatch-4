@@ -546,6 +546,9 @@ Focus on real, actionable intelligence that security professionals can use immed
         
         logger.info("Enhanced quick scan completed successfully")
         
+        # Generate comprehensive cost summary
+        cost_summary = cost_tracker.get_cost_summary(llm_usage, google_usage)
+        
         return {
             "query": query,
             "summary": llm_response,
@@ -557,6 +560,7 @@ Focus on real, actionable intelligence that security professionals can use immed
                 "search_time": search_results.get("searchInformation", {}).get("searchTime", 0),
                 "articles_analyzed": len(discovered_articles)
             },
+            "cost_breakdown": cost_summary,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "userEmail": current_user.email,
             "scans_remaining": can_scan_check["scans_allowed"] - can_scan_check["scans_used"] - 1,
