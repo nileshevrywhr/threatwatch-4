@@ -389,8 +389,9 @@ const IntelligenceFeed = () => {
       
       if (response.data.status === 'success') {
         // Step 2: Download the generated PDF
-        // Fix: Remove extra slash by using download_url directly (it already starts with /)
-        const downloadUrl = `${BACKEND_URL}${response.data.download_url}`;
+        // Fix: Properly construct URL by removing trailing slash from BACKEND_URL
+        const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+        const downloadUrl = `${backendUrl}${response.data.download_url}`;
         
         try {
           const downloadResponse = await axios.get(downloadUrl, {
