@@ -762,8 +762,8 @@ class OSINTAPITester:
         )[0]
 
 def main():
-    print("🚀 Starting Enhanced OSINT Threat Monitoring API Tests")
-    print("🔍 Testing Google Custom Search API Integration & Enhanced Quick Scan")
+    print("🚀 Starting ThreatWatch Backend Authentication System Tests")
+    print("🔐 Comprehensive Testing: Authentication, JWT Tokens, Database & API Health")
     print("=" * 80)
     
     tester = OSINTAPITester()
