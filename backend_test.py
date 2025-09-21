@@ -72,10 +72,10 @@ class OSINTAPITester:
         )
 
     def test_register_user(self):
-        """Test user registration"""
+        """Test user registration with proper schema validation"""
         timestamp = datetime.now().strftime('%H%M%S')
         test_data = {
-            "email": f"testuser_{timestamp}@threatradar.com",
+            "email": f"testuser_{timestamp}@threatwatch.com",
             "password": "SecurePass123!",
             "confirm_password": "SecurePass123!",
             "full_name": "Test User"
@@ -92,6 +92,18 @@ class OSINTAPITester:
         if success:
             self.test_user_email = test_data["email"]
             self.test_user_password = test_data["password"]
+            
+            # Verify response structure
+            required_fields = ['id', 'email', 'full_name', 'is_active', 'subscription_tier']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if missing_fields:
+                print(f"⚠️  Registration response missing fields: {missing_fields}")
+            else:
+                print("✅ Registration response has correct structure")
+                print(f"✅ User ID: {response.get('id')}")
+                print(f"✅ Subscription Tier: {response.get('subscription_tier')}")
+            
             return True, response
         return False, {}
 
