@@ -97,11 +97,25 @@ class GoogleCustomSearchClient:
                 
                 logger.info(f"Search completed successfully: {items_count} items returned, {total_results} total results available")
                 
-                # Add API usage tracking for cost calculation
-                api_calls_made = 2 if items_count == 0 and 'tbm' not in fallback_params else 1
+                # Track API usage for cost calculation
+                # Count API calls: 1 initial call + 1 fallback call if first returned no results
+                api_calls_made = 1
+                fallback_used = False
+                
+                # Check if we went through fallback logic by examining if we have any results
+                # and if the first search with 'tbm=nws' would have returned 0 results
+                if len(result.get("items", [])) > 0:
+                    # We have results - check if we used fallback
+                    search_info = result.get("searchInformation", {})
+                    # If this search didn't use 'tbm=nws' (news search), it was a fallback
+                    if params.get("tbm") == "nws" and "tbm" not in result.get("queries", {}).get("request", [{}])[0]:
+                        api_calls_made = 2
+                        fallback_used = True
+                
                 result['api_usage'] = {
                     'queries_made': 1,
                     'api_calls_made': api_calls_made,
+                    'fallback_used': fallback_used,
                     'results_returned': items_count,
                     'total_results_available': int(total_results) if total_results.isdigit() else 0
                 }
