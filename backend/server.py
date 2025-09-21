@@ -21,6 +21,7 @@ from auth_service import AuthService
 from auth_schemas import *
 from subscription_service import SubscriptionService, SUBSCRIPTION_TIERS
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+from cost_tracker import CostTracker
 import stripe
 from sqlalchemy.orm import Session
 
