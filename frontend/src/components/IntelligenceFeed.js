@@ -389,7 +389,8 @@ const IntelligenceFeed = () => {
       
       if (response.data.status === 'success') {
         // Step 2: Download the generated PDF
-        const downloadUrl = `${API}${response.data.download_url}`;
+        // Fix: Remove extra slash by using download_url directly (it already starts with /)
+        const downloadUrl = `${BACKEND_URL}${response.data.download_url}`;
         
         try {
           const downloadResponse = await axios.get(downloadUrl, {
@@ -399,25 +400,29 @@ const IntelligenceFeed = () => {
             responseType: 'blob'
           });
           
-          // Create blob and trigger download
-          const blob = new Blob([downloadResponse.data], { type: 'application/pdf' });
+          // Firefox-compatible PDF download method
+          const blob = downloadResponse.data;
           const blobUrl = window.URL.createObjectURL(blob);
           
-          // Create temporary download link
+          // Create temporary download link with Firefox compatibility
           const link = document.createElement('a');
           link.href = blobUrl;
           link.download = response.data.filename || 'ThreatWatch_Report.pdf';
           link.style.display = 'none';
           
-          // Trigger download
+          // Firefox compatibility: Add to DOM, click, and remove
           document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
           
-          // Clean up blob URL
+          // Use setTimeout to ensure Firefox processes the DOM addition
           setTimeout(() => {
-            window.URL.revokeObjectURL(blobUrl);
-          }, 100);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Clean up blob URL after download
+            setTimeout(() => {
+              window.URL.revokeObjectURL(blobUrl);
+            }, 1000);
+          }, 10);
           
           console.log('✅ PDF download completed successfully');
           
