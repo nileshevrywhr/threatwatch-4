@@ -512,10 +512,7 @@ Focus on real, actionable intelligence that security professionals can use immed
         estimated_input_tokens = len(input_text.split()) * 1.3  # Rough token estimation
         estimated_output_tokens = len(output_text.split()) * 1.3
         
-        # Initialize cost tracker
-        cost_tracker = CostTracker()
-        
-        # Calculate LLM costs
+        # Calculate LLM costs (cost_tracker already initialized above)
         llm_usage = cost_tracker.calculate_llm_cost(
             model="gpt-4o",
             input_tokens=int(estimated_input_tokens),
