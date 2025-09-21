@@ -490,8 +490,26 @@ Focus on real, actionable intelligence that security professionals can use immed
 
         user_message = UserMessage(text=analysis_prompt)
         
-        # Get AI analysis
+        # Get AI analysis with usage tracking
         llm_response = await chat.send_message(user_message)
+        
+        # Get token usage from the chat session for cost tracking
+        # Note: This is a placeholder - actual token tracking depends on Emergent LLM implementation
+        # We'll estimate tokens for now and update when precise tracking is available
+        input_text = analysis_prompt
+        output_text = llm_response
+        estimated_input_tokens = len(input_text.split()) * 1.3  # Rough token estimation
+        estimated_output_tokens = len(output_text.split()) * 1.3
+        
+        # Initialize cost tracker
+        cost_tracker = CostTracker()
+        
+        # Calculate LLM costs
+        llm_usage = cost_tracker.calculate_llm_cost(
+            model="gpt-4o",
+            input_tokens=int(estimated_input_tokens),
+            output_tokens=int(estimated_output_tokens)
+        )
         
         # Extract key threats from the response
         key_threats = []
