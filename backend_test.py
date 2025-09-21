@@ -108,7 +108,7 @@ class OSINTAPITester:
         return False, {}
 
     def test_login_user(self):
-        """Test user login"""
+        """Test user login with proper credentials"""
         if not hasattr(self, 'test_user_email'):
             print("⚠️  Skipping login test - no test user available")
             return False
@@ -129,6 +129,24 @@ class OSINTAPITester:
         if success and 'token' in response:
             self.auth_token = response['token']['access_token']
             print(f"✅ Authentication token obtained")
+            
+            # Verify JWT token structure
+            token_data = response['token']
+            required_token_fields = ['access_token', 'token_type', 'expires_in', 'user_id']
+            missing_token_fields = [field for field in required_token_fields if field not in token_data]
+            
+            if missing_token_fields:
+                print(f"⚠️  Token response missing fields: {missing_token_fields}")
+            else:
+                print("✅ JWT token has correct structure")
+                print(f"✅ Token Type: {token_data.get('token_type')}")
+                print(f"✅ Expires In: {token_data.get('expires_in')} seconds")
+            
+            # Verify user data in response
+            user_data = response.get('user', {})
+            if 'email' in user_data and user_data['email'] == self.test_user_email:
+                print("✅ User data correctly returned in login response")
+            
             return True, response
         return False, {}
 
