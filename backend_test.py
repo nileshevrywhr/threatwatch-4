@@ -150,6 +150,246 @@ class OSINTAPITester:
             return True, response
         return False, {}
 
+    def test_register_invalid_email(self):
+        """Test registration with invalid email format"""
+        timestamp = datetime.now().strftime('%H%M%S')
+        test_data = {
+            "email": f"invalid-email-{timestamp}",  # Invalid email format
+            "password": "SecurePass123!",
+            "confirm_password": "SecurePass123!",
+            "full_name": "Test User"
+        }
+        
+        return self.run_test(
+            "Registration - Invalid Email",
+            "POST",
+            "auth/register",
+            422,  # Validation error
+            data=test_data
+        )[0]
+
+    def test_register_weak_password(self):
+        """Test registration with weak password"""
+        timestamp = datetime.now().strftime('%H%M%S')
+        test_data = {
+            "email": f"testuser_{timestamp}@threatwatch.com",
+            "password": "weak",  # Too weak
+            "confirm_password": "weak",
+            "full_name": "Test User"
+        }
+        
+        return self.run_test(
+            "Registration - Weak Password",
+            "POST",
+            "auth/register",
+            400,  # Should reject weak password
+            data=test_data
+        )[0]
+
+    def test_register_password_mismatch(self):
+        """Test registration with password mismatch"""
+        timestamp = datetime.now().strftime('%H%M%S')
+        test_data = {
+            "email": f"testuser_{timestamp}@threatwatch.com",
+            "password": "SecurePass123!",
+            "confirm_password": "DifferentPass123!",  # Mismatch
+            "full_name": "Test User"
+        }
+        
+        return self.run_test(
+            "Registration - Password Mismatch",
+            "POST",
+            "auth/register",
+            422,  # Validation error
+            data=test_data
+        )[0]
+
+    def test_register_duplicate_email(self):
+        """Test registration with duplicate email"""
+        if not hasattr(self, 'test_user_email'):
+            print("⚠️  Skipping duplicate email test - no test user available")
+            return False
+            
+        test_data = {
+            "email": self.test_user_email,  # Use existing email
+            "password": "SecurePass123!",
+            "confirm_password": "SecurePass123!",
+            "full_name": "Another User"
+        }
+        
+        return self.run_test(
+            "Registration - Duplicate Email",
+            "POST",
+            "auth/register",
+            400,  # Should reject duplicate email
+            data=test_data
+        )[0]
+
+    def test_login_invalid_credentials(self):
+        """Test login with invalid credentials"""
+        test_data = {
+            "email": "nonexistent@threatwatch.com",
+            "password": "WrongPassword123!"
+        }
+        
+        return self.run_test(
+            "Login - Invalid Credentials",
+            "POST",
+            "auth/login",
+            401,  # Unauthorized
+            data=test_data
+        )[0]
+
+    def test_login_wrong_password(self):
+        """Test login with correct email but wrong password"""
+        if not hasattr(self, 'test_user_email'):
+            print("⚠️  Skipping wrong password test - no test user available")
+            return False
+            
+        test_data = {
+            "email": self.test_user_email,
+            "password": "WrongPassword123!"
+        }
+        
+        return self.run_test(
+            "Login - Wrong Password",
+            "POST",
+            "auth/login",
+            401,  # Unauthorized
+            data=test_data
+        )[0]
+
+    def test_protected_route_without_token(self):
+        """Test accessing protected route without authentication token"""
+        # Temporarily remove auth token
+        temp_token = self.auth_token
+        self.auth_token = None
+        
+        success, response = self.run_test(
+            "Protected Route - No Token",
+            "GET",
+            "auth/me",
+            401,  # Should return unauthorized
+            auth_required=False
+        )
+        
+        # Restore auth token
+        self.auth_token = temp_token
+        return success
+
+    def test_protected_route_invalid_token(self):
+        """Test accessing protected route with invalid token"""
+        # Use invalid token
+        temp_token = self.auth_token
+        self.auth_token = "invalid.jwt.token"
+        
+        success, response = self.run_test(
+            "Protected Route - Invalid Token",
+            "GET",
+            "auth/me",
+            401,  # Should return unauthorized
+            auth_required=True
+        )
+        
+        # Restore auth token
+        self.auth_token = temp_token
+        return success
+
+    def test_get_current_user_profile(self):
+        """Test getting current user profile with valid token"""
+        if not self.auth_token:
+            print("⚠️  Skipping user profile test - no auth token available")
+            return False
+            
+        success, response = self.run_test(
+            "Get Current User Profile",
+            "GET",
+            "auth/me",
+            200,
+            auth_required=True
+        )
+        
+        if success:
+            # Verify user profile structure
+            required_fields = ['id', 'email', 'full_name', 'is_active', 'subscription_tier']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if missing_fields:
+                print(f"⚠️  User profile missing fields: {missing_fields}")
+            else:
+                print("✅ User profile has correct structure")
+                print(f"✅ Email: {response.get('email')}")
+                print(f"✅ Active: {response.get('is_active')}")
+                print(f"✅ Subscription: {response.get('subscription_tier')}")
+            
+            return True
+        return False
+
+    def test_database_connectivity(self):
+        """Test database connectivity by checking if user data persists"""
+        if not hasattr(self, 'test_user_email'):
+            print("⚠️  Skipping database test - no test user available")
+            return False
+            
+        # Login again to verify user data persists in database
+        test_data = {
+            "email": self.test_user_email,
+            "password": self.test_user_password
+        }
+        
+        success, response = self.run_test(
+            "Database Connectivity - User Persistence",
+            "POST",
+            "auth/login",
+            200,
+            data=test_data
+        )
+        
+        if success:
+            print("✅ Database connectivity confirmed - user data persists")
+            return True
+        else:
+            print("❌ Database connectivity issue - user data not found")
+            return False
+
+    def test_jwt_token_validation(self):
+        """Test JWT token validation for protected routes"""
+        if not self.auth_token:
+            print("⚠️  Skipping JWT validation test - no auth token available")
+            return False
+            
+        # Test multiple protected endpoints to verify token works
+        endpoints_to_test = [
+            ("auth/me", "GET"),
+            ("auth/subscription-info", "GET")
+        ]
+        
+        all_passed = True
+        for endpoint, method in endpoints_to_test:
+            success, response = self.run_test(
+                f"JWT Validation - {endpoint}",
+                method,
+                endpoint,
+                200,
+                auth_required=True
+            )
+            if not success:
+                all_passed = False
+                print(f"❌ JWT validation failed for {endpoint}")
+            else:
+                print(f"✅ JWT validation passed for {endpoint}")
+        
+        return all_passed
+
+    def test_health_endpoint(self):
+        """Test health endpoint"""
+        return self.run_test(
+            "Health Check",
+            "GET",
+            "../health",  # Go up one level from /api
+            200
+        )[0]
+
     def test_google_search_health_check(self):
         """Test Google Custom Search API health check"""
         success, response = self.run_test(
