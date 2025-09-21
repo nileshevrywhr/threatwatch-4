@@ -293,6 +293,77 @@ class ThreatWatchPDFGenerator:
         self._add_cost_breakdown(story, scan_data)
         story.append(Spacer(1, 20))
     
+    def _add_cost_breakdown(self, story: List, scan_data: Dict[str, Any]):
+        """Add detailed cost breakdown for API usage"""
+        story.append(Paragraph("API Usage & Cost Breakdown", self.styles['SubsectionHeader']))
+        
+        cost_breakdown = scan_data.get('cost_breakdown', {})
+        if not cost_breakdown:
+            story.append(Paragraph("Cost tracking data not available for this report.", self.styles['Normal']))
+            return
+        
+        # LLM Usage Section
+        llm_usage = cost_breakdown.get('llm_usage', {})
+        google_usage = cost_breakdown.get('google_api_usage', {})
+        total_cost = cost_breakdown.get('total_cost', '$0.00')
+        
+        # Create cost breakdown table
+        cost_data = [
+            ['Service', 'Usage', 'Cost', 'Details'],
+            ['LLM Analysis (GPT-4o)', 
+             f"{llm_usage.get('total_tokens', 0):,} tokens", 
+             llm_usage.get('total_cost', '$0.00'),
+             f"Input: {llm_usage.get('input_tokens', 0):,} tokens ({llm_usage.get('input_cost', '$0.00')})\n" +
+             f"Output: {llm_usage.get('output_tokens', 0):,} tokens ({llm_usage.get('output_cost', '$0.00')})"
+            ],
+            ['Google Custom Search API', 
+             f"{google_usage.get('queries_made', 0)} queries", 
+             google_usage.get('total_cost', '$0.00'),
+             f"API Calls: {google_usage.get('api_calls', 0)}\n" +
+             f"Results: {google_usage.get('results_returned', 0):,} articles\n" +
+             f"Rate: {google_usage.get('cost_per_query', '$0.00')} per query"
+            ],
+            ['', '', '', ''],  # Empty row for spacing
+            ['TOTAL COST', '', total_cost, 'All API services combined']
+        ]
+        
+        cost_table = Table(cost_data, colWidths=[1.8*inch, 1.5*inch, 1*inch, 2.7*inch])
+        cost_table.setStyle(TableStyle([
+            # Header row
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#27ae60')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('GRID', (0, 0), (-1, -2), 1, colors.HexColor('#bdc3c7')),
+            # Data rows
+            ('BACKGROUND', (0, 1), (-1, -2), colors.HexColor('#f8f9fa')),
+            # Total row
+            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#34495e')),
+            ('TEXTCOLOR', (0, -1), (-1, -1), colors.whitesmoke),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ('GRID', (0, -1), (-1, -1), 1, colors.HexColor('#2c3e50')),
+            # Pricing details in last column
+            ('FONTSIZE', (3, 1), (3, -2), 7),
+            ('TEXTCOLOR', (3, 1), (3, -2), colors.HexColor('#7f8c8d'))
+        ]))
+        
+        story.append(cost_table)
+        
+        # Add cost explanation
+        cost_explanation = f"""
+        <b>Cost Transparency:</b> This report provides detailed tracking of all API usage and associated costs. 
+        LLM analysis uses OpenAI's GPT-4o model at current market rates. Google Custom Search API costs are based on 
+        the number of queries performed. Total cost for this analysis: <b>{total_cost}</b>.
+        
+        <i>Note: Costs are calculated at current API pricing rates and may vary. The first 100 Google searches per day 
+        are typically free under most API plans.</i>
+        """
+        
+        story.append(Spacer(1, 10))
+        story.append(Paragraph(cost_explanation.strip(), self.styles['Normal']))
+    
     def _add_detailed_analysis(self, story: List, scan_data: Dict[str, Any]):
         """Add detailed AI analysis section"""
         story.append(Paragraph("Detailed Threat Analysis", self.styles['SectionHeader']))
