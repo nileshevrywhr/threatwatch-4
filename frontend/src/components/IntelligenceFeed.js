@@ -429,8 +429,8 @@ const IntelligenceFeed = () => {
         } catch (downloadError) {
           console.error('Download failed:', downloadError);
           
-          // Fallback: direct link approach
-          const downloadUrl = `${API}${response.data.download_url}`;
+          // Fallback: direct link approach with fixed URL
+          const downloadUrl = `${BACKEND_URL}${response.data.download_url}`;
           const link = document.createElement('a');
           link.href = downloadUrl;
           link.download = response.data.filename || 'ThreatWatch_Report.pdf';
@@ -438,8 +438,12 @@ const IntelligenceFeed = () => {
           link.style.display = 'none';
           
           document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          
+          // Firefox-compatible fallback
+          setTimeout(() => {
+            link.click();
+            document.body.removeChild(link);
+          }, 10);
         }
       }
     } catch (error) {
