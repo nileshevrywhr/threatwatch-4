@@ -768,12 +768,37 @@ def main():
     
     tester = OSINTAPITester()
     
-    # Test sequence - Authentication first, then enhanced features
+    # Test sequence - Comprehensive Authentication Testing First
     tests = [
+        # Basic API Health
         ("API Root Endpoint", tester.test_api_root),
+        ("Health Check", tester.test_health_endpoint),
+        
+        # Authentication Endpoints - Registration
         ("User Registration", tester.test_register_user),
+        ("Registration - Invalid Email", tester.test_register_invalid_email),
+        ("Registration - Weak Password", tester.test_register_weak_password),
+        ("Registration - Password Mismatch", tester.test_register_password_mismatch),
+        ("Registration - Duplicate Email", tester.test_register_duplicate_email),
+        
+        # Authentication Endpoints - Login
         ("User Login", tester.test_login_user),
+        ("Login - Invalid Credentials", tester.test_login_invalid_credentials),
+        ("Login - Wrong Password", tester.test_login_wrong_password),
+        
+        # JWT Token System
+        ("Get Current User Profile", tester.test_get_current_user_profile),
+        ("Protected Route - No Token", tester.test_protected_route_without_token),
+        ("Protected Route - Invalid Token", tester.test_protected_route_invalid_token),
+        ("JWT Token Validation", tester.test_jwt_token_validation),
+        
+        # Database Connectivity
+        ("Database Connectivity", tester.test_database_connectivity),
+        
+        # API Health & Integrations
         ("Google Search Health Check", tester.test_google_search_health_check),
+        
+        # Enhanced Quick Scan Features (require authentication)
         ("Enhanced Quick Scan - Cybersecurity", tester.test_enhanced_quick_scan_cybersecurity),
         ("Enhanced Quick Scan - Ransomware", tester.test_enhanced_quick_scan_ransomware),
         ("Enhanced Quick Scan - Data Breach", tester.test_enhanced_quick_scan_data_breach),
@@ -781,6 +806,7 @@ def main():
         ("Quick Scan Rate Limiting", tester.test_quick_scan_rate_limiting),
         ("Quick Scan - Empty Query", tester.test_quick_scan_empty_query),
         ("Quick Scan - Missing Query", tester.test_quick_scan_missing_query),
+        
         # Legacy subscription tests
         ("Subscribe with Valid Data", tester.test_subscribe_valid_data),
         ("Subscribe with Missing Fields", tester.test_subscribe_missing_required_fields),
