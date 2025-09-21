@@ -70,9 +70,14 @@ class GoogleCustomSearchClient:
         
         async with httpx.AsyncClient(timeout=timeout) as client:
             try:
+                # Track API usage for cost calculation
+                api_calls_made = 0
+                fallback_used = False
+                
                 logger.info("Making request to Google Custom Search API")
                 response = await client.get(self.base_url, params=params)
                 response.raise_for_status()
+                api_calls_made += 1
                 
                 result = response.json()
                 items_count = len(result.get("items", []))
@@ -88,6 +93,9 @@ class GoogleCustomSearchClient:
                     
                     response = await client.get(self.base_url, params=fallback_params)
                     response.raise_for_status()
+                    api_calls_made += 1
+                    fallback_used = True
+                    
                     result = response.json()
                     items_count = len(result.get("items", []))
                     total_results = result.get("searchInformation", {}).get("totalResults", "0")
@@ -97,21 +105,7 @@ class GoogleCustomSearchClient:
                 
                 logger.info(f"Search completed successfully: {items_count} items returned, {total_results} total results available")
                 
-                # Track API usage for cost calculation
-                # Count API calls: 1 initial call + 1 fallback call if first returned no results
-                api_calls_made = 1
-                fallback_used = False
-                
-                # Check if we went through fallback logic by examining if we have any results
-                # and if the first search with 'tbm=nws' would have returned 0 results
-                if len(result.get("items", [])) > 0:
-                    # We have results - check if we used fallback
-                    search_info = result.get("searchInformation", {})
-                    # If this search didn't use 'tbm=nws' (news search), it was a fallback
-                    if params.get("tbm") == "nws" and "tbm" not in result.get("queries", {}).get("request", [{}])[0]:
-                        api_calls_made = 2
-                        fallback_used = True
-                
+                # Add API usage tracking to result
                 result['api_usage'] = {
                     'queries_made': 1,
                     'api_calls_made': api_calls_made,
