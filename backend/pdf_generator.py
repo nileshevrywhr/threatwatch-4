@@ -254,8 +254,8 @@ class ThreatWatchPDFGenerator:
         story.append(Spacer(1, 12))
     
     def _add_key_metrics(self, story: List, scan_data: Dict[str, Any]):
-        """Add key metrics visualization"""
-        story.append(Paragraph("Key Metrics", self.styles['SectionHeader']))
+        """Add key metrics visualization including cost breakdown"""
+        story.append(Paragraph("Key Metrics & Cost Analysis", self.styles['SectionHeader']))
         
         # Gather metrics
         search_metadata = scan_data.get('search_metadata', {})
@@ -287,6 +287,10 @@ class ThreatWatchPDFGenerator:
         ]))
         
         story.append(metrics_table)
+        story.append(Spacer(1, 15))
+        
+        # Add cost breakdown section
+        self._add_cost_breakdown(story, scan_data)
         story.append(Spacer(1, 20))
     
     def _add_detailed_analysis(self, story: List, scan_data: Dict[str, Any]):
