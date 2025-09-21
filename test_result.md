@@ -356,11 +356,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Cost Tracking in Quick Scan API"
-    - "Enhanced PDF Reports with Cost Analysis"
-    - "Cost Calculation Accuracy"
-    - "Full Workflow Testing with Cost Data"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
