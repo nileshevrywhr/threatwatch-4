@@ -290,12 +290,8 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: 
-    - "Google Custom Search API Integration"
-    - "Enhanced Quick Scan with Real Search Results"
-  stuck_tasks:
-    - "Google Custom Search API Integration"
-    - "Enhanced Quick Scan with Real Search Results"
+  current_focus: []
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
