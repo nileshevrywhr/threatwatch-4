@@ -52,6 +52,14 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
       localStorage.setItem('authToken', response.data.token.access_token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       
+      // Track successful login analytics
+      analytics.trackAuthEvent('login', true);
+      analytics.identify(response.data.user.id, {
+        email: response.data.user.email,
+        full_name: response.data.user.full_name,
+        subscription_tier: response.data.user.subscription_tier || 'free'
+      });
+      
       setMessage('Login successful!');
       setMessageType('success');
       
@@ -65,6 +73,10 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
 
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Login failed. Please try again.';
+      
+      // Track failed login analytics
+      analytics.trackAuthEvent('login', false, errorMessage);
+      
       setMessage(errorMessage);
       setMessageType('error');
     } finally {
