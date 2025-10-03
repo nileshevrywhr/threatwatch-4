@@ -14,6 +14,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
+  const analytics = useAnalytics();
   const [activeTab, setActiveTab] = useState('login');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
