@@ -756,6 +756,20 @@ async def generate_pdf_report(
         # Get user-friendly filename
         public_filename = pdf_generator.get_public_filename(scan_data)
         
+        # Track PDF generation analytics
+        try:
+            pdf_size_kb = Path(pdf_path).stat().st_size / 1024  # Size in KB
+            generation_time = time.time() - pdf_start_time
+            
+            analytics.track_pdf_report_generated(
+                user_id=current_user.id,
+                query=scan_data.get('query', 'unknown'),
+                report_size_kb=pdf_size_kb,
+                generation_time=generation_time
+            )
+        except Exception as e:
+            logger.warning(f"Failed to track PDF generation analytics: {e}")
+        
         return {
             "status": "success",
             "message": "PDF report generated successfully",
