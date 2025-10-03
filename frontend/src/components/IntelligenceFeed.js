@@ -10,6 +10,7 @@ import { Shield, Plus, RefreshCw, Clock, ExternalLink, AlertTriangle, Zap, Check
 import AuthModal from './AuthModal';
 import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
+import { useAnalytics } from '../services/analytics';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
