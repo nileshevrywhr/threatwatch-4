@@ -421,6 +421,18 @@ async def quick_scan(
     query = scan_request.query
     logger.info(f"Starting enhanced quick scan for user {current_user.email}: query='{query}'")
     
+    # Track Quick Scan initiated - Key Metric #2: Searches per user
+    scan_start_time = time.time()
+    try:
+        analytics.track_quick_scan_initiated(
+            user_id=current_user.id,
+            query=query,
+            user_plan=current_user.subscription_tier or 'free',
+            scans_remaining=can_scan_check["scans_allowed"] - can_scan_check["scans_used"]
+        )
+    except Exception as e:
+        logger.warning(f"Failed to track scan initiation analytics: {e}")
+    
     try:
         # Import and initialize Google Custom Search client
         from google_search_client import GoogleCustomSearchClient
