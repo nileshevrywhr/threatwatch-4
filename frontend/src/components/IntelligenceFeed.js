@@ -486,6 +486,23 @@ const IntelligenceFeed = () => {
     } catch (error) {
       console.error('PDF generation failed:', error);
       
+      // Track PDF generation failure analytics
+      const pdfDuration = (Date.now() - pdfStartTime) / 1000;
+      const errorMessage = error.response?.data?.detail || error.message || 'Unknown error';
+      
+      analytics.trackPDFInteraction('generate_failed', { 
+        query: scanData.query,
+        error_message: errorMessage,
+        status_code: error.response?.status,
+        generation_duration: pdfDuration
+      });
+      
+      // Track API error
+      analytics.trackAPIError('/api/generate-report', error.response?.status || 500, errorMessage, {
+        method: 'POST',
+        duration: pdfDuration
+      });
+      
       // Show user-friendly error message
       if (error.response?.status === 401) {
         console.error('Authentication required for PDF download');
