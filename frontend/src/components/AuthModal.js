@@ -115,6 +115,15 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
       localStorage.setItem('authToken', loginResponse.data.token.access_token);
       localStorage.setItem('user', JSON.stringify(loginResponse.data.user));
       
+      // Track successful registration and identify user - Key Metric #1: Signups
+      analytics.trackAuthEvent('register', true);
+      analytics.identify(loginResponse.data.user.id, {
+        email: loginResponse.data.user.email,
+        full_name: loginResponse.data.user.full_name,
+        subscription_tier: loginResponse.data.user.subscription_tier || 'free',
+        signup_timestamp: new Date().toISOString()
+      });
+      
       setMessage('Registration successful! You are now logged in.');
       setMessageType('success');
       
@@ -128,6 +137,10 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
 
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Registration failed. Please try again.';
+      
+      // Track failed registration analytics
+      analytics.trackAuthEvent('register', false, errorMessage);
+      
       setMessage(errorMessage);
       setMessageType('error');
     } finally {
