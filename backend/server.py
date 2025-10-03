@@ -817,11 +817,31 @@ async def download_pdf_report(
         timestamp = datetime.now().strftime('%Y-%m-%d')
         filename = f"ThreatWatch_Report_{timestamp}.pdf"
         
+        # Track PDF download analytics - Key Metric #3: Report downloads
+        try:
+            # Extract query from filename for analytics (format: ThreatWatch_Report_query_date.pdf)
+            query_match = filename.replace('ThreatWatch_Report_', '').split('_')
+            query_for_analytics = '_'.join(query_match[:-1]) if len(query_match) > 1 else 'unknown'
+            
+            analytics.track_pdf_report_downloaded(
+                user_id=current_user.id,
+                query=query_for_analytics,
+                report_id=report_id,
+                download_method='browser'
+            )
+        except Exception as e:
+            logger.warning(f"Failed to track PDF download analytics: {e}")
+        
         return FileResponse(
             path=str(pdf_path),
             filename=filename,
-            media_type='application/pdf',
-            headers={"Content-Disposition": f"attachment; filename={filename}"}
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
         )
         
     except HTTPException:
