@@ -747,10 +747,9 @@ async def generate_pdf_report(
     try:
         from pdf_generator import ThreatWatchPDFGenerator
         
-        # Initialize PDF generator
+        # Generate PDF report
+        pdf_start_time = time.time()
         pdf_generator = ThreatWatchPDFGenerator()
-        
-        # Generate PDF
         pdf_path = pdf_generator.generate_report(scan_data)
         
         # Get user-friendly filename
