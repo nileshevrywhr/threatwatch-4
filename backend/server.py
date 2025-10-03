@@ -584,6 +584,21 @@ Focus on real, actionable intelligence that security professionals can use immed
         # Generate comprehensive cost summary
         cost_summary = cost_tracker.get_cost_summary(llm_usage, google_usage)
         
+        # Track Quick Scan completion analytics
+        scan_duration = time.time() - scan_start_time
+        try:
+            analytics.track_quick_scan_completed(
+                user_id=current_user.id,
+                query=query,
+                scan_duration=scan_duration,
+                articles_found=len(discovered_articles),
+                llm_tokens_used=llm_usage.total_tokens,
+                total_cost=float(cost_summary.get('total_cost', '$0.00').replace('$', '')),
+                success=True
+            )
+        except Exception as e:
+            logger.warning(f"Failed to track scan completion analytics: {e}")
+        
         return {
             "query": query,
             "summary": llm_response,
