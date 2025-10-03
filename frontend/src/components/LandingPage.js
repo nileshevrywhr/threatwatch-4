@@ -143,9 +143,19 @@ const LandingPage = () => {
       setMessage('Please sign in to perform Quick Scans');
       setMessageType('error');
       setShowAuthModal(true);
+      
+      // Track authentication barrier for drop-off analysis
+      analytics.trackFunnelStep('scan_to_download', 'auth_required', false);
       return;
     }
 
+    // Track Quick Scan initiation - Key Metric #2: Searches per user
+    const scanStartTime = Date.now();
+    analytics.trackQuickScanUI('initiated', { 
+      query: formData.term,
+      user_authenticated: true 
+    });
+    
     setQuickScanLoading(true);
     setMessage('');
 
@@ -192,6 +202,18 @@ const LandingPage = () => {
         progress: stages[stages.length - 1].progress
       });
 
+      // Track successful scan completion
+      const scanDuration = (Date.now() - scanStartTime) / 1000;
+      analytics.trackQuickScanUI('completed', { 
+        query: formData.term,
+        scan_duration: scanDuration,
+        articles_found: response.data.discovered_links?.length || 0,
+        success: true
+      });
+
+      // Track funnel progression
+      analytics.trackFunnelStep('scan_to_download', 'scan_completed', true, scanDuration);
+
       // Short delay before redirect to show completion
       await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -207,6 +229,22 @@ const LandingPage = () => {
 
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Quick scan failed. Please try again.';
+      const scanDuration = (Date.now() - scanStartTime) / 1000;
+      
+      // Track scan failure analytics
+      analytics.trackQuickScanUI('failed', { 
+        query: formData.term,
+        error_message: errorMessage,
+        scan_duration: scanDuration,
+        success: false
+      });
+
+      // Track API error
+      analytics.trackAPIError('/api/quick-scan', error.response?.status || 500, errorMessage, {
+        method: 'POST',
+        duration: scanDuration
+      });
+
       setMessage(errorMessage);
       setMessageType('error');
       setQuickScanLoading(false);
