@@ -172,6 +172,16 @@ async def login_user(
     
     auth_db.commit()
     
+    # Track user login analytics
+    try:
+        analytics.track_user_login(
+            user_id=user.id,
+            email=user.email,
+            login_method='password'
+        )
+    except Exception as e:
+        logger.warning(f"Failed to track login analytics: {e}")
+    
     # Create access token
     access_token_expires = timedelta(minutes=1440)  # 24 hours
     access_token = AuthService.create_access_token(
