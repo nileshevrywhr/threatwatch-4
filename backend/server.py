@@ -130,6 +130,17 @@ async def register_user(
     auth_db.commit()
     auth_db.refresh(new_user)
     
+    # Track user registration analytics - Key Metric #1: Signups
+    try:
+        analytics.track_user_signup(
+            user_id=new_user.id,
+            email=new_user.email,
+            plan_type=new_user.subscription_tier or 'free',
+            signup_method='email'
+        )
+    except Exception as e:
+        logger.warning(f"Failed to track signup analytics: {e}")
+    
     return new_user
 
 @auth_router.post("/login", response_model=LoginResponse)
