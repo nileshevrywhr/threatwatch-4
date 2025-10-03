@@ -378,6 +378,13 @@ const IntelligenceFeed = () => {
   const handleGeneratePDF = async (scanData) => {
     if (!authToken || !scanData) return;
     
+    // Track PDF generation initiation - Key Metric #3: Report downloads
+    const pdfStartTime = Date.now();
+    analytics.trackPDFInteraction('generate_clicked', { 
+      query: scanData.query,
+      user_plan: user?.subscription_tier || 'free' 
+    });
+    
     setPdfGenerating(scanData.query);
     
     try {
