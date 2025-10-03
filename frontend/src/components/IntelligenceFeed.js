@@ -451,6 +451,13 @@ const IntelligenceFeed = () => {
         } catch (downloadError) {
           console.error('Download failed:', downloadError);
           
+          // Track download failure and attempt fallback method
+          analytics.trackPDFInteraction('download_failed', { 
+            query: scanData.query,
+            error_message: downloadError.message,
+            fallback_attempted: true
+          });
+          
           // Fallback: direct link approach with properly constructed URL
           const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
           const downloadUrl = `${backendUrl}${response.data.download_url}`;
@@ -466,6 +473,13 @@ const IntelligenceFeed = () => {
           setTimeout(() => {
             link.click();
             document.body.removeChild(link);
+            
+            // Track fallback download attempt
+            analytics.trackPDFInteraction('download_fallback', { 
+              query: scanData.query,
+              filename: response.data.filename,
+              download_method: 'fallback_direct_link'
+            });
           }, 10);
         }
       }
