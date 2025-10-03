@@ -10,6 +10,7 @@ import { Shield, Eye, Bell, Target, ArrowRight, CheckCircle, Zap, LogIn, UserPlu
 import AuthModal from './AuthModal';
 import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
+import { useAnalytics } from '../services/analytics';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
