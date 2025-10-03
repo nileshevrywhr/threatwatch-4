@@ -428,6 +428,18 @@ const IntelligenceFeed = () => {
             link.click();
             document.body.removeChild(link);
             
+            // Track successful PDF download - Key Metric #3: Report downloads
+            const pdfDuration = (Date.now() - pdfStartTime) / 1000;
+            analytics.trackPDFInteraction('download_completed', { 
+              query: scanData.query,
+              filename: response.data.filename,
+              download_duration: pdfDuration,
+              download_method: 'blob'
+            });
+            
+            // Track funnel completion
+            analytics.trackFunnelStep('scan_to_download', 'pdf_downloaded', true, pdfDuration);
+            
             // Clean up blob URL after download
             setTimeout(() => {
               window.URL.revokeObjectURL(blobUrl);
