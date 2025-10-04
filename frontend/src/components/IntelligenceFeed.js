@@ -56,7 +56,7 @@ const IntelligenceFeed = () => {
           setAuthToken(token);
           setAuthChecking(false);
         } catch (error) {
-          console.error('Failed to parse user data:', error);
+          secureLog.error('Failed to parse user data:', error);
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');
           setError('Authentication failed. Please sign in again.');
