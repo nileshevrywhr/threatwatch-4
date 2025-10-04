@@ -447,7 +447,7 @@ const IntelligenceFeed = () => {
             }, 1000);
           }, 10);
           
-          console.log('✅ PDF download completed successfully');
+          secureLog.info('PDF download completed successfully');
           
         } catch (downloadError) {
           console.error('Download failed:', downloadError);
