@@ -485,7 +485,7 @@ const IntelligenceFeed = () => {
         }
       }
     } catch (error) {
-      console.error('PDF generation failed:', error);
+      secureLog.error('PDF generation failed:', error);
       
       // Track PDF generation failure analytics
       const pdfDuration = (Date.now() - pdfStartTime) / 1000;
