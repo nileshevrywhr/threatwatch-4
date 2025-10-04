@@ -1,7 +1,10 @@
 [build]
 builder = "NIXPACKS"
 
+[build.nixpacksConfig]
+cmds = ["pip install emergentintegrations --extra-index-url https://d33sy5i8bnduwe.cloudfront.net/simple/", "pip install -r requirements.txt"]
+
 [deploy]
-startCommand = "cd backend && uvicorn server:app --host 0.0.0.0 --port $PORT"
+startCommand = "uvicorn server:app --host 0.0.0.0 --port $PORT"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
