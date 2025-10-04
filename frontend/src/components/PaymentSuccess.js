@@ -54,7 +54,7 @@ const PaymentSuccess = () => {
         }
 
       } catch (error) {
-        console.error('Payment status check failed:', error);
+        secureLog.error('Payment status check failed:', error);
         setPaymentStatus('error');
       }
     };
