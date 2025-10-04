@@ -49,9 +49,9 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
     try {
       const response = await axios.post(`${API}/auth/login`, loginData);
       
-      // Store auth data
+      // Store auth data (sanitize user data before storing)
       localStorage.setItem('authToken', response.data.token.access_token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      localStorage.setItem('user', JSON.stringify(sanitizeUserData(response.data.user)));
       
       // Track successful login analytics
       analytics.trackAuthEvent('login', true);
