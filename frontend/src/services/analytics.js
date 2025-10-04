@@ -16,7 +16,9 @@ class ThreatWatchFrontendAnalytics {
       const host = process.env.REACT_APP_POSTHOG_HOST || 'https://us.i.posthog.com'
 
       if (!apiKey || apiKey === 'phc_your_project_api_key_here') {
-        console.warn('PostHog API key not configured. Frontend analytics disabled.')
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('PostHog API key not configured. Frontend analytics disabled.')
+        }
         return
       }
 
