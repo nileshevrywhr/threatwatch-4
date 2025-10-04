@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { CheckCircle, AlertTriangle, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAnalytics } from '../services/analytics';
+import { secureLog, sanitizeUserData } from '../utils/secureLogger';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
