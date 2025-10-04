@@ -44,7 +44,9 @@ class ThreatWatchFrontendAnalytics {
       })
 
       this.isInitialized = true
-      console.log('PostHog frontend analytics initialized successfully')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('PostHog frontend analytics initialized successfully')
+      }
     } catch (error) {
       console.error('Failed to initialize PostHog:', error)
       this.isInitialized = false
