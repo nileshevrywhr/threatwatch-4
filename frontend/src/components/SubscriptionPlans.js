@@ -111,7 +111,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
       window.location.href = response.data.url;
 
     } catch (error) {
-      console.error('Checkout error:', error);
+      secureLog.error('Checkout error:', error);
       alert('Failed to start checkout process. Please try again.');
       setLoading(false);
       setSelectedPlan(null);
