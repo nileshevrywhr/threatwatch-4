@@ -148,7 +148,20 @@ async def register_user(
     except Exception as e:
         logger.warning(f"Failed to track signup analytics: {e}")
     
-    return new_user
+    # Return user info (excluding sensitive data like password)
+    return UserResponse(
+        id=new_user.id,
+        email=new_user.email,
+        full_name=new_user.full_name,
+        is_active=new_user.is_active,
+        is_verified=new_user.is_verified,
+        created_at=new_user.created_at,
+        last_login=new_user.last_login,
+        subscription_tier=new_user.subscription_tier,
+        subscription_status=new_user.subscription_status,
+        monitoring_terms_count=len(new_user.monitoring_terms) if new_user.monitoring_terms else 0,
+        quick_scans_today=new_user.quick_scans_today
+    )
 
 @auth_router.post("/login", response_model=LoginResponse)
 async def login_user(
