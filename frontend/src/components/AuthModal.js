@@ -112,9 +112,9 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
         password: registerData.password
       });
       
-      // Store auth data
+      // Store auth data (sanitize user data before storing)
       localStorage.setItem('authToken', loginResponse.data.token.access_token);
-      localStorage.setItem('user', JSON.stringify(loginResponse.data.user));
+      localStorage.setItem('user', JSON.stringify(sanitizeUserData(loginResponse.data.user)));
       
       // Track successful registration and identify user - Key Metric #1: Signups
       analytics.trackAuthEvent('register', true);
