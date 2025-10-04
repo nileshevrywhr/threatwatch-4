@@ -72,7 +72,9 @@ class ThreatWatchFrontendAnalytics {
 
       posthog.capture(eventName, { ...standardProperties, ...properties })
     } catch (error) {
-      console.error(`Failed to track event '${eventName}':`, error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`Failed to track event '${eventName}':`, error)
+      }
     }
   }
 
