@@ -506,11 +506,11 @@ const IntelligenceFeed = () => {
       
       // Show user-friendly error message
       if (error.response?.status === 401) {
-        console.error('Authentication required for PDF download');
+        secureLog.error('Authentication required for PDF download');
       } else if (error.response?.status === 404) {
-        console.error('PDF report not found or expired');
+        secureLog.error('PDF report not found or expired');
       } else {
-        console.error('Failed to generate PDF report');
+        secureLog.error('Failed to generate PDF report');
       }
     } finally {
       setPdfGenerating(null);
