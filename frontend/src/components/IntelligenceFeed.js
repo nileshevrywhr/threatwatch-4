@@ -11,6 +11,7 @@ import AuthModal from './AuthModal';
 import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
 import { useAnalytics } from '../services/analytics';
+import { secureLog } from '../utils/secureLogger';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
