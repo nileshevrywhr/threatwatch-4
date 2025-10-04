@@ -369,7 +369,7 @@ const IntelligenceFeed = () => {
       window.history.replaceState({}, '', newUrl);
       
     } catch (error) {
-      console.error('Failed to subscribe:', error);
+      secureLog.error('Failed to subscribe:', error);
       if (error.response?.status === 401) {
         handleLogout();
       }
