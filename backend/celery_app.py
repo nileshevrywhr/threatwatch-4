@@ -141,6 +141,10 @@ celery_app.conf.update(
     # Retry settings
     task_acks_late=True,  # Acknowledge task after completion (enables retry on failure)
     task_reject_on_worker_lost=True,  # Reject task if worker crashes
+    
+    # SSL/TLS settings for Upstash Redis
+    broker_use_ssl=broker_use_ssl,
+    redis_backend_use_ssl=redis_backend_use_ssl,
 )
 
 # ============================================================================
