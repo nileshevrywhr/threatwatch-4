@@ -87,7 +87,9 @@ class ThreatWatchFrontendAnalytics {
     try {
       posthog.identify(userId, userProperties)
     } catch (error) {
-      console.error('Failed to identify user:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to identify user:', error)
+      }
     }
   }
 
