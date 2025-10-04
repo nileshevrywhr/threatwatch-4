@@ -1,0 +1,11 @@
+[phases.install]
+cmds = [
+    'pip install emergentintegrations --extra-index-url https://d33sy5i8bnduwe.cloudfront.net/simple/',
+    'pip install -r requirements.txt'
+]
+
+[phases.build]
+cmds = ['echo "Build phase completed"']
+
+[start]
+cmd = 'uvicorn server:app --host 0.0.0.0 --port $PORT'
