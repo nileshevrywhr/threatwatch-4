@@ -908,9 +908,504 @@ async def cleanup_old_reports(
             detail=f"Failed to cleanup reports: {str(e)}"
         )
 
+# ============================================================================
+# MONITORING ENDPOINTS - Phase 1
+# ============================================================================
+
+# Import monitoring services
+from monitor_service import MonitorService
+from alert_service import AlertService
+from monitor_engine import MonitorEngine
+from mongodb_models import (
+    CreateMonitorRequest,
+    UpdateMonitorRequest,
+    MonitorResponse,
+    AlertResponse,
+    AlertStatus,
+    MonitorModel
+)
+from celery_tasks import scan_monitor_task
+from celery_app import check_celery_health, check_redis_health
+
+# Create monitoring router
+monitoring_router = APIRouter(prefix="/monitors", tags=["Monitoring"])
+
+@monitoring_router.post("", response_model=MonitorResponse, status_code=201)
+async def create_monitor(
+    request: CreateMonitorRequest,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Create a new monitoring term
+    
+    This sets up automatic scanning for specific threats.
+    Example: Monitor "ransomware attacks healthcare" to get alerts when new threats are detected.
+    """
+    try:
+        monitor_service = MonitorService(mongo_db)
+        
+        # Check monitor limit based on subscription tier
+        current_count = await monitor_service.get_monitor_count(str(current_user.id))
+        tier_limits = {
+            'free': 1,
+            'professional': 5,
+            'enterprise': 50,
+            'enterprise_plus': 999999
+        }
+        
+        user_tier = getattr(current_user, 'subscription_tier', 'free')
+        limit = tier_limits.get(user_tier, 1)
+        
+        if current_count >= limit:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Monitor limit reached for {user_tier} tier. Upgrade to create more monitors."
+            )
+        
+        # Create monitor
+        monitor = await monitor_service.create_monitor(
+            user_id=str(current_user.id),
+            request=request
+        )
+        
+        logger.info(f"✅ Monitor created: {monitor.id} by user {current_user.email}")
+        
+        return monitor_service.to_response(monitor)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Failed to create monitor: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create monitor: {str(e)}")
+
+
+@monitoring_router.get("", response_model=List[MonitorResponse])
+async def list_monitors(
+    active_only: bool = Query(False, description="Only return active monitors"),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=100),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    List all monitors for the current user
+    """
+    try:
+        monitor_service = MonitorService(mongo_db)
+        
+        monitors = await monitor_service.list_user_monitors(
+            user_id=str(current_user.id),
+            active_only=active_only,
+            skip=skip,
+            limit=limit
+        )
+        
+        return [monitor_service.to_response(m) for m in monitors]
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to list monitors: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to list monitors: {str(e)}")
+
+
+@monitoring_router.get("/{monitor_id}", response_model=MonitorResponse)
+async def get_monitor(
+    monitor_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get details of a specific monitor
+    """
+    try:
+        monitor_service = MonitorService(mongo_db)
+        
+        monitor = await monitor_service.get_monitor(monitor_id, str(current_user.id))
+        
+        if not monitor:
+            raise HTTPException(status_code=404, detail="Monitor not found")
+        
+        return monitor_service.to_response(monitor)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Failed to get monitor: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get monitor: {str(e)}")
+
+
+@monitoring_router.put("/{monitor_id}", response_model=MonitorResponse)
+async def update_monitor(
+    monitor_id: str,
+    request: UpdateMonitorRequest,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Update monitor settings
+    """
+    try:
+        monitor_service = MonitorService(mongo_db)
+        
+        updated_monitor = await monitor_service.update_monitor(
+            monitor_id=monitor_id,
+            user_id=str(current_user.id),
+            request=request
+        )
+        
+        if not updated_monitor:
+            raise HTTPException(status_code=404, detail="Monitor not found")
+        
+        logger.info(f"✅ Monitor updated: {monitor_id}")
+        
+        return monitor_service.to_response(updated_monitor)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Failed to update monitor: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to update monitor: {str(e)}")
+
+
+@monitoring_router.delete("/{monitor_id}", status_code=204)
+async def delete_monitor(
+    monitor_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Delete a monitor
+    """
+    try:
+        monitor_service = MonitorService(mongo_db)
+        
+        deleted = await monitor_service.delete_monitor(monitor_id, str(current_user.id))
+        
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Monitor not found")
+        
+        logger.info(f"✅ Monitor deleted: {monitor_id}")
+        
+        return None
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Failed to delete monitor: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete monitor: {str(e)}")
+
+
+@monitoring_router.post("/{monitor_id}/test")
+async def test_monitor(
+    monitor_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Test a monitor by running an immediate scan
+    
+    This triggers a manual scan without waiting for the scheduled time.
+    Useful for testing monitor configuration.
+    """
+    try:
+        monitor_service = MonitorService(mongo_db)
+        
+        # Get monitor
+        monitor = await monitor_service.get_monitor(monitor_id, str(current_user.id))
+        
+        if not monitor:
+            raise HTTPException(status_code=404, detail="Monitor not found")
+        
+        # Trigger scan task
+        task = scan_monitor_task.delay(monitor_id)
+        
+        logger.info(f"✅ Test scan triggered for monitor: {monitor_id} (Task ID: {task.id})")
+        
+        return {
+            "status": "success",
+            "message": "Scan triggered successfully",
+            "monitor_id": monitor_id,
+            "task_id": task.id,
+            "note": "Scan is running in the background. Check alerts in a few minutes."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Failed to test monitor: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to test monitor: {str(e)}")
+
+
+@monitoring_router.get("/{monitor_id}/alerts", response_model=List[AlertResponse])
+async def get_monitor_alerts(
+    monitor_id: str,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get alerts for a specific monitor
+    """
+    try:
+        # Verify monitor belongs to user
+        monitor_service = MonitorService(mongo_db)
+        monitor = await monitor_service.get_monitor(monitor_id, str(current_user.id))
+        
+        if not monitor:
+            raise HTTPException(status_code=404, detail="Monitor not found")
+        
+        # Get alerts
+        alert_service = AlertService(mongo_db)
+        alerts = await alert_service.list_user_alerts(
+            user_id=str(current_user.id),
+            monitor_id=monitor_id,
+            skip=skip,
+            limit=limit
+        )
+        
+        return [alert_service.to_response(a) for a in alerts]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Failed to get monitor alerts: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get alerts: {str(e)}")
+
+
+# ============================================================================
+# ALERT ENDPOINTS
+# ============================================================================
+
+alerts_router = APIRouter(prefix="/alerts", tags=["Alerts"])
+
+@alerts_router.get("", response_model=List[AlertResponse])
+async def list_alerts(
+    status: Optional[str] = Query(None, description="Filter by status"),
+    severity: Optional[str] = Query(None, description="Filter by severity"),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    List all alerts for the current user
+    """
+    try:
+        alert_service = AlertService(mongo_db)
+        
+        # Parse filters
+        status_filter = AlertStatus(status) if status else None
+        from mongodb_models import SeverityLevel
+        severity_filter = SeverityLevel(severity) if severity else None
+        
+        alerts = await alert_service.list_user_alerts(
+            user_id=str(current_user.id),
+            status=status_filter,
+            severity=severity_filter,
+            skip=skip,
+            limit=limit
+        )
+        
+        return [alert_service.to_response(a) for a in alerts]
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid filter value: {str(e)}")
+    except Exception as e:
+        logger.error(f"❌ Failed to list alerts: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to list alerts: {str(e)}")
+
+
+@alerts_router.get("/{alert_id}", response_model=AlertResponse)
+async def get_alert(
+    alert_id: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get details of a specific alert
+    """
+    try:
+        alert_service = AlertService(mongo_db)
+        
+        alert = await alert_service.get_alert(alert_id, str(current_user.id))
+        
+        if not alert:
+            raise HTTPException(status_code=404, detail="Alert not found")
+        
+        return alert_service.to_response(alert)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Failed to get alert: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get alert: {str(e)}")
+
+
+@alerts_router.put("/{alert_id}/status")
+async def update_alert_status(
+    alert_id: str,
+    status: str = Query(..., description="New status (new, acknowledged, resolved, false_positive)"),
+    feedback: Optional[str] = Query(None, description="Optional user feedback"),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Update alert status
+    
+    Statuses:
+    - acknowledged: User has seen the alert
+    - resolved: Threat has been addressed
+    - false_positive: Not a real threat
+    """
+    try:
+        alert_service = AlertService(mongo_db)
+        
+        # Parse status
+        try:
+            new_status = AlertStatus(status)
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid status. Must be one of: {[s.value for s in AlertStatus]}"
+            )
+        
+        # Update alert
+        updated_alert = await alert_service.update_alert_status(
+            alert_id=alert_id,
+            user_id=str(current_user.id),
+            new_status=new_status,
+            user_feedback=feedback
+        )
+        
+        if not updated_alert:
+            raise HTTPException(status_code=404, detail="Alert not found")
+        
+        logger.info(f"✅ Alert {alert_id} status updated to {status}")
+        
+        return alert_service.to_response(updated_alert)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Failed to update alert status: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to update alert: {str(e)}")
+
+
+@alerts_router.get("/statistics/summary")
+async def get_alert_statistics(
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Get alert statistics for the current user
+    """
+    try:
+        alert_service = AlertService(mongo_db)
+        
+        stats = await alert_service.get_alert_statistics(str(current_user.id))
+        
+        return stats
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to get alert statistics: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get statistics: {str(e)}")
+
+
+# ============================================================================
+# HEALTH CHECK ENDPOINTS
+# ============================================================================
+
+health_router = APIRouter(prefix="/health", tags=["Health"])
+
+@health_router.get("/celery")
+async def celery_health():
+    """Check Celery worker status"""
+    try:
+        health = check_celery_health()
+        return health
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e)
+        }
+
+
+@health_router.get("/redis")
+async def redis_health():
+    """Check Redis connection status"""
+    try:
+        health = check_redis_health()
+        return health
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e)
+        }
+
+
+@health_router.get("/mongodb")
+async def mongodb_health():
+    """Check MongoDB connection status"""
+    try:
+        from database import check_mongodb_connection
+        connected = await check_mongodb_connection()
+        return {
+            "status": "healthy" if connected else "unhealthy",
+            "connected": connected
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e)
+        }
+
+
+@health_router.get("/system")
+async def system_health():
+    """
+    Complete system health check
+    
+    Checks:
+    - MongoDB connection
+    - Redis connection
+    - Celery workers
+    - Recent monitoring activity
+    """
+    try:
+        from database import check_mongodb_connection, get_collection_stats
+        
+        # Check MongoDB
+        mongo_ok = await check_mongodb_connection()
+        
+        # Check Redis
+        redis_health = check_redis_health()
+        redis_ok = redis_health['status'] == 'healthy'
+        
+        # Check Celery
+        celery_health = check_celery_health()
+        celery_ok = celery_health['worker_count'] > 0
+        
+        # Get collection stats
+        stats = await get_collection_stats()
+        
+        overall_status = "healthy" if (mongo_ok and redis_ok) else "degraded"
+        if not mongo_ok:
+            overall_status = "unhealthy"
+        
+        return {
+            "status": overall_status,
+            "mongodb": {
+                "status": "healthy" if mongo_ok else "unhealthy",
+                "collections": stats
+            },
+            "redis": redis_health,
+            "celery": celery_health,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e)
+        }
+
+
 # Include all routers
 api_router.include_router(auth_router)
 api_router.include_router(payment_router)
+api_router.include_router(monitoring_router)
+api_router.include_router(alerts_router)
+api_router.include_router(health_router)
 app.include_router(api_router)
 
 # Add CORS middleware
