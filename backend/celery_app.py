@@ -76,6 +76,21 @@ REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', REDIS_URL)
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', REDIS_URL)
 
+# Upstash Redis SSL configuration
+# Upstash uses 'rediss://' (with SSL), which requires special broker transport options
+broker_use_ssl = None
+redis_backend_use_ssl = None
+
+if CELERY_BROKER_URL.startswith('rediss://'):
+    # SSL configuration for Upstash
+    import ssl
+    broker_use_ssl = {
+        'ssl_cert_reqs': ssl.CERT_NONE  # Upstash handles cert validation
+    }
+    redis_backend_use_ssl = {
+        'ssl_cert_reqs': ssl.CERT_NONE
+    }
+
 # Create Celery application
 celery_app = Celery(
     'threatwatch',
