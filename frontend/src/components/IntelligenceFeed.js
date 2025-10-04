@@ -181,7 +181,7 @@ const IntelligenceFeed = () => {
             }
           }
         } catch (error) {
-          console.error('Failed to parse quick scan data:', error);
+          secureLog.error('Failed to parse quick scan data:', error);
         }
       } else {
         // User accessed feed directly (View My Feed) - ensure no lingering Quick Scan results
