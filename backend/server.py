@@ -1424,6 +1424,36 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@app.on_event("startup")
+async def startup_event():
+    """Initialize application on startup"""
+    try:
+        logger.info("🚀 Application starting...")
+        
+        # Initialize MongoDB indexes
+        from database import init_mongodb_indexes
+        await init_mongodb_indexes()
+        
+        logger.info("✅ Application startup complete!")
+    except Exception as e:
+        logger.error(f"❌ Startup error: {str(e)}")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown"""
+    try:
+        logger.info("🛑 Application shutting down...")
+        
+        # Close MongoDB connection
+        from database import close_mongodb
+        await close_mongodb()
+        
+        logger.info("✅ Application shutdown complete!")
+    except Exception as e:
+        logger.error(f"❌ Shutdown error: {str(e)}")
+
+
 @app.get("/")
 async def root():
     return {"message": "OSINT Threat Monitoring Platform API", "version": "1.0.0"}
