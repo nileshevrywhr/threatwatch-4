@@ -21,7 +21,13 @@ from auth_models import User, UserSubscription, PaymentTransaction
 from auth_service import AuthService
 from auth_schemas import *
 from subscription_service import SubscriptionService, SUBSCRIPTION_TIERS
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+try:
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    EMERGENT_AVAILABLE = True
+except ImportError:
+    from llm_fallback import LlmChat, UserMessage
+    EMERGENT_AVAILABLE = False
+    print("⚠️ Using LLM fallback - emergentintegrations not available")
 from cost_tracker import CostTracker
 from analytics_service import analytics
 import stripe
