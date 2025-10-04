@@ -450,7 +450,7 @@ const IntelligenceFeed = () => {
           secureLog.info('PDF download completed successfully');
           
         } catch (downloadError) {
-          console.error('Download failed:', downloadError);
+          secureLog.error('Download failed:', downloadError);
           
           // Track download failure and attempt fallback method
           analytics.trackPDFInteraction('download_failed', { 
