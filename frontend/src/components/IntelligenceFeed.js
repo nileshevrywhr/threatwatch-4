@@ -398,7 +398,7 @@ const IntelligenceFeed = () => {
       
       if (response.data.status === 'success') {
         // Step 2: Download the generated PDF
-        // Fix: Properly construct URL by removing trailing slash from BACKEND_URL
+        // Fix: Use BACKEND_URL directly since download_url already includes /api path
         const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
         const downloadUrl = `${backendUrl}${response.data.download_url}`;
         
