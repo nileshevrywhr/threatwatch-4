@@ -41,7 +41,7 @@ Your ThreatWatch application consists of three main components that need separat
 8. **Driver**: Python, Version 3.12 or later
 9. **Copy Connection String**: 
    ```
-   mongodb+srv://threatwatch-admin:<password>@threatwatch-cluster.xxxxx.mongodb.net/?retryWrites=true&w=majority
+   mongodb+srv://threatwatch-admin:FBKz2ZM3xU90arFM@threatwatch-cluster.kqkappu.mongodb.net/?retryWrites=true&w=majority&appName=threatwatch-cluster
    ```
 
 ### 1.3 Database Setup
