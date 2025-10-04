@@ -47,7 +47,7 @@ const PaymentSuccess = () => {
           if (userData) {
             const parsedUser = JSON.parse(userData);
             parsedUser.subscription_tier = response.data.subscription_tier;
-            localStorage.setItem('user', JSON.stringify(parsedUser));
+            localStorage.setItem('user', JSON.stringify(parsedUser)); // User data already sanitized from auth
             setUser(parsedUser);
           }
         }
