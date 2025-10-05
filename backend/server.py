@@ -160,35 +160,34 @@ async def register_user(
 
 @auth_router.post("/login", response_model=LoginResponse)
 async def login_user(
-    login_data: UserLogin,
-    auth_db: Session = Depends(get_auth_db)
+    login_data: UserLogin
 ):
-    """Authenticate user and return access token"""
+    """
+    Authenticate user and return access token (MongoDB version)
+    """
     
-    # Fetch user from database
-    user = auth_db.query(User).filter(User.email == login_data.email).first()
-    
-    if not user or not AuthService.verify_password(login_data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=401,
-            detail="Incorrect email or password"
-        )
-    
-    if not user.is_active:
-        raise HTTPException(status_code=400, detail="Account is deactivated")
-    
-    # Update last login timestamp
-    user.last_login = datetime.utcnow()
-    
-    # Reset daily quick scan counter if it's a new day
-    today = datetime.utcnow().date()
-    if user.last_login and user.last_login.date() != today:
-        user.quick_scans_today = 0
-    
-    auth_db.commit()
-    
-    # Track user login analytics
     try:
+        # Get MongoDB connection
+        db = get_mongodb()
+        auth_service = MongoDBAuthService(db)
+        
+        # Authenticate user
+        user = await auth_service.authenticate_user(
+            email=login_data.email,
+            password=login_data.password
+        )
+        
+        if not user:
+            raise HTTPException(
+                status_code=401,
+                detail="Incorrect email or password"
+            )
+        
+        if not user.is_active:
+            raise HTTPException(status_code=400, detail="Account is deactivated")
+        
+        # Track user login analytics
+        try:
         analytics.track_user_login(
             user_id=user.id,
             email=user.email,
