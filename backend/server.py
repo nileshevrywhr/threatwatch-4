@@ -101,52 +101,36 @@ auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @auth_router.post("/register", response_model=UserResponse, status_code=201)
 async def register_user(
-    user_data: UserCreate,
-    auth_db: Session = Depends(get_auth_db)
+    user_data: UserCreate
 ):
-    """Register a new user account"""
+    """
+    Register a new user account (MongoDB version)
     
-    # Check if user already exists
-    existing_user = auth_db.query(User).filter(User.email == user_data.email).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+    Creates user and default free subscription in MongoDB
+    """
     
-    # Validate password strength
-    strength_check = AuthService.validate_password_strength(user_data.password)
-    if strength_check["strength"] == "very_weak":
-        raise HTTPException(
-            status_code=400, 
-            detail="Password is too weak. Please include uppercase, lowercase, and numbers."
-        )
-    
-    # Create new user
-    hashed_password = AuthService.get_password_hash(user_data.password)
-    
-    new_user = User(
-        id=uuid.uuid4(),
-        email=user_data.email,
-        hashed_password=hashed_password,
-        full_name=user_data.full_name,
-        is_active=True,
-        is_verified=True,  # Auto-verify for demo
-        subscription_tier="free",
-        subscription_status="active"
-    )
-    
-    auth_db.add(new_user)
-    auth_db.commit()
-    auth_db.refresh(new_user)
-    
-    # Track user registration analytics - Key Metric #1: Signups
     try:
-        analytics.track_user_signup(
-            user_id=new_user.id,
-            email=new_user.email,
-            plan_type=new_user.subscription_tier or 'free',
-            signup_method='email'
+        # Get MongoDB connection
+        db = get_mongodb()
+        auth_service = MongoDBAuthService(db)
+        
+        # Create user (this handles validation and duplicate check)
+        new_user = await auth_service.create_user(
+            email=user_data.email,
+            password=user_data.password,
+            full_name=user_data.full_name
         )
-    except Exception as e:
-        logger.warning(f"Failed to track signup analytics: {e}")
+        
+        # Track user registration analytics - Key Metric #1: Signups
+        try:
+            analytics.track_user_signup(
+                user_id=new_user.id,
+                email=new_user.email,
+                plan_type='free',
+                signup_method='email'
+            )
+        except Exception as e:
+            logger.warning(f"Failed to track signup analytics: {e}")
     
     # Return user info (excluding sensitive data like password)
     return UserResponse(
