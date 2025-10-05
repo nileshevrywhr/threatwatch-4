@@ -957,7 +957,7 @@ async def create_monitor(
     Example: Monitor "ransomware attacks healthcare" to get alerts when new threats are detected.
     """
     try:
-        monitor_service = MonitorService(mongo_db)
+        monitor_service = MonitorService(get_mongodb())
         
         # Check monitor limit based on subscription tier
         current_count = await monitor_service.get_monitor_count(str(current_user.id))
@@ -1005,7 +1005,7 @@ async def list_monitors(
     List all monitors for the current user
     """
     try:
-        monitor_service = MonitorService(mongo_db)
+        monitor_service = MonitorService(get_mongodb())
         
         monitors = await monitor_service.list_user_monitors(
             user_id=str(current_user.id),
@@ -1030,7 +1030,7 @@ async def get_monitor(
     Get details of a specific monitor
     """
     try:
-        monitor_service = MonitorService(mongo_db)
+        monitor_service = MonitorService(get_mongodb())
         
         monitor = await monitor_service.get_monitor(monitor_id, str(current_user.id))
         
@@ -1056,7 +1056,7 @@ async def update_monitor(
     Update monitor settings
     """
     try:
-        monitor_service = MonitorService(mongo_db)
+        monitor_service = MonitorService(get_mongodb())
         
         updated_monitor = await monitor_service.update_monitor(
             monitor_id=monitor_id,
@@ -1087,7 +1087,7 @@ async def delete_monitor(
     Delete a monitor
     """
     try:
-        monitor_service = MonitorService(mongo_db)
+        monitor_service = MonitorService(get_mongodb())
         
         deleted = await monitor_service.delete_monitor(monitor_id, str(current_user.id))
         
@@ -1117,7 +1117,7 @@ async def test_monitor(
     Useful for testing monitor configuration.
     """
     try:
-        monitor_service = MonitorService(mongo_db)
+        monitor_service = MonitorService(get_mongodb())
         
         # Get monitor
         monitor = await monitor_service.get_monitor(monitor_id, str(current_user.id))
@@ -1157,7 +1157,7 @@ async def get_monitor_alerts(
     """
     try:
         # Verify monitor belongs to user
-        monitor_service = MonitorService(mongo_db)
+        monitor_service = MonitorService(get_mongodb())
         monitor = await monitor_service.get_monitor(monitor_id, str(current_user.id))
         
         if not monitor:
