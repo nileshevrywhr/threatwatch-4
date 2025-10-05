@@ -228,15 +228,15 @@ async def login_user(
         )
 
 @auth_router.get("/me", response_model=UserResponse)
-async def get_current_user_profile(current_user: User = Depends(get_current_active_user)):
-    """Get current user profile"""
+async def get_current_user_profile(current_user: UserModel = Depends(get_current_active_user)):
+    """Get current user profile (MongoDB version)"""
     # Return user info (excluding sensitive data like password)
     return UserResponse(
         id=current_user.id,
         email=current_user.email,
         full_name=current_user.full_name,
         is_active=current_user.is_active,
-        is_verified=current_user.is_verified,
+        is_verified=True,
         created_at=current_user.created_at,
         last_login=current_user.last_login,
         subscription_tier=current_user.subscription_tier,
