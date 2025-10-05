@@ -141,13 +141,22 @@ async def register_user(
             full_name=new_user.full_name,
             is_active=new_user.is_active,
             is_verified=True,
-        created_at=new_user.created_at,
-        last_login=new_user.last_login,
-        subscription_tier=new_user.subscription_tier,
-        subscription_status=new_user.subscription_status,
-        monitoring_terms_count=len(new_user.monitoring_terms) if new_user.monitoring_terms else 0,
-        quick_scans_today=new_user.quick_scans_today
-    )
+            created_at=new_user.created_at,
+            last_login=new_user.last_login,
+            subscription_tier="free",
+            subscription_status="active",
+            monitoring_terms_count=0,
+            quick_scans_today=new_user.quick_scans_today
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Registration failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Registration failed: {str(e)}"
+        )
 
 @auth_router.post("/login", response_model=LoginResponse)
 async def login_user(
