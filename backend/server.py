@@ -1164,7 +1164,7 @@ async def get_monitor_alerts(
             raise HTTPException(status_code=404, detail="Monitor not found")
         
         # Get alerts
-        alert_service = AlertService(mongo_db)
+        alert_service = AlertService(get_mongodb())
         alerts = await alert_service.list_user_alerts(
             user_id=str(current_user.id),
             monitor_id=monitor_id,
@@ -1199,7 +1199,7 @@ async def list_alerts(
     List all alerts for the current user
     """
     try:
-        alert_service = AlertService(mongo_db)
+        alert_service = AlertService(get_mongodb())
         
         # Parse filters
         status_filter = AlertStatus(status) if status else None
@@ -1232,7 +1232,7 @@ async def get_alert(
     Get details of a specific alert
     """
     try:
-        alert_service = AlertService(mongo_db)
+        alert_service = AlertService(get_mongodb())
         
         alert = await alert_service.get_alert(alert_id, str(current_user.id))
         
@@ -1264,7 +1264,7 @@ async def update_alert_status(
     - false_positive: Not a real threat
     """
     try:
-        alert_service = AlertService(mongo_db)
+        alert_service = AlertService(get_mongodb())
         
         # Parse status
         try:
@@ -1305,7 +1305,7 @@ async def get_alert_statistics(
     Get alert statistics for the current user
     """
     try:
-        alert_service = AlertService(mongo_db)
+        alert_service = AlertService(get_mongodb())
         
         stats = await alert_service.get_alert_statistics(str(current_user.id))
         
