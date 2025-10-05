@@ -212,8 +212,23 @@ async def login_user(
             user_id=user.id
         )
         
+        # Create UserResponse from UserModel
+        user_response = UserResponse(
+            id=user.id,
+            email=user.email,
+            full_name=user.full_name,
+            is_active=user.is_active,
+            is_verified=True,
+            created_at=user.created_at,
+            last_login=user.last_login,
+            subscription_tier="free",
+            subscription_status="active",
+            monitoring_terms_count=0,
+            quick_scans_today=user.quick_scans_today
+        )
+        
         return LoginResponse(
-            user=user,
+            user=user_response,
             token=token_response,
             message="Login successful"
         )
