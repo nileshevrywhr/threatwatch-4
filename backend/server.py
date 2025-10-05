@@ -188,26 +188,28 @@ async def login_user(
         
         # Track user login analytics
         try:
-        analytics.track_user_login(
-            user_id=user.id,
-            email=user.email,
-            login_method='password'
+            analytics.track_user_login(
+                user_id=user.id,
+                email=user.email,
+                login_method='password'
+            )
+        except Exception as e:
+            logger.warning(f"Failed to track login analytics: {e}")
+        
+        # Create access token
+        access_token_expires = timedelta(minutes=1440)  # 24 hours
+        access_token = MongoDBAuthService.create_access_token(
+            data={"sub": str(user.id), "email": user.email, "tier": "free"},
+            expires_delta=access_token_expires
         )
-    except Exception as e:
-        logger.warning(f"Failed to track login analytics: {e}")
-    
-    # Create access token
-    access_token_expires = timedelta(minutes=1440)  # 24 hours
-    access_token = AuthService.create_access_token(
-        data={"sub": str(user.id), "email": user.email, "tier": user.subscription_tier},
-        expires_delta=access_token_expires
-    )
-    
-    token_response = Token(
-        access_token=access_token,
-        token_type="bearer",
-        expires_in=1440 * 60,  # 24 hours in seconds
-        user_id=user.id
+        
+        logger.info(f"✅ User logged in: {user.email}")
+        
+        token_response = Token(
+            access_token=access_token,
+            token_type="bearer",
+            expires_in=1440 * 60,  # 24 hours in seconds
+            user_id=user.id
     )
     
     return LoginResponse(
