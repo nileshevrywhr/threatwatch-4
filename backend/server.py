@@ -239,9 +239,9 @@ async def get_current_user_profile(current_user: UserModel = Depends(get_current
         is_verified=True,
         created_at=current_user.created_at,
         last_login=current_user.last_login,
-        subscription_tier=current_user.subscription_tier,
-        subscription_status=current_user.subscription_status,
-        monitoring_terms_count=len(current_user.monitoring_terms) if current_user.monitoring_terms else 0,
+        subscription_tier="free",
+        subscription_status="active",
+        monitoring_terms_count=0,
         quick_scans_today=current_user.quick_scans_today
     )
 
