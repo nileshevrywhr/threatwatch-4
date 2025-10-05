@@ -210,13 +210,22 @@ async def login_user(
             token_type="bearer",
             expires_in=1440 * 60,  # 24 hours in seconds
             user_id=user.id
-    )
-    
-    return LoginResponse(
-        user=user,
-        token=token_response,
-        message="Login successful"
-    )
+        )
+        
+        return LoginResponse(
+            user=user,
+            token=token_response,
+            message="Login successful"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Login failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Login failed: {str(e)}"
+        )
 
 @auth_router.get("/me", response_model=UserResponse)
 async def get_current_user_profile(current_user: User = Depends(get_current_active_user)):
