@@ -38,13 +38,8 @@ from sqlalchemy.orm import Session
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# Database setup
-MONGO_URL = os.environ['MONGO_URL']
-DB_NAME = os.environ['DB_NAME']
-
-# MongoDB connection
-mongo_client = AsyncIOMotorClient(MONGO_URL)
-mongo_db = mongo_client[DB_NAME]
+# Database setup (using get_mongodb() from database.py for consistent connection management)
+# This is imported from database module - no need to create separate connection
 
 # Create all tables
 Base.metadata.create_all(bind=engine)
