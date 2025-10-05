@@ -53,12 +53,15 @@ Base.metadata.create_all(bind=engine)
 security = HTTPBearer()
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    auth_db: Session = Depends(get_auth_db)
-) -> User:
-    """Get current authenticated user from JWT token"""
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> UserModel:
+    """
+    Get current authenticated user from JWT token (MongoDB version)
     
-    payload = AuthService.verify_token(credentials.credentials)
+    This replaces SQLAlchemy user lookup with MongoDB
+    """
+    
+    payload = MongoDBAuthService.verify_token(credentials.credentials)
     
     user_id: str = payload.get("sub")
     if user_id is None:
@@ -67,17 +70,12 @@ async def get_current_user(
             detail="Could not validate credentials"
         )
     
-    # Convert string UUID to UUID object for database query
-    try:
-        import uuid as uuid_module
-        user_uuid = uuid_module.UUID(user_id)
-    except ValueError:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid user ID format"
-        )
+    # Get MongoDB connection
+    db = get_mongodb()
+    auth_service = MongoDBAuthService(db)
     
-    user = auth_db.query(User).filter(User.id == user_uuid).first()
+    # Get user from MongoDB
+    user = await auth_service.get_user_by_id(user_id)
     if user is None:
         raise HTTPException(
             status_code=401,
@@ -86,7 +84,7 @@ async def get_current_user(
     
     return user
 
-async def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
+async def get_current_active_user(current_user: UserModel = Depends(get_current_user)) -> UserModel:
     """Get current active user"""
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
