@@ -16,11 +16,13 @@ import json
 import time
 
 # Authentication and Payment imports
-from database import Base, get_auth_db, engine
+from database import Base, get_auth_db, engine, get_mongodb
 from auth_models import User, UserSubscription, PaymentTransaction
 from auth_service import AuthService
+from auth_service_mongodb import MongoDBAuthService
 from auth_schemas import *
 from subscription_service import SubscriptionService, SUBSCRIPTION_TIERS
+from mongodb_models import UserModel
 try:
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     EMERGENT_AVAILABLE = True
