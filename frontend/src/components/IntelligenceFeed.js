@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from './ui/button';
@@ -15,6 +15,46 @@ import { secureLog } from '../utils/secureLogger';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+const convertQuickScanToMatches = (quickScan) => {
+  if (!quickScan) return [];
+
+  const matches = [];
+
+  // Add AI Summary as main intelligence match with enhanced styling
+  matches.push({
+    id: `quick-scan-summary-${Date.now()}`,
+    term: quickScan.query,
+    incident_title: `🤖 AI Threat Intelligence Analysis: ${quickScan.query}`,
+    source: 'AI-Powered Analysis (Enhanced)',
+    date: quickScan.timestamp,
+    severity: 'High',
+    type: 'quick-scan-summary',
+    summary: quickScan.summary,
+    url: null,
+    search_metadata: quickScan.search_metadata || {},
+    scan_type: quickScan.scan_type || 'enhanced'
+  });
+
+  return matches;
+};
+
+const convertDiscoveredLinksToMatches = (quickScan) => {
+  if (!quickScan || !quickScan.discovered_links) return [];
+
+  return quickScan.discovered_links.map((link, index) => ({
+    id: `discovered-link-${Date.now()}-${index}`,
+    term: quickScan.query,
+    incident_title: link.title,
+    source: link.source || new URL(link.url).hostname,
+    date: link.date,
+    severity: link.severity,
+    type: 'discovered-link',
+    url: link.url,
+    snippet: link.snippet,
+    isRealNews: true // Flag to indicate these are real Google search results
+  }));
+};
 
 const IntelligenceFeed = () => {
   const analytics = useAnalytics();
@@ -222,47 +262,8 @@ const IntelligenceFeed = () => {
     });
   };
 
-  const convertQuickScanToMatches = (quickScan) => {
-    if (!quickScan) return [];
-    
-    const matches = [];
-    
-    // Add AI Summary as main intelligence match with enhanced styling
-    matches.push({
-      id: `quick-scan-summary-${Date.now()}`,
-      term: quickScan.query,
-      incident_title: `🤖 AI Threat Intelligence Analysis: ${quickScan.query}`,
-      source: 'AI-Powered Analysis (Enhanced)',
-      date: quickScan.timestamp,
-      severity: 'High',
-      type: 'quick-scan-summary',
-      summary: quickScan.summary,
-      url: null,
-      search_metadata: quickScan.search_metadata || {},
-      scan_type: quickScan.scan_type || 'enhanced'
-    });
-    
-    return matches;
-  };
-
-  const convertDiscoveredLinksToMatches = (quickScan) => {
-    if (!quickScan || !quickScan.discovered_links) return [];
-    
-    return quickScan.discovered_links.map((link, index) => ({
-      id: `discovered-link-${Date.now()}-${index}`,
-      term: quickScan.query,
-      incident_title: link.title,
-      source: link.source || new URL(link.url).hostname,
-      date: link.date,
-      severity: link.severity,
-      type: 'discovered-link',
-      url: link.url,
-      snippet: link.snippet,
-      isRealNews: true // Flag to indicate these are real Google search results
-    }));
-  };
-
-  const getAllIntelligenceMatches = () => {
+  // Memoize all matches to prevent recalculation and new ID generation on every render
+  const allMatches = useMemo(() => {
     const regularMatches = userData?.intelligence_matches || [];
     
     // Only include Quick Scan results if they belong to the current user
@@ -274,10 +275,10 @@ const IntelligenceFeed = () => {
       : [];
     
     return [...quickScanMatches, ...discoveredLinks, ...regularMatches];
-  };
+  }, [userData, quickScanResult, userEmail]);
 
-  const getFilteredAndSortedMatches = () => {
-    let matches = getAllIntelligenceMatches();
+  const filteredAndSortedMatches = useMemo(() => {
+    let matches = [...allMatches];
     
     // Apply filters
     if (filterTerm) {
@@ -333,13 +334,16 @@ const IntelligenceFeed = () => {
     });
     
     return matches;
-  };
+  }, [allMatches, filterTerm, severityFilter, sourceFilter, sortBy, sortOrder]);
 
-  const getUniqueSourcesForFilter = () => {
-    const matches = getAllIntelligenceMatches();
-    const sources = [...new Set(matches.map(match => match.source))];
+  const uniqueSources = useMemo(() => {
+    const sources = [...new Set(allMatches.map(match => match.source))];
     return sources;
-  };
+  }, [allMatches]);
+
+  const quickScanMatchesForDisplay = useMemo(() => {
+    return convertQuickScanToMatches(quickScanResult);
+  }, [quickScanResult]);
 
   const handleSubscribeToQuickScan = async () => {
     if (!quickScanResult || !authToken) return;
@@ -690,7 +694,7 @@ const IntelligenceFeed = () => {
             </div>
             
             <div className="space-y-4">
-              {convertQuickScanToMatches(quickScanResult).map((match, index) => (
+              {quickScanMatchesForDisplay.map((match, index) => (
                 <Card key={`${match.id}-${index}`} className={`glass ${match.type === 'quick-scan-summary' ? 'border-orange-400/30' : 'border-yellow-400/30'} hover-glow`}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -783,7 +787,7 @@ const IntelligenceFeed = () => {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-white">
-              All Intelligence Matches ({getFilteredAndSortedMatches().length})
+              All Intelligence Matches ({filteredAndSortedMatches.length})
             </h2>
             <div className="flex items-center space-x-2">
               <Button
@@ -836,7 +840,7 @@ const IntelligenceFeed = () => {
                   <option value="all">All Sources</option>
                   <option value="quick-scan">Quick Scan Results</option>
                   <option value="monitoring">Continuous Monitoring</option>
-                  {getUniqueSourcesForFilter().slice(0, 5).map(source => (
+                  {uniqueSources.slice(0, 5).map(source => (
                     <option key={source} value={source}>{source}</option>
                   ))}
                 </select>
@@ -893,9 +897,9 @@ const IntelligenceFeed = () => {
           </div>
 
           {/* Intelligence Matches Display */}
-          {getFilteredAndSortedMatches().length > 0 ? (
+          {filteredAndSortedMatches.length > 0 ? (
             <div className="space-y-4">
-              {getFilteredAndSortedMatches().map((match, index) => (
+              {filteredAndSortedMatches.map((match, index) => (
                 <Card key={`${match.id}-${index}`} className={`glass hover-glow ${
                   match.type === 'quick-scan-summary' ? 'border-orange-400/30' : 
                   match.type === 'discovered-link' ? 'border-blue-400/30' : 'border-gray-700'
