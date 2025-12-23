@@ -791,6 +791,7 @@ const IntelligenceFeed = () => {
                 variant="outline"
                 size="sm"
                 className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                aria-label={sortOrder === 'asc' ? "Sort ascending" : "Sort descending"}
               >
                 {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
               </Button>
@@ -808,6 +809,7 @@ const IntelligenceFeed = () => {
                   value={filterTerm}
                   onChange={(e) => setFilterTerm(e.target.value)}
                   className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                  aria-label="Search threats"
                 />
               </div>
 
@@ -817,6 +819,7 @@ const IntelligenceFeed = () => {
                   value={severityFilter}
                   onChange={(e) => setSeverityFilter(e.target.value)}
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:border-cyan-400"
+                  aria-label="Filter by severity"
                 >
                   <option value="all">All Severities</option>
                   <option value="critical">Critical</option>
@@ -832,6 +835,7 @@ const IntelligenceFeed = () => {
                   value={sourceFilter}
                   onChange={(e) => setSourceFilter(e.target.value)}
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:border-cyan-400"
+                  aria-label="Filter by source"
                 >
                   <option value="all">All Sources</option>
                   <option value="quick-scan">Quick Scan Results</option>
@@ -848,6 +852,7 @@ const IntelligenceFeed = () => {
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:border-cyan-400"
+                  aria-label="Sort by"
                 >
                   <option value="date">Sort by Date</option>
                   <option value="severity">Sort by Severity</option>
@@ -993,6 +998,7 @@ const IntelligenceFeed = () => {
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="ml-4 flex-shrink-0"
+                          aria-label="Open external link"
                         >
                           <ExternalLink className="h-5 w-5 text-gray-400 hover:text-cyan-400 transition-colors" />
                         </a>
