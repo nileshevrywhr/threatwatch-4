@@ -1,19 +1,14 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { CheckCircle, AlertTriangle, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAnalytics } from '../services/analytics';
-import { secureLog, sanitizeUserData } from '../utils/secureLogger';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import { supabase } from '../lib/supabaseClient';
 
 const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   const analytics = useAnalytics();
@@ -23,6 +18,13 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   const [messageType, setMessageType] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [timerId, setTimerId] = useState(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [timerId]);
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -48,37 +50,34 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
     setMessage('');
 
     try {
-      const response = await axios.post(`${API}/auth/login`, loginData);
-      
-      // Store auth data (sanitize user data before storing)
-      localStorage.setItem('authToken', response.data.token.access_token);
-      localStorage.setItem('user', JSON.stringify(sanitizeUserData(response.data.user)));
-      
-      // Track successful login analytics
-      analytics.trackAuthEvent('login', true);
-      analytics.identify(response.data.user.id, {
-        email: response.data.user.email,
-        full_name: response.data.user.full_name,
-        subscription_tier: response.data.user.subscription_tier || 'free'
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginData.email,
+        password: loginData.password,
       });
-      
+
+      if (error) throw error;
+
+      analytics.trackAuthEvent('login', true);
+      analytics.identify(data.user.id, {
+        email: data.user.email,
+        full_name: data.user.user_metadata?.full_name,
+      });
+
       setMessage('Login successful!');
       setMessageType('success');
-      
-      // Call success callback
-      onAuthSuccess(response.data.user, response.data.token.access_token);
-      
-      // Close modal after short delay
-      setTimeout(() => {
+
+      if (onAuthSuccess) {
+        onAuthSuccess(data.user, data.session?.access_token);
+      }
+
+      const id = setTimeout(() => {
         onClose();
       }, 1000);
+      setTimerId(id);
 
     } catch (error) {
-      const errorMessage = error.response?.data?.detail || 'Login failed. Please try again.';
-      
-      // Track failed login analytics
+      const errorMessage = error.message || 'Login failed. Please try again.';
       analytics.trackAuthEvent('login', false, errorMessage);
-      
       setMessage(errorMessage);
       setMessageType('error');
     } finally {
@@ -104,45 +103,41 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
     setMessage('');
 
     try {
-      // Register user
-      await axios.post(`${API}/auth/register`, registerData);
-      
-      // Auto-login after registration
-      const loginResponse = await axios.post(`${API}/auth/login`, {
+      const { data, error } = await supabase.auth.signUp({
         email: registerData.email,
-        password: registerData.password
+        password: registerData.password,
+        options: {
+          data: {
+            full_name: registerData.full_name,
+            subscription_tier: 'free',
+          },
+        },
       });
-      
-      // Store auth data (sanitize user data before storing)
-      localStorage.setItem('authToken', loginResponse.data.token.access_token);
-      localStorage.setItem('user', JSON.stringify(sanitizeUserData(loginResponse.data.user)));
-      
-      // Track successful registration and identify user - Key Metric #1: Signups
+
+      if (error) throw error;
+
       analytics.trackAuthEvent('register', true);
-      analytics.identify(loginResponse.data.user.id, {
-        email: loginResponse.data.user.email,
-        full_name: loginResponse.data.user.full_name,
-        subscription_tier: loginResponse.data.user.subscription_tier || 'free',
+      analytics.identify(data.user.id, {
+        email: data.user.email,
+        full_name: registerData.full_name,
         signup_timestamp: new Date().toISOString()
       });
-      
+
       setMessage('Registration successful! You are now logged in.');
       setMessageType('success');
-      
-      // Call success callback
-      onAuthSuccess(loginResponse.data.user, loginResponse.data.token.access_token);
-      
-      // Close modal after short delay
-      setTimeout(() => {
+
+      if (onAuthSuccess) {
+        onAuthSuccess(data.user, data.session?.access_token);
+      }
+
+      const id = setTimeout(() => {
         onClose();
       }, 1000);
+      setTimerId(id);
 
     } catch (error) {
-      const errorMessage = error.response?.data?.detail || 'Registration failed. Please try again.';
-      
-      // Track failed registration analytics
+      const errorMessage = error.message || 'Registration failed. Please try again.';
       analytics.trackAuthEvent('register', false, errorMessage);
-      
       setMessage(errorMessage);
       setMessageType('error');
     } finally {
