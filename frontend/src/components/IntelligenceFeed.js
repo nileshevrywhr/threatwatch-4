@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from './ui/button';
@@ -12,56 +12,16 @@ import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
 import { useAnalytics } from '../services/analytics';
 import { secureLog } from '../utils/secureLogger';
+import { useAuth } from './AuthProvider';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-
-const convertQuickScanToMatches = (quickScan) => {
-  if (!quickScan) return [];
-
-  const matches = [];
-
-  // Add AI Summary as main intelligence match with enhanced styling
-  matches.push({
-    id: `quick-scan-summary-${Date.now()}`,
-    term: quickScan.query,
-    incident_title: `🤖 AI Threat Intelligence Analysis: ${quickScan.query}`,
-    source: 'AI-Powered Analysis (Enhanced)',
-    date: quickScan.timestamp,
-    severity: 'High',
-    type: 'quick-scan-summary',
-    summary: quickScan.summary,
-    url: null,
-    search_metadata: quickScan.search_metadata || {},
-    scan_type: quickScan.scan_type || 'enhanced'
-  });
-
-  return matches;
-};
-
-const convertDiscoveredLinksToMatches = (quickScan) => {
-  if (!quickScan || !quickScan.discovered_links) return [];
-
-  return quickScan.discovered_links.map((link, index) => ({
-    id: `discovered-link-${Date.now()}-${index}`,
-    term: quickScan.query,
-    incident_title: link.title,
-    source: link.source || new URL(link.url).hostname,
-    date: link.date,
-    severity: link.severity,
-    type: 'discovered-link',
-    url: link.url,
-    snippet: link.snippet,
-    isRealNews: true // Flag to indicate these are real Google search results
-  }));
-};
 
 const IntelligenceFeed = () => {
   const analytics = useAnalytics();
   const [searchParams] = useSearchParams();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [authChecking, setAuthChecking] = useState(true);
   const [error, setError] = useState('');
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [quickScanResult, setQuickScanResult] = useState(null);
@@ -73,8 +33,7 @@ const IntelligenceFeed = () => {
   const [sortOrder, setSortOrder] = useState('desc');
   
   // Authentication state
-  const [user, setUser] = useState(null);
-  const [authToken, setAuthToken] = useState(null);
+  const { user, session, signOut, loading: authLoading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSubscriptionPlans, setShowSubscriptionPlans] = useState(false);
   
@@ -83,55 +42,13 @@ const IntelligenceFeed = () => {
   const userEmail = searchParams.get('email');
   const hasQuickScan = searchParams.get('quickScan') === 'true';
 
-  // Check for existing authentication on component mount
-  useEffect(() => {
-    const checkAuthentication = () => {
-      const token = localStorage.getItem('authToken');
-      const userData = localStorage.getItem('user');
-      
-      if (token && userData) {
-        try {
-          const parsedUser = JSON.parse(userData);
-          setUser(parsedUser);
-          setAuthToken(token);
-          setAuthChecking(false);
-        } catch (error) {
-          secureLog.error('Failed to parse user data:', error);
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('user');
-          setError('Authentication failed. Please sign in again.');
-          setAuthChecking(false);
-          setLoading(false);
-          setShowAuthModal(true);
-        }
-      } else {
-        // No stored authentication
-        setError('Please sign in to view your intelligence feed');
-        setAuthChecking(false);
-        setLoading(false);
-        setShowAuthModal(true);
-      }
-    };
-
-    // Add a small delay to ensure localStorage is ready
-    setTimeout(checkAuthentication, 100);
-  }, []);
-
-  const handleAuthSuccess = (userData, token) => {
-    setUser(userData);
-    setAuthToken(token);
+  const handleAuthSuccess = () => {
     setShowAuthModal(false);
-    // Refresh user data after authentication
-    if (userData.email) {
-      fetchUserData(userData.email, token);
-    }
+    // Data fetch will happen automatically via useEffect when user state changes
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    setUser(null);
-    setAuthToken(null);
+  const handleLogout = async () => {
+    await signOut();
     
     // Clear any session storage
     const quickScanKeys = Object.keys(sessionStorage).filter(key => key.startsWith('quickScanResult_'));
@@ -141,22 +58,27 @@ const IntelligenceFeed = () => {
     navigate('/');
   };
 
-  const fetchUserData = async (email = null, token = null) => {
+  const fetchUserData = async () => {
     // Use authenticated user's email and token
-    const userEmail = email || user?.email;
-    const authTokenToUse = token || authToken;
+    const userEmail = user?.email;
+    const authTokenToUse = session?.access_token;
 
     if (!userEmail) {
-      setError('No user email available');
-      setLoading(false);
-      setShowAuthModal(true);
+      // Don't show modal immediately, wait for auth loading
+      if (!authLoading) {
+        setError('No user email available');
+        setLoading(false);
+        setShowAuthModal(true);
+      }
       return;
     }
 
     if (!authTokenToUse) {
-      setError('Authentication required');
-      setLoading(false);
-      setShowAuthModal(true);
+      if (!authLoading) {
+        setError('Authentication required');
+        setLoading(false);
+        setShowAuthModal(true);
+      }
       return;
     }
 
@@ -188,7 +110,7 @@ const IntelligenceFeed = () => {
 
   useEffect(() => {
     // Only proceed if authentication check is complete (user is set or explicitly null)
-    if (user && authToken) {
+    if (!authLoading && user && session?.access_token) {
       // User is authenticated - fetch data
       fetchUserData();
       
@@ -229,12 +151,15 @@ const IntelligenceFeed = () => {
       }
       
       // Auto-refresh every 30 seconds
-      const interval = setInterval(() => fetchUserData(user.email, authToken), 30000);
+      const interval = setInterval(() => fetchUserData(), 30000);
       return () => clearInterval(interval);
+    } else if (!authLoading && !user) {
+        // Not authenticated
+        setError('Please sign in to view your intelligence feed');
+        setLoading(false);
+        setShowAuthModal(true);
     }
-    // Removed the else condition that was immediately showing auth modal
-    // The auth modal will only show if explicitly set in the first useEffect
-  }, [user, authToken, hasQuickScan]);
+  }, [user, session, authLoading, hasQuickScan]);
 
   const getSeverityBadge = (severity) => {
     const severityClasses = {
@@ -262,8 +187,47 @@ const IntelligenceFeed = () => {
     });
   };
 
-  // Memoize all matches to prevent recalculation and new ID generation on every render
-  const allMatches = useMemo(() => {
+  const convertQuickScanToMatches = (quickScan) => {
+    if (!quickScan) return [];
+
+    const matches = [];
+
+    // Add AI Summary as main intelligence match with enhanced styling
+    matches.push({
+      id: `quick-scan-summary-${Date.now()}`,
+      term: quickScan.query,
+      incident_title: `🤖 AI Threat Intelligence Analysis: ${quickScan.query}`,
+      source: 'AI-Powered Analysis (Enhanced)',
+      date: quickScan.timestamp,
+      severity: 'High',
+      type: 'quick-scan-summary',
+      summary: quickScan.summary,
+      url: null,
+      search_metadata: quickScan.search_metadata || {},
+      scan_type: quickScan.scan_type || 'enhanced'
+    });
+
+    return matches;
+  };
+
+  const convertDiscoveredLinksToMatches = (quickScan) => {
+    if (!quickScan || !quickScan.discovered_links) return [];
+
+    return quickScan.discovered_links.map((link, index) => ({
+      id: `discovered-link-${Date.now()}-${index}`,
+      term: quickScan.query,
+      incident_title: link.title,
+      source: link.source || new URL(link.url).hostname,
+      date: link.date,
+      severity: link.severity,
+      type: 'discovered-link',
+      url: link.url,
+      snippet: link.snippet,
+      isRealNews: true // Flag to indicate these are real Google search results
+    }));
+  };
+
+  const getAllIntelligenceMatches = () => {
     const regularMatches = userData?.intelligence_matches || [];
     
     // Only include Quick Scan results if they belong to the current user
@@ -275,10 +239,10 @@ const IntelligenceFeed = () => {
       : [];
     
     return [...quickScanMatches, ...discoveredLinks, ...regularMatches];
-  }, [userData, quickScanResult, userEmail]);
+  };
 
-  const filteredAndSortedMatches = useMemo(() => {
-    let matches = [...allMatches];
+  const getFilteredAndSortedMatches = () => {
+    let matches = getAllIntelligenceMatches();
     
     // Apply filters
     if (filterTerm) {
@@ -334,19 +298,16 @@ const IntelligenceFeed = () => {
     });
     
     return matches;
-  }, [allMatches, filterTerm, severityFilter, sourceFilter, sortBy, sortOrder]);
+  };
 
-  const uniqueSources = useMemo(() => {
-    const sources = [...new Set(allMatches.map(match => match.source))];
+  const getUniqueSourcesForFilter = () => {
+    const matches = getAllIntelligenceMatches();
+    const sources = [...new Set(matches.map(match => match.source))];
     return sources;
-  }, [allMatches]);
-
-  const quickScanMatchesForDisplay = useMemo(() => {
-    return convertQuickScanToMatches(quickScanResult);
-  }, [quickScanResult]);
+  };
 
   const handleSubscribeToQuickScan = async () => {
-    if (!quickScanResult || !authToken) return;
+    if (!quickScanResult || !session?.access_token) return;
     
     try {
       const response = await axios.post(`${API}/subscribe`, {
@@ -354,7 +315,7 @@ const IntelligenceFeed = () => {
         email: user?.email || userEmail,
       }, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -381,7 +342,7 @@ const IntelligenceFeed = () => {
   };
 
   const handleGeneratePDF = async (scanData) => {
-    if (!authToken || !scanData) return;
+    if (!session?.access_token || !scanData) return;
     
     // Track PDF generation initiation - Key Metric #3: Report downloads
     const pdfStartTime = Date.now();
@@ -396,7 +357,7 @@ const IntelligenceFeed = () => {
       // Step 1: Generate the PDF report
       const response = await axios.post(`${API}/generate-report`, scanData, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -410,7 +371,7 @@ const IntelligenceFeed = () => {
         try {
           const downloadResponse = await axios.get(downloadUrl, {
             headers: {
-              'Authorization': `Bearer ${authToken}`
+              'Authorization': `Bearer ${session.access_token}`
             },
             responseType: 'blob'
           });
@@ -521,7 +482,7 @@ const IntelligenceFeed = () => {
     }
   };
 
-  if (authChecking || (loading && !user)) {
+  if (authLoading || (loading && !user)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
         <div className="text-center">
@@ -529,7 +490,7 @@ const IntelligenceFeed = () => {
             <Shield className="h-16 w-16 mx-auto" />
           </div>
           <p className="text-gray-300">
-            {authChecking ? 'Checking authentication...' : 'Loading intelligence feed...'}
+            {authLoading ? 'Checking authentication...' : 'Loading intelligence feed...'}
           </p>
         </div>
       </div>
@@ -694,7 +655,7 @@ const IntelligenceFeed = () => {
             </div>
             
             <div className="space-y-4">
-              {quickScanMatchesForDisplay.map((match, index) => (
+              {convertQuickScanToMatches(quickScanResult).map((match, index) => (
                 <Card key={`${match.id}-${index}`} className={`glass ${match.type === 'quick-scan-summary' ? 'border-orange-400/30' : 'border-yellow-400/30'} hover-glow`}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -787,7 +748,7 @@ const IntelligenceFeed = () => {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-white">
-              All Intelligence Matches ({filteredAndSortedMatches.length})
+              All Intelligence Matches ({getFilteredAndSortedMatches().length})
             </h2>
             <div className="flex items-center space-x-2">
               <Button
@@ -844,7 +805,7 @@ const IntelligenceFeed = () => {
                   <option value="all">All Sources</option>
                   <option value="quick-scan">Quick Scan Results</option>
                   <option value="monitoring">Continuous Monitoring</option>
-                  {uniqueSources.slice(0, 5).map(source => (
+                  {getUniqueSourcesForFilter().slice(0, 5).map(source => (
                     <option key={source} value={source}>{source}</option>
                   ))}
                 </select>
@@ -902,9 +863,9 @@ const IntelligenceFeed = () => {
           </div>
 
           {/* Intelligence Matches Display */}
-          {filteredAndSortedMatches.length > 0 ? (
+          {getFilteredAndSortedMatches().length > 0 ? (
             <div className="space-y-4">
-              {filteredAndSortedMatches.map((match, index) => (
+              {getFilteredAndSortedMatches().map((match, index) => (
                 <Card key={`${match.id}-${index}`} className={`glass hover-glow ${
                   match.type === 'quick-scan-summary' ? 'border-orange-400/30' : 
                   match.type === 'discovered-link' ? 'border-blue-400/30' : 'border-gray-700'
@@ -1050,7 +1011,7 @@ const IntelligenceFeed = () => {
         isOpen={showSubscriptionPlans}
         onClose={() => setShowSubscriptionPlans(false)}
         currentUser={user}
-        authToken={authToken}
+        authToken={session?.access_token}
       />
     </div>
   );
