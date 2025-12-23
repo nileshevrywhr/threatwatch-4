@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from './ui/button';
@@ -11,13 +11,15 @@ import AuthModal from './AuthModal';
 import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
 import { useAnalytics } from '../services/analytics';
-import { secureLog } from '../utils/secureLogger';
+import { useAuth } from './AuthProvider';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const LandingPage = () => {
   const analytics = useAnalytics();
+  const { user, session, signOut } = useAuth(); // Use AuthProvider context
+
   const [formData, setFormData] = useState({
     term: '',
     email: '',
@@ -35,44 +37,20 @@ const LandingPage = () => {
   const [feedEmail, setFeedEmail] = useState('');
   const [feedLoading, setFeedLoading] = useState(false);
   
-  // Authentication state
-  const [user, setUser] = useState(null);
-  const [authToken, setAuthToken] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSubscriptionPlans, setShowSubscriptionPlans] = useState(false);
   
   const navigate = useNavigate();
 
-  // Check for existing authentication on component mount
-  useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('user');
-    
-    if (token && userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-        setAuthToken(token);
-      } catch (error) {
-        secureLog.error('Failed to parse user data:', error);
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-      }
-    }
-  }, []);
-
-  const handleAuthSuccess = (userData, token) => {
-    setUser(userData);
-    setAuthToken(token);
+  const handleAuthSuccess = () => {
+    // AuthProvider updates the user state automatically.
+    // Navigate to feed on success as requested.
     setShowAuthModal(false);
+    navigate('/feed');
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    setUser(null);
-    setAuthToken(null);
-    
+  const handleLogout = async () => {
+    await signOut();
     // Clear any session storage
     const quickScanKeys = Object.keys(sessionStorage).filter(key => key.startsWith('quickScanResult_'));
     quickScanKeys.forEach(key => sessionStorage.removeItem(key));
@@ -94,7 +72,7 @@ const LandingPage = () => {
     }
 
     // Check if user is authenticated
-    if (!user || !authToken) {
+    if (!user) {
       setMessage('Please sign in to set up monitoring');
       setMessageType('error');
       setShowAuthModal(true);
@@ -110,7 +88,7 @@ const LandingPage = () => {
         email: user.email
       }, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          'Authorization': `Bearer ${session?.access_token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -140,7 +118,7 @@ const LandingPage = () => {
     }
 
     // Check if user is authenticated
-    if (!user || !authToken) {
+    if (!user) {
       setMessage('Please sign in to perform Quick Scans');
       setMessageType('error');
       setShowAuthModal(true);
@@ -191,7 +169,7 @@ const LandingPage = () => {
         query: formData.term
       }, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          'Authorization': `Bearer ${session?.access_token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -266,6 +244,7 @@ const LandingPage = () => {
 
     try {
       // Check if user has any subscriptions by calling the status endpoint
+      // This part might need auth if backend requires it, but keeping it as is for now
       const response = await axios.get(`${API}/status`, {
         params: { email: feedEmail }
       });
@@ -404,9 +383,9 @@ const LandingPage = () => {
                         </span>
                       </div>
                       <div className="text-xs text-gray-400 mt-1">
-                        {user.subscription_tier === 'free' && `${user.monitoring_terms_count || 0}/0 monitoring terms (upgrade to add more)`}
-                        {user.subscription_tier === 'pro' && `${user.monitoring_terms_count || 0}/10 monitoring terms used`}
-                        {user.subscription_tier === 'enterprise' && `${user.monitoring_terms_count || 0}/50 monitoring terms used`}
+                        {(user.user_metadata?.subscription_tier === 'free' || !user.user_metadata?.subscription_tier) && `${user.monitoring_terms_count || 0}/0 monitoring terms (upgrade to add more)`}
+                        {user.user_metadata?.subscription_tier === 'pro' && `${user.monitoring_terms_count || 0}/10 monitoring terms used`}
+                        {user.user_metadata?.subscription_tier === 'enterprise' && `${user.monitoring_terms_count || 0}/50 monitoring terms used`}
                       </div>
                     </div>
                   )}
@@ -530,12 +509,12 @@ const LandingPage = () => {
                     <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-600">
                       <div className="flex items-center space-x-2 mb-2">
                         <CheckCircle className="h-4 w-4 text-green-400" />
-                        <span className="text-white font-semibold">{user.full_name}</span>
+                        <span className="text-white font-semibold">{user.user_metadata?.full_name || 'User'}</span>
                       </div>
                       <p className="text-sm text-gray-400">{user.email}</p>
                       <div className="mt-2 flex items-center space-x-2">
                         <span className="text-xs text-gray-500">Plan:</span>
-                        <span className="text-xs capitalize text-cyan-400 font-semibold">{user.subscription_tier}</span>
+                        <span className="text-xs capitalize text-cyan-400 font-semibold">{user.user_metadata?.subscription_tier || 'free'}</span>
                       </div>
                     </div>
                     
@@ -582,7 +561,7 @@ const LandingPage = () => {
         isOpen={showSubscriptionPlans}
         onClose={() => setShowSubscriptionPlans(false)}
         currentUser={user}
-        authToken={authToken}
+        authToken={session?.access_token}
       />
     </div>
   );
