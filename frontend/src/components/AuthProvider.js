@@ -14,16 +14,30 @@ export const AuthProvider = ({ children }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-    });
-
-    // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    }).catch((error) => {
+      console.error("Error getting session:", error);
+      setSession(null);
+      setUser(null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Listen for changes on auth state (logged in, signed out, etc.)
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      try {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error in auth state change:", error);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      if (data && data.subscription) {
+        data.subscription.unsubscribe();
+      }
+    };
   }, []);
 
   const signOut = async () => {
