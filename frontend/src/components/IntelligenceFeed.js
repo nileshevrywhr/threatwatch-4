@@ -12,6 +12,7 @@ import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
 import { useAnalytics } from '../services/analytics';
 import { secureLog } from '../utils/secureLogger';
+import { useAuth } from './AuthProvider';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -21,7 +22,6 @@ const IntelligenceFeed = () => {
   const [searchParams] = useSearchParams();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [authChecking, setAuthChecking] = useState(true);
   const [error, setError] = useState('');
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [quickScanResult, setQuickScanResult] = useState(null);
@@ -33,8 +33,7 @@ const IntelligenceFeed = () => {
   const [sortOrder, setSortOrder] = useState('desc');
   
   // Authentication state
-  const [user, setUser] = useState(null);
-  const [authToken, setAuthToken] = useState(null);
+  const { user, session, signOut, loading: authLoading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSubscriptionPlans, setShowSubscriptionPlans] = useState(false);
   
@@ -43,55 +42,13 @@ const IntelligenceFeed = () => {
   const userEmail = searchParams.get('email');
   const hasQuickScan = searchParams.get('quickScan') === 'true';
 
-  // Check for existing authentication on component mount
-  useEffect(() => {
-    const checkAuthentication = () => {
-      const token = localStorage.getItem('authToken');
-      const userData = localStorage.getItem('user');
-      
-      if (token && userData) {
-        try {
-          const parsedUser = JSON.parse(userData);
-          setUser(parsedUser);
-          setAuthToken(token);
-          setAuthChecking(false);
-        } catch (error) {
-          secureLog.error('Failed to parse user data:', error);
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('user');
-          setError('Authentication failed. Please sign in again.');
-          setAuthChecking(false);
-          setLoading(false);
-          setShowAuthModal(true);
-        }
-      } else {
-        // No stored authentication
-        setError('Please sign in to view your intelligence feed');
-        setAuthChecking(false);
-        setLoading(false);
-        setShowAuthModal(true);
-      }
-    };
-
-    // Add a small delay to ensure localStorage is ready
-    setTimeout(checkAuthentication, 100);
-  }, []);
-
-  const handleAuthSuccess = (userData, token) => {
-    setUser(userData);
-    setAuthToken(token);
+  const handleAuthSuccess = () => {
     setShowAuthModal(false);
-    // Refresh user data after authentication
-    if (userData.email) {
-      fetchUserData(userData.email, token);
-    }
+    // Data fetch will happen automatically via useEffect when user state changes
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    setUser(null);
-    setAuthToken(null);
+  const handleLogout = async () => {
+    await signOut();
     
     // Clear any session storage
     const quickScanKeys = Object.keys(sessionStorage).filter(key => key.startsWith('quickScanResult_'));
@@ -101,22 +58,27 @@ const IntelligenceFeed = () => {
     navigate('/');
   };
 
-  const fetchUserData = async (email = null, token = null) => {
+  const fetchUserData = async () => {
     // Use authenticated user's email and token
-    const userEmail = email || user?.email;
-    const authTokenToUse = token || authToken;
+    const userEmail = user?.email;
+    const authTokenToUse = session?.access_token;
 
     if (!userEmail) {
-      setError('No user email available');
-      setLoading(false);
-      setShowAuthModal(true);
+      // Don't show modal immediately, wait for auth loading
+      if (!authLoading) {
+        setError('No user email available');
+        setLoading(false);
+        setShowAuthModal(true);
+      }
       return;
     }
 
     if (!authTokenToUse) {
-      setError('Authentication required');
-      setLoading(false);
-      setShowAuthModal(true);
+      if (!authLoading) {
+        setError('Authentication required');
+        setLoading(false);
+        setShowAuthModal(true);
+      }
       return;
     }
 
@@ -148,7 +110,7 @@ const IntelligenceFeed = () => {
 
   useEffect(() => {
     // Only proceed if authentication check is complete (user is set or explicitly null)
-    if (user && authToken) {
+    if (!authLoading && user && session?.access_token) {
       // User is authenticated - fetch data
       fetchUserData();
       
@@ -189,12 +151,15 @@ const IntelligenceFeed = () => {
       }
       
       // Auto-refresh every 30 seconds
-      const interval = setInterval(() => fetchUserData(user.email, authToken), 30000);
+      const interval = setInterval(() => fetchUserData(), 30000);
       return () => clearInterval(interval);
+    } else if (!authLoading && !user) {
+        // Not authenticated
+        setError('Please sign in to view your intelligence feed');
+        setLoading(false);
+        setShowAuthModal(true);
     }
-    // Removed the else condition that was immediately showing auth modal
-    // The auth modal will only show if explicitly set in the first useEffect
-  }, [user, authToken, hasQuickScan]);
+  }, [user, session, authLoading, hasQuickScan]);
 
   const getSeverityBadge = (severity) => {
     const severityClasses = {
@@ -342,7 +307,7 @@ const IntelligenceFeed = () => {
   };
 
   const handleSubscribeToQuickScan = async () => {
-    if (!quickScanResult || !authToken) return;
+    if (!quickScanResult || !session?.access_token) return;
     
     try {
       const response = await axios.post(`${API}/subscribe`, {
@@ -350,7 +315,7 @@ const IntelligenceFeed = () => {
         email: user?.email || userEmail,
       }, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -377,7 +342,7 @@ const IntelligenceFeed = () => {
   };
 
   const handleGeneratePDF = async (scanData) => {
-    if (!authToken || !scanData) return;
+    if (!session?.access_token || !scanData) return;
     
     // Track PDF generation initiation - Key Metric #3: Report downloads
     const pdfStartTime = Date.now();
@@ -392,7 +357,7 @@ const IntelligenceFeed = () => {
       // Step 1: Generate the PDF report
       const response = await axios.post(`${API}/generate-report`, scanData, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -406,7 +371,7 @@ const IntelligenceFeed = () => {
         try {
           const downloadResponse = await axios.get(downloadUrl, {
             headers: {
-              'Authorization': `Bearer ${authToken}`
+              'Authorization': `Bearer ${session.access_token}`
             },
             responseType: 'blob'
           });
@@ -517,7 +482,7 @@ const IntelligenceFeed = () => {
     }
   };
 
-  if (authChecking || (loading && !user)) {
+  if (authLoading || (loading && !user)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
         <div className="text-center">
@@ -525,7 +490,7 @@ const IntelligenceFeed = () => {
             <Shield className="h-16 w-16 mx-auto" />
           </div>
           <p className="text-gray-300">
-            {authChecking ? 'Checking authentication...' : 'Loading intelligence feed...'}
+            {authLoading ? 'Checking authentication...' : 'Loading intelligence feed...'}
           </p>
         </div>
       </div>
@@ -1046,7 +1011,7 @@ const IntelligenceFeed = () => {
         isOpen={showSubscriptionPlans}
         onClose={() => setShowSubscriptionPlans(false)}
         currentUser={user}
-        authToken={authToken}
+        authToken={session?.access_token}
       />
     </div>
   );
