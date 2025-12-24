@@ -71,28 +71,19 @@ const IntelligenceFeed = () => {
       setError('Authentication required. Please sign in again.');
       return;
     }
-=======
+
     const userEmail = email || user?.email;
     const authTokenToUse = token || session?.access_token;
 
     if (!userEmail) {
       setError('No user email available');
       setLoading(false);
->>>>>>> Stashed changes
       return;
     }
 
     if (!authTokenToUse) {
-<<<<<<< Updated upstream
-      if (!authLoading) {
-        setError('Authentication required');
-        setLoading(false);
-        setShowAuthModal(true);
-      }
-=======
       secureLog.error('No authentication token available');
       setError('Authentication required. Please sign in again.');
->>>>>>> Stashed changes
       return;
     }
 
