@@ -19,6 +19,7 @@ const API = `${BACKEND_URL}/api`;
 
 const IntelligenceFeed = () => {
   const analytics = useAnalytics();
+  const { user, session, signOut, loading: authLoading } = useAuth();
   const [searchParams] = useSearchParams();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,12 +32,9 @@ const IntelligenceFeed = () => {
   const [sourceFilter, setSourceFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date');
   const [sortOrder, setSortOrder] = useState('desc');
-  
-  // Authentication state
-  const { user, session, signOut, loading: authLoading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSubscriptionPlans, setShowSubscriptionPlans] = useState(false);
-  
+
   const navigate = useNavigate();
 
   const userEmail = searchParams.get('email');
@@ -49,36 +47,52 @@ const IntelligenceFeed = () => {
 
   const handleLogout = async () => {
     await signOut();
-    
     // Clear any session storage
     const quickScanKeys = Object.keys(sessionStorage).filter(key => key.startsWith('quickScanResult_'));
     quickScanKeys.forEach(key => sessionStorage.removeItem(key));
-    
+
     // Navigate back to landing page
     navigate('/');
   };
 
-  const fetchUserData = async () => {
+  const fetchUserData = async (email, token) => {
     // Use authenticated user's email and token
-    const userEmail = user?.email;
-    const authTokenToUse = session?.access_token;
+    const userEmail = email || user?.email;
+    const authTokenToUse = token || session?.access_token;
 
     if (!userEmail) {
-      // Don't show modal immediately, wait for auth loading
-      if (!authLoading) {
-        setError('No user email available');
-        setLoading(false);
-        setShowAuthModal(true);
-      }
+      setError('No user email available');
+      setLoading(false);
       return;
     }
 
     if (!authTokenToUse) {
+      secureLog.error('No authentication token available');
+      setError('Authentication required. Please sign in again.');
+      return;
+    }
+=======
+    const userEmail = email || user?.email;
+    const authTokenToUse = token || session?.access_token;
+
+    if (!userEmail) {
+      setError('No user email available');
+      setLoading(false);
+>>>>>>> Stashed changes
+      return;
+    }
+
+    if (!authTokenToUse) {
+<<<<<<< Updated upstream
       if (!authLoading) {
         setError('Authentication required');
         setLoading(false);
         setShowAuthModal(true);
       }
+=======
+      secureLog.error('No authentication token available');
+      setError('Authentication required. Please sign in again.');
+>>>>>>> Stashed changes
       return;
     }
 
@@ -108,12 +122,11 @@ const IntelligenceFeed = () => {
     }
   };
 
+  // Load user data when user is authenticated
   useEffect(() => {
-    // Only proceed if authentication check is complete (user is set or explicitly null)
-    if (!authLoading && user && session?.access_token) {
-      // User is authenticated - fetch data
-      fetchUserData();
-      
+    if (user && session) {
+      fetchUserData(user.email, session.access_token);
+
       // Clean up any stale Quick Scan results from other users in sessionStorage
       const allKeys = Object.keys(sessionStorage);
       const quickScanKeys = allKeys.filter(key => key.startsWith('quickScanResult_'));
@@ -123,7 +136,7 @@ const IntelligenceFeed = () => {
           sessionStorage.removeItem(key);
         }
       });
-      
+
       // Handle quick scan data from sessionStorage (associated with specific email)
       if (hasQuickScan) {
         try {
@@ -134,7 +147,7 @@ const IntelligenceFeed = () => {
             const scanTime = new Date(parsedQuickScan.timestamp);
             const now = new Date();
             const hoursDiff = Math.abs(now - scanTime) / 36e5;
-            
+
             if (parsedQuickScan.userEmail === user.email && hoursDiff < 1) {
               setQuickScanResult(parsedQuickScan);
             } else {
@@ -149,17 +162,12 @@ const IntelligenceFeed = () => {
         // User accessed feed directly (View My Feed) - ensure no lingering Quick Scan results
         setQuickScanResult(null);
       }
-      
+
       // Auto-refresh every 30 seconds
-      const interval = setInterval(() => fetchUserData(), 30000);
+      const interval = setInterval(() => fetchUserData(user.email, session?.access_token), 30000);
       return () => clearInterval(interval);
-    } else if (!authLoading && !user) {
-        // Not authenticated
-        setError('Please sign in to view your intelligence feed');
-        setLoading(false);
-        setShowAuthModal(true);
     }
-  }, [user, session, authLoading, hasQuickScan]);
+  }, [user, session, hasQuickScan]);
 
   const getSeverityBadge = (severity) => {
     const severityClasses = {
@@ -314,7 +322,7 @@ const IntelligenceFeed = () => {
         email: user?.email || userEmail,
       }, {
         headers: {
-          'Authorization': `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${session?.access_token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -356,7 +364,7 @@ const IntelligenceFeed = () => {
       // Step 1: Generate the PDF report
       const response = await axios.post(`${API}/generate-report`, scanData, {
         headers: {
-          'Authorization': `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${session?.access_token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -370,7 +378,7 @@ const IntelligenceFeed = () => {
         try {
           const downloadResponse = await axios.get(downloadUrl, {
             headers: {
-              'Authorization': `Bearer ${session.access_token}`
+              'Authorization': `Bearer ${session?.access_token}`
             },
             responseType: 'blob'
           });
@@ -557,16 +565,7 @@ const IntelligenceFeed = () => {
                   onLogout={handleLogout}
                   onShowSubscriptionPlans={() => setShowSubscriptionPlans(true)}
                 />
-              ) : (
-                <Button
-                  onClick={() => setShowAuthModal(true)}
-                  variant="outline"
-                  className="border-gray-600 text-gray-300 hover:bg-gray-800"
-                >
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Sign In
-                </Button>
-              )}
+               ) : null}
             </div>
           </div>
           
@@ -998,13 +997,6 @@ const IntelligenceFeed = () => {
           )}
         </section>
       </div>
-
-      {/* Authentication Modal */}
-      <AuthModal 
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onAuthSuccess={handleAuthSuccess}
-      />
 
       {/* Subscription Plans Modal */}
       <SubscriptionPlans
