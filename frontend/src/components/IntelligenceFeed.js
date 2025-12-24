@@ -225,7 +225,7 @@ const IntelligenceFeed = () => {
     return [...quickScanMatches, ...discoveredLinks, ...regularMatches];
   }, [userData, quickScanResult, userEmail]);
 
-  const filteredAndSortedMatches = useMemo(() => {
+  const getFilteredAndSortedMatches = useMemo(() => {
     let matches = [...allIntelligenceMatches];
     
     // Apply filters
@@ -723,7 +723,7 @@ const IntelligenceFeed = () => {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-white">
-              All Intelligence Matches ({getFilteredAndSortedMatches().length})
+                All Intelligence Matches ({getFilteredAndSortedMatches().length})
             </h2>
             <div className="flex items-center space-x-2">
               <Button
@@ -838,9 +838,9 @@ const IntelligenceFeed = () => {
           </div>
 
           {/* Intelligence Matches Display */}
-          {filteredAndSortedMatches.length > 0 ? (
+          {getFilteredAndSortedMatches().length > 0 ? (
             <div className="space-y-4">
-              {filteredAndSortedMatches.map((match, index) => (
+              {getFilteredAndSortedMatches().map((match, index) => (
                 <Card key={`${match.id}-${index}`} className={`glass hover-glow ${
                   match.type === 'quick-scan-summary' ? 'border-orange-400/30' : 
                   match.type === 'discovered-link' ? 'border-blue-400/30' : 'border-gray-700'
