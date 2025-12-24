@@ -3,8 +3,10 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { CheckCircle, Crown, Zap, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckCircle, Crown, Zap, ArrowRight, Loader2, LogIn } from 'lucide-react';
 import { secureLog } from '../utils/secureLogger';
+import { useAuth } from './AuthProvider';
+import AuthModal from './AuthModal';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -13,45 +15,39 @@ const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const [paymentStatus, setPaymentStatus] = useState('checking');
   const [paymentData, setPaymentData] = useState(null);
-  const [user, setUser] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const navigate = useNavigate();
+
+  const { user, session, loading: authLoading } = useAuth();
 
   const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
+    // Wait for auth to finish loading
+    if (authLoading) return;
+
     const checkPaymentStatus = async () => {
       if (!sessionId) {
         setPaymentStatus('error');
         return;
       }
 
-      try {
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-          navigate('/');
-          return;
-        }
+      // Soft check for auth
+      if (!user || !session) {
+        setPaymentStatus('auth_required');
+        return;
+      }
 
+      try {
         const response = await axios.get(`${API}/payments/status/${sessionId}`, {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json'
           }
         });
 
         setPaymentData(response.data);
         setPaymentStatus(response.data.payment_status === 'paid' ? 'success' : 'pending');
-
-        // Update user data in localStorage if payment successful
-        if (response.data.payment_status === 'paid') {
-          const userData = localStorage.getItem('user');
-          if (userData) {
-            const parsedUser = JSON.parse(userData);
-            parsedUser.subscription_tier = response.data.subscription_tier;
-            localStorage.setItem('user', JSON.stringify(parsedUser)); // User data already sanitized from auth
-            setUser(parsedUser);
-          }
-        }
 
       } catch (error) {
         secureLog.error('Payment status check failed:', error);
@@ -60,7 +56,12 @@ const PaymentSuccess = () => {
     };
 
     checkPaymentStatus();
-  }, [sessionId, navigate]);
+  }, [sessionId, user, session, authLoading]);
+
+  const handleAuthSuccess = () => {
+    setShowAuthModal(false);
+    // The useEffect will re-run because user/session will change
+  };
 
   const getPlanIcon = (tier) => {
     return tier === 'enterprise' ? <Crown className="h-8 w-8 text-purple-400" /> : <Zap className="h-8 w-8 text-orange-400" />;
@@ -70,16 +71,52 @@ const PaymentSuccess = () => {
     return tier === 'enterprise' ? 'border-purple-400/50' : 'border-orange-400/50';
   };
 
-  if (paymentStatus === 'checking') {
+  if (authLoading || paymentStatus === 'checking') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
         <Card className="glass border-gray-700 max-w-md w-full mx-4">
           <CardContent className="p-8 text-center">
             <Loader2 className="h-12 w-12 text-cyan-400 mx-auto mb-4 animate-spin" />
-            <h2 className="text-xl font-semibold text-white mb-2">Processing Payment</h2>
-            <p className="text-gray-400">Please wait while we confirm your payment...</p>
+            <h2 className="text-xl font-semibold text-white mb-2">
+              {authLoading ? 'Verifying Session' : 'Processing Payment'}
+            </h2>
+            <p className="text-gray-400">Please wait while we confirm your details...</p>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  if (paymentStatus === 'auth_required') {
+     return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
+        <Card className="glass border-gray-700 max-w-md w-full mx-4">
+          <CardContent className="p-8 text-center">
+            <div className="h-12 w-12 bg-cyan-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+               <LogIn className="h-6 w-6 text-cyan-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-white mb-2">Authentication Required</h2>
+            <p className="text-gray-400 mb-6">Please log in to verify your payment and activate your subscription.</p>
+            <Button
+              onClick={() => setShowAuthModal(true)}
+              className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+            >
+              Log In to Continue
+            </Button>
+            <Button
+                onClick={() => navigate('/')}
+                variant="ghost"
+                className="mt-4 text-gray-400 hover:text-white"
+            >
+                Return to Home
+            </Button>
+          </CardContent>
+        </Card>
+        <AuthModal
+            isOpen={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
+            onAuthSuccess={handleAuthSuccess}
+        />
       </div>
     );
   }
@@ -161,9 +198,8 @@ const PaymentSuccess = () => {
             <div className="space-y-3">
               <Button
                 onClick={() => {
-                  const userEmail = user?.email || localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).email : null;
-                  if (userEmail) {
-                    navigate(`/feed?email=${encodeURIComponent(userEmail)}`);
+                  if (user?.email) {
+                    navigate(`/feed?email=${encodeURIComponent(user.email)}`);
                   } else {
                     navigate('/');
                   }
