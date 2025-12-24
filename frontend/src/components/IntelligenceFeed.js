@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from './ui/button';
@@ -194,7 +194,7 @@ const IntelligenceFeed = () => {
 
     // Add AI Summary as main intelligence match with enhanced styling
     matches.push({
-      id: `quick-scan-summary-${Date.now()}`,
+      id: `quick-scan-summary-${quickScan.timestamp}`,
       term: quickScan.query,
       incident_title: `🤖 AI Threat Intelligence Analysis: ${quickScan.query}`,
       source: 'AI-Powered Analysis (Enhanced)',
@@ -214,7 +214,7 @@ const IntelligenceFeed = () => {
     if (!quickScan || !quickScan.discovered_links) return [];
 
     return quickScan.discovered_links.map((link, index) => ({
-      id: `discovered-link-${Date.now()}-${index}`,
+      id: `discovered-link-${quickScan.timestamp}-${index}`,
       term: quickScan.query,
       incident_title: link.title,
       source: link.source || new URL(link.url).hostname,
@@ -227,7 +227,7 @@ const IntelligenceFeed = () => {
     }));
   };
 
-  const getAllIntelligenceMatches = () => {
+  const allIntelligenceMatches = useMemo(() => {
     const regularMatches = userData?.intelligence_matches || [];
     
     // Only include Quick Scan results if they belong to the current user
@@ -239,10 +239,10 @@ const IntelligenceFeed = () => {
       : [];
     
     return [...quickScanMatches, ...discoveredLinks, ...regularMatches];
-  };
+  }, [userData, quickScanResult, userEmail]);
 
-  const getFilteredAndSortedMatches = () => {
-    let matches = getAllIntelligenceMatches();
+  const filteredAndSortedMatches = useMemo(() => {
+    let matches = [...allIntelligenceMatches];
     
     // Apply filters
     if (filterTerm) {
@@ -298,13 +298,12 @@ const IntelligenceFeed = () => {
     });
     
     return matches;
-  };
+  }, [allIntelligenceMatches, filterTerm, severityFilter, sourceFilter, sortBy, sortOrder]);
 
-  const getUniqueSourcesForFilter = () => {
-    const matches = getAllIntelligenceMatches();
-    const sources = [...new Set(matches.map(match => match.source))];
+  const uniqueSources = useMemo(() => {
+    const sources = [...new Set(allIntelligenceMatches.map(match => match.source))];
     return sources;
-  };
+  }, [allIntelligenceMatches]);
 
   const handleSubscribeToQuickScan = async () => {
     if (!quickScanResult || !session?.access_token) return;
@@ -805,7 +804,7 @@ const IntelligenceFeed = () => {
                   <option value="all">All Sources</option>
                   <option value="quick-scan">Quick Scan Results</option>
                   <option value="monitoring">Continuous Monitoring</option>
-                  {getUniqueSourcesForFilter().slice(0, 5).map(source => (
+                  {uniqueSources.slice(0, 5).map(source => (
                     <option key={source} value={source}>{source}</option>
                   ))}
                 </select>
@@ -863,9 +862,9 @@ const IntelligenceFeed = () => {
           </div>
 
           {/* Intelligence Matches Display */}
-          {getFilteredAndSortedMatches().length > 0 ? (
+          {filteredAndSortedMatches.length > 0 ? (
             <div className="space-y-4">
-              {getFilteredAndSortedMatches().map((match, index) => (
+              {filteredAndSortedMatches.map((match, index) => (
                 <Card key={`${match.id}-${index}`} className={`glass hover-glow ${
                   match.type === 'quick-scan-summary' ? 'border-orange-400/30' : 
                   match.type === 'discovered-link' ? 'border-blue-400/30' : 'border-gray-700'
