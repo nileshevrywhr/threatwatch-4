@@ -72,21 +72,6 @@ const IntelligenceFeed = () => {
       return;
     }
 
-    const userEmail = email || user?.email;
-    const authTokenToUse = token || session?.access_token;
-
-    if (!userEmail) {
-      setError('No user email available');
-      setLoading(false);
-      return;
-    }
-
-    if (!authTokenToUse) {
-      secureLog.error('No authentication token available');
-      setError('Authentication required. Please sign in again.');
-      return;
-    }
-
     try {
       setLoading(true);
       const response = await axios.get(`${API}/status`, {
