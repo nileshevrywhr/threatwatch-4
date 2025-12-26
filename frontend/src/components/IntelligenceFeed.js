@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Badge } from './ui/badge';
 import { Alert, AlertDescription } from './ui/alert';
 import { Input } from './ui/input';
-import { Shield, Plus, RefreshCw, Clock, ExternalLink, AlertTriangle, Zap, CheckCircle, Search, Filter, SortAsc, SortDesc, LogIn, User, Download, FileText } from 'lucide-react';
+import { Shield, Plus, RefreshCw, Clock, ExternalLink, AlertTriangle, Zap, CheckCircle, Search, Filter, SortAsc, SortDesc, FileText, LogIn, User, Download } from 'lucide-react';
 import AuthModal from './AuthModal';
 import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
@@ -16,6 +16,191 @@ import { useAuth } from './AuthProvider';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+const SEVERITY_CLASSES = {
+  'Critical': 'severity-critical',
+  'High': 'severity-high',
+  'Medium': 'severity-medium',
+  'Low': 'severity-low'
+};
+
+const formatDate = (dateString) => {
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (e) {
+    return 'Invalid Date';
+  }
+};
+
+const SeverityBadge = ({ severity }) => {
+  return (
+    <Badge className={`${SEVERITY_CLASSES[severity]} text-xs font-semibold px-2 py-1`}>
+      {severity}
+    </Badge>
+  );
+};
+
+const MatchItem = React.memo(({ match }) => {
+  return (
+    <Card className={`glass hover-glow ${
+      match.type === 'quick-scan-summary' ? 'border-orange-400/30' :
+      match.type === 'discovered-link' ? 'border-blue-400/30' : 'border-gray-700'
+    }`}>
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center space-x-2 mb-2">
+              <Badge variant="outline" className={
+                match.type === 'quick-scan-summary' ? 'border-orange-400 text-orange-400' :
+                match.type === 'discovered-link' ? 'border-blue-400 text-blue-400' :
+                'border-cyan-400 text-cyan-400'
+              }>
+                {match.term}
+              </Badge>
+              <SeverityBadge severity={match.severity} />
+              {match.type === 'quick-scan-summary' && (
+                <Badge className="bg-orange-500/20 text-orange-300 border-orange-400">
+                  <Zap className="h-3 w-3 mr-1" />
+                  AI Analysis
+                </Badge>
+              )}
+              {match.type === 'discovered-link' && (
+                <Badge className="bg-blue-500/20 text-blue-300 border-blue-400">
+                  <ExternalLink className="h-3 w-3 mr-1" />
+                  {match.isRealNews ? 'Live News Article' : 'Discovered Link'}
+                </Badge>
+              )}
+            </div>
+            <CardTitle className="text-white text-lg">
+              {match.url ? (
+                <a
+                  href={match.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-cyan-400 transition-colors duration-200"
+                >
+                  {match.incident_title}
+                </a>
+              ) : (
+                match.incident_title
+              )}
+            </CardTitle>
+            <CardDescription className="text-gray-400 mt-2">
+              <div className="flex items-center justify-between text-sm">
+                <span>Source: {match.source}</span>
+                <span>{formatDate(match.date)}</span>
+              </div>
+              {match.snippet && (
+                <div className="mt-2 text-gray-300 text-sm">
+                  {match.snippet}
+                </div>
+              )}
+            </CardDescription>
+
+            {/* Show enhanced summary for AI analysis with metadata */}
+            {match.type === 'quick-scan-summary' && match.summary && (
+              <div className="mt-4 space-y-4">
+                {/* Search metadata display */}
+                {match.search_metadata && (
+                  <div className="bg-gradient-to-r from-orange-900/30 to-orange-800/30 rounded-lg p-3 border border-orange-500/30">
+                    <div className="flex items-center space-x-4 text-sm text-orange-300">
+                      <div className="flex items-center space-x-1">
+                        <span>📊</span>
+                        <span>{match.search_metadata.articles_analyzed || 0} articles analyzed</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <span>🔍</span>
+                        <span>{match.search_metadata.total_results || 0} total results found</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <span>⚡</span>
+                        <span>Real Google Search</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* AI Summary */}
+                <div className="bg-gray-800/50 rounded-lg p-4 border border-orange-400/30">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <span className="text-orange-400">🤖</span>
+                    <span className="text-orange-300 font-semibold text-sm">AI-Generated Threat Analysis</span>
+                  </div>
+                  <pre className="text-gray-300 text-sm whitespace-pre-wrap font-sans leading-relaxed">
+                    {match.summary}
+                  </pre>
+                </div>
+              </div>
+            )}
+          </div>
+          {match.url ? (
+            <a
+              href={match.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-4 flex-shrink-0"
+              aria-label="Open external link"
+            >
+              <ExternalLink className="h-5 w-5 text-gray-400 hover:text-cyan-400 transition-colors" />
+            </a>
+          ) : match.type === 'quick-scan-summary' ? (
+            <Zap className="h-5 w-5 text-orange-400 ml-4 flex-shrink-0" />
+          ) : (
+            <ExternalLink className="h-5 w-5 text-gray-400 ml-4 flex-shrink-0" />
+          )}
+        </div>
+      </CardHeader>
+    </Card>
+  );
+});
+
+const convertQuickScanToMatches = (quickScan) => {
+  if (!quickScan) return [];
+
+  const matches = [];
+
+  // Add AI Summary as main intelligence match with enhanced styling
+  matches.push({
+    id: `quick-scan-summary-${quickScan.timestamp}`,
+    term: quickScan.query,
+    incident_title: `🤖 AI Threat Intelligence Analysis: ${quickScan.query}`,
+    source: 'AI-Powered Analysis (Enhanced)',
+    date: quickScan.timestamp,
+    severity: 'High',
+    type: 'quick-scan-summary',
+    summary: quickScan.summary,
+    url: null,
+    search_metadata: quickScan.search_metadata || {},
+    scan_type: quickScan.scan_type || 'enhanced'
+  });
+
+  return matches;
+};
+
+const convertDiscoveredLinksToMatches = (quickScan) => {
+  if (!quickScan || !quickScan.discovered_links) return [];
+
+  return quickScan.discovered_links.map((link, index) => ({
+    id: `discovered-link-${quickScan.timestamp}-${index}`,
+    term: quickScan.query,
+    incident_title: link.title,
+    source: link.source || new URL(link.url).hostname,
+    date: link.date,
+    severity: link.severity,
+    type: 'discovered-link',
+    url: link.url,
+    snippet: link.snippet,
+    isRealNews: true // Flag to indicate these are real Google search results
+  }));
+};
 
 const IntelligenceFeed = () => {
   const analytics = useAnalytics();
@@ -145,85 +330,23 @@ const IntelligenceFeed = () => {
     }
   }, [user, session, hasQuickScan]);
 
-  const getSeverityBadge = (severity) => {
-    const severityClasses = {
-      'Critical': 'severity-critical',
-      'High': 'severity-high', 
-      'Medium': 'severity-medium',
-      'Low': 'severity-low'
-    };
-    
-    return (
-      <Badge className={`${severityClasses[severity]} text-xs font-semibold px-2 py-1`}>
-        {severity}
-      </Badge>
-    );
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const convertQuickScanToMatches = (quickScan) => {
-    if (!quickScan) return [];
-
-    const matches = [];
-
-    // Add AI Summary as main intelligence match with enhanced styling
-    matches.push({
-      id: `quick-scan-summary-${quickScan.timestamp}`,
-      term: quickScan.query,
-      incident_title: `🤖 AI Threat Intelligence Analysis: ${quickScan.query}`,
-      source: 'AI-Powered Analysis (Enhanced)',
-      date: quickScan.timestamp,
-      severity: 'High',
-      type: 'quick-scan-summary',
-      summary: quickScan.summary,
-      url: null,
-      search_metadata: quickScan.search_metadata || {},
-      scan_type: quickScan.scan_type || 'enhanced'
-    });
-
-    return matches;
-  };
-
-  const convertDiscoveredLinksToMatches = (quickScan) => {
-    if (!quickScan || !quickScan.discovered_links) return [];
-
-    return quickScan.discovered_links.map((link, index) => ({
-      id: `discovered-link-${quickScan.timestamp}-${index}`,
-      term: quickScan.query,
-      incident_title: link.title,
-      source: link.source || new URL(link.url).hostname,
-      date: link.date,
-      severity: link.severity,
-      type: 'discovered-link',
-      url: link.url,
-      snippet: link.snippet,
-      isRealNews: true // Flag to indicate these are real Google search results
-    }));
-  };
+  const quickScanMatches = useMemo(() => {
+    return convertQuickScanToMatches(quickScanResult);
+  }, [quickScanResult]);
 
   const allIntelligenceMatches = useMemo(() => {
     const regularMatches = userData?.intelligence_matches || [];
     
     // Only include Quick Scan results if they belong to the current user
-    const quickScanMatches = (quickScanResult && quickScanResult.userEmail === userEmail) 
-      ? convertQuickScanToMatches(quickScanResult) 
+    const quickScanFromParam = (quickScanResult && quickScanResult.userEmail === userEmail)
+      ? quickScanMatches
       : [];
     const discoveredLinks = (quickScanResult && quickScanResult.userEmail === userEmail) 
       ? convertDiscoveredLinksToMatches(quickScanResult) 
       : [];
     
-    return [...quickScanMatches, ...discoveredLinks, ...regularMatches];
-  }, [userData, quickScanResult, userEmail]);
+    return [...quickScanFromParam, ...discoveredLinks, ...regularMatches];
+  }, [userData, quickScanResult, userEmail, quickScanMatches]);
 
   const getFilteredAndSortedMatches = useMemo(() => {
     let matches = [...allIntelligenceMatches];
@@ -630,75 +753,8 @@ const IntelligenceFeed = () => {
             </div>
             
             <div className="space-y-4">
-              {convertQuickScanToMatches(quickScanResult).map((match, index) => (
-                <Card key={`${match.id}-${index}`} className={`glass ${match.type === 'quick-scan-summary' ? 'border-orange-400/30' : 'border-yellow-400/30'} hover-glow`}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Badge variant="outline" className="border-orange-400 text-orange-400">
-                            {match.term}
-                          </Badge>
-                          {getSeverityBadge(match.severity)}
-                          {match.type === 'quick-scan-summary' && (
-                            <Badge className="bg-orange-500/20 text-orange-300 border-orange-400">
-                              <Zap className="h-3 w-3 mr-1" />
-                              AI Analysis
-                            </Badge>
-                          )}
-                        </div>
-                        <CardTitle className="text-white text-lg">{match.incident_title}</CardTitle>
-                        <CardDescription className="text-gray-400 mt-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span>Source: {match.source}</span>
-                            <span>{formatDate(match.date)}</span>
-                          </div>
-                        </CardDescription>
-                        
-                        {/* Show enhanced summary for AI analysis with metadata */}
-                        {match.type === 'quick-scan-summary' && match.summary && (
-                          <div className="mt-4 space-y-4">
-                            {/* Search metadata display */}
-                            {match.search_metadata && (
-                              <div className="bg-gradient-to-r from-orange-900/30 to-orange-800/30 rounded-lg p-3 border border-orange-500/30">
-                                <div className="flex items-center space-x-4 text-sm text-orange-300">
-                                  <div className="flex items-center space-x-1">
-                                    <span>📊</span>
-                                    <span>{match.search_metadata.articles_analyzed || 0} articles analyzed</span>
-                                  </div>
-                                  <div className="flex items-center space-x-1">
-                                    <span>🔍</span>
-                                    <span>{match.search_metadata.total_results || 0} total results found</span>
-                                  </div>
-                                  <div className="flex items-center space-x-1">
-                                    <span>⚡</span>
-                                    <span>Real Google Search</span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* AI Summary */}
-                            <div className="bg-gray-800/50 rounded-lg p-4 border border-orange-400/30">
-                              <div className="flex items-center space-x-2 mb-3">
-                                <span className="text-orange-400">🤖</span>
-                                <span className="text-orange-300 font-semibold text-sm">AI-Generated Threat Analysis</span>
-                              </div>
-                              <pre className="text-gray-300 text-sm whitespace-pre-wrap font-sans leading-relaxed">
-                                {match.summary}
-                              </pre>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      {match.type === 'quick-scan-summary' ? (
-                        <Zap className="h-5 w-5 text-orange-400 ml-4 flex-shrink-0" />
-                      ) : (
-                        <ExternalLink className="h-5 w-5 text-gray-400 ml-4 flex-shrink-0" />
-                      )}
-                    </div>
-                  </CardHeader>
-                </Card>
+              {quickScanMatches.map((match, index) => (
+                <MatchItem key={`${match.id}-${index}`} match={match} />
               ))}
             </div>
             
@@ -841,115 +897,7 @@ const IntelligenceFeed = () => {
           {getFilteredAndSortedMatches().length > 0 ? (
             <div className="space-y-4">
               {getFilteredAndSortedMatches().map((match, index) => (
-                <Card key={`${match.id}-${index}`} className={`glass hover-glow ${
-                  match.type === 'quick-scan-summary' ? 'border-orange-400/30' : 
-                  match.type === 'discovered-link' ? 'border-blue-400/30' : 'border-gray-700'
-                }`}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Badge variant="outline" className={
-                            match.type === 'quick-scan-summary' ? 'border-orange-400 text-orange-400' :
-                            match.type === 'discovered-link' ? 'border-blue-400 text-blue-400' :
-                            'border-cyan-400 text-cyan-400'
-                          }>
-                            {match.term}
-                          </Badge>
-                          {getSeverityBadge(match.severity)}
-                          {match.type === 'quick-scan-summary' && (
-                            <Badge className="bg-orange-500/20 text-orange-300 border-orange-400">
-                              <Zap className="h-3 w-3 mr-1" />
-                              AI Analysis
-                            </Badge>
-                          )}
-                          {match.type === 'discovered-link' && (
-                            <Badge className="bg-blue-500/20 text-blue-300 border-blue-400">
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              {match.isRealNews ? 'Live News Article' : 'Discovered Link'}
-                            </Badge>
-                          )}
-                        </div>
-                        <CardTitle className="text-white text-lg">
-                          {match.url ? (
-                            <a 
-                              href={match.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="hover:text-cyan-400 transition-colors duration-200"
-                            >
-                              {match.incident_title}
-                            </a>
-                          ) : (
-                            match.incident_title
-                          )}
-                        </CardTitle>
-                        <CardDescription className="text-gray-400 mt-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span>Source: {match.source}</span>
-                            <span>{formatDate(match.date)}</span>
-                          </div>
-                          {match.snippet && (
-                            <div className="mt-2 text-gray-300 text-sm">
-                              {match.snippet}
-                            </div>
-                          )}
-                        </CardDescription>
-                        
-                        {/* Show enhanced summary for AI analysis with metadata */}
-                        {match.type === 'quick-scan-summary' && match.summary && (
-                          <div className="mt-4 space-y-4">
-                            {/* Search metadata display */}
-                            {match.search_metadata && (
-                              <div className="bg-gradient-to-r from-orange-900/30 to-orange-800/30 rounded-lg p-3 border border-orange-500/30">
-                                <div className="flex items-center space-x-4 text-sm text-orange-300">
-                                  <div className="flex items-center space-x-1">
-                                    <span>📊</span>
-                                    <span>{match.search_metadata.articles_analyzed || 0} articles analyzed</span>
-                                  </div>
-                                  <div className="flex items-center space-x-1">
-                                    <span>🔍</span>
-                                    <span>{match.search_metadata.total_results || 0} total results found</span>
-                                  </div>
-                                  <div className="flex items-center space-x-1">
-                                    <span>⚡</span>
-                                    <span>Real Google Search</span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* AI Summary */}
-                            <div className="bg-gray-800/50 rounded-lg p-4 border border-orange-400/30">
-                              <div className="flex items-center space-x-2 mb-3">
-                                <span className="text-orange-400">🤖</span>
-                                <span className="text-orange-300 font-semibold text-sm">AI-Generated Threat Analysis</span>
-                              </div>
-                              <pre className="text-gray-300 text-sm whitespace-pre-wrap font-sans leading-relaxed">
-                                {match.summary}
-                              </pre>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      {match.url ? (
-                        <a 
-                          href={match.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="ml-4 flex-shrink-0"
-                          aria-label="Open external link"
-                        >
-                          <ExternalLink className="h-5 w-5 text-gray-400 hover:text-cyan-400 transition-colors" />
-                        </a>
-                      ) : match.type === 'quick-scan-summary' ? (
-                        <Zap className="h-5 w-5 text-orange-400 ml-4 flex-shrink-0" />
-                      ) : (
-                        <ExternalLink className="h-5 w-5 text-gray-400 ml-4 flex-shrink-0" />
-                      )}
-                    </div>
-                  </CardHeader>
-                </Card>
+                <MatchItem key={`${match.id}-${index}`} match={match} />
               ))}
             </div>
           ) : (
