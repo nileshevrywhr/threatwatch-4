@@ -13,6 +13,7 @@ import UserMenu from './UserMenu';
 import { useAnalytics } from '../services/analytics';
 import { secureLog } from '../utils/secureLogger';
 import { useAuth } from './AuthProvider';
+import { getFeed } from '../lib/api';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -56,19 +57,13 @@ const IntelligenceFeed = () => {
   };
 
   const fetchUserData = async (email, token) => {
-    // Use authenticated user's email and token
+    // Note: getFeed uses internal session management, so params are not used for the call itself
+    // but kept for compatibility with existing useEffect logic if needed.
     const userEmail = email || user?.email;
-    const authTokenToUse = token || session?.access_token;
 
     if (!userEmail) {
       setError('No user email available');
       setLoading(false);
-      return;
-    }
-
-    if (!authTokenToUse) {
-      secureLog.error('No authentication token available');
-      setError('Authentication required. Please sign in again.');
       return;
     }
 
@@ -79,26 +74,20 @@ const IntelligenceFeed = () => {
     try {
       setLoading(true);
       console.log('Fetching user data for:', userEmail);
-      const response = await axios.get(`${API}/status`, {
-        params: { email: userEmail },
-        headers: {
-          'Authorization': `Bearer ${authTokenToUse}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const data = await getFeed();
       console.log('User data fetched successfully');
-      setUserData(response.data);
+      setUserData(data);
       setError('');
       setLastRefresh(new Date());
     } catch (error) {
       console.error('Fetch user data error:', error);
-      if (error.response?.status === 401) {
+      if (error.status === 401 || error.name === 'UnauthorizedError') {
         // Token expired or invalid
         setError('Session expired. Please sign in again.');
         handleLogout();
         return;
       }
-      const errorMessage = error.response?.data?.detail || 'Failed to fetch intelligence data';
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to fetch intelligence data';
       setError(errorMessage);
     } finally {
       setLoading(false);
