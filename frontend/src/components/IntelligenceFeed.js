@@ -72,8 +72,13 @@ const IntelligenceFeed = () => {
       return;
     }
 
+    if (!BACKEND_URL) {
+      secureLog.warn('BACKEND_URL is not defined in environment variables');
+    }
+
     try {
       setLoading(true);
+      console.log('Fetching user data for:', userEmail);
       const response = await axios.get(`${API}/status`, {
         params: { email: userEmail },
         headers: {
@@ -81,10 +86,12 @@ const IntelligenceFeed = () => {
           'Content-Type': 'application/json'
         }
       });
+      console.log('User data fetched successfully');
       setUserData(response.data);
       setError('');
       setLastRefresh(new Date());
     } catch (error) {
+      console.error('Fetch user data error:', error);
       if (error.response?.status === 401) {
         // Token expired or invalid
         setError('Session expired. Please sign in again.');
@@ -100,6 +107,7 @@ const IntelligenceFeed = () => {
 
   // Load user data when user is authenticated
   useEffect(() => {
+    console.log('IntelligenceFeed mounted. User:', !!user, 'Session:', !!session);
     if (user && session) {
       fetchUserData(user.email, session.access_token);
 
@@ -465,7 +473,7 @@ const IntelligenceFeed = () => {
     }
   };
 
-  if (authLoading || (loading && !user)) {
+  if (authLoading || (loading && !userData)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
         <div className="text-center">

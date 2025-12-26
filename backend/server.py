@@ -913,11 +913,25 @@ api_router.include_router(auth_router)
 api_router.include_router(payment_router)
 app.include_router(api_router)
 
-# Add CORS middleware
+# Configure CORS
+origins = []
+if os.environ.get('CORS_ORIGINS'):
+    origins = os.environ.get('CORS_ORIGINS').split(',')
+
+# Add development and local origins
+origins.extend([
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
+])
+
+# Add CORS middleware with regex for Vercel preview deployments
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=origins,
+    allow_origin_regex=r"https://.*\.vercel\.app|https://threatwatch.*",
     allow_methods=["*"],
     allow_headers=["*"],
 )
