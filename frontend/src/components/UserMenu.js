@@ -37,7 +37,11 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="flex items-center space-x-2 text-gray-300 hover:text-white hover:bg-gray-800">
+      <Button
+        variant="ghost"
+        className="flex items-center space-x-2 text-gray-300 hover:text-white hover:bg-gray-800"
+        aria-label={`User menu for ${user.full_name}`}
+      >
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
               <User className="h-4 w-4 text-white" />
