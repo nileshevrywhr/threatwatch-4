@@ -7,6 +7,7 @@ import { Badge } from './ui/badge';
 import { Alert, AlertDescription } from './ui/alert';
 import { Input } from './ui/input';
 import { Shield, Plus, RefreshCw, Clock, ExternalLink, AlertTriangle, Zap, CheckCircle, Search, Filter, SortAsc, SortDesc, LogIn, User, Download, FileText } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import AuthModal from './AuthModal';
 import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
@@ -726,15 +727,22 @@ const IntelligenceFeed = () => {
                 All Intelligence Matches ({getFilteredAndSortedMatches().length})
             </h2>
             <div className="flex items-center space-x-2">
-              <Button
-                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                variant="outline"
-                size="sm"
-                className="border-gray-600 text-gray-300 hover:bg-gray-800"
-                aria-label={sortOrder === 'asc' ? "Sort ascending" : "Sort descending"}
-              >
-                {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    variant="outline"
+                    size="sm"
+                    className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                    aria-label={sortOrder === 'asc' ? "Sort ascending" : "Sort descending"}
+                  >
+                    {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{sortOrder === 'asc' ? "Sort Ascending" : "Sort Descending"}</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
 
@@ -933,15 +941,22 @@ const IntelligenceFeed = () => {
                         )}
                       </div>
                       {match.url ? (
-                        <a 
-                          href={match.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="ml-4 flex-shrink-0"
-                          aria-label="Open external link"
-                        >
-                          <ExternalLink className="h-5 w-5 text-gray-400 hover:text-cyan-400 transition-colors" />
-                        </a>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <a
+                              href={match.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ml-4 flex-shrink-0"
+                              aria-label="Open external link"
+                            >
+                              <ExternalLink className="h-5 w-5 text-gray-400 hover:text-cyan-400 transition-colors" />
+                            </a>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Open external link</p>
+                          </TooltipContent>
+                        </Tooltip>
                       ) : match.type === 'quick-scan-summary' ? (
                         <Zap className="h-5 w-5 text-orange-400 ml-4 flex-shrink-0" />
                       ) : (
@@ -956,18 +971,40 @@ const IntelligenceFeed = () => {
             <Card className="glass border-gray-700">
               <CardContent className="p-6 text-center">
                 <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-400 mb-2">
+                <h3 className="text-lg font-medium text-white mb-2">
                   {filterTerm || severityFilter !== 'all' || sourceFilter !== 'all'
-                    ? 'No intelligence matches found for the current filters.'
-                    : 'No intelligence matches found yet.'
+                    ? 'No matches found'
+                    : 'No intelligence found yet'
                   }
-                </p>
-                <p className="text-sm text-gray-500">
+                </h3>
+                <p className="text-gray-400 mb-6">
                   {filterTerm || severityFilter !== 'all' || sourceFilter !== 'all'
-                    ? 'Try adjusting your filters or perform a Quick Scan to discover new threats.'
+                    ? "We couldn't find any threats matching your current filters."
                     : "Perform a Quick Scan or set up monitoring to start discovering threats."
                   }
                 </p>
+
+                {filterTerm || severityFilter !== 'all' || sourceFilter !== 'all' ? (
+                   <Button
+                     variant="outline"
+                     onClick={() => {
+                        setFilterTerm('');
+                        setSeverityFilter('all');
+                        setSourceFilter('all');
+                     }}
+                     className="border-gray-500 text-gray-300 hover:bg-gray-800"
+                   >
+                     Clear all filters
+                   </Button>
+                ) : (
+                   <Button
+                    onClick={() => navigate('/')}
+                    className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Start New Scan
+                  </Button>
+                )}
               </CardContent>
             </Card>
           )}
