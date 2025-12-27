@@ -6,6 +6,16 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Download, Shield, AlertTriangle, FileText, Loader2 } from 'lucide-react';
 
+const getSeverityColor = (severity) => {
+  switch (severity?.toLowerCase()) {
+    case 'critical': return 'bg-red-500/10 text-red-500 border-red-500/20';
+    case 'high': return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
+    case 'medium': return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
+    case 'low': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+    default: return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+  }
+};
+
 const IntelligenceFeed = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,16 +39,6 @@ const IntelligenceFeed = () => {
 
     fetchFeed();
   }, []);
-
-  const getSeverityColor = (severity) => {
-    switch (severity?.toLowerCase()) {
-      case 'critical': return 'bg-red-500/10 text-red-500 border-red-500/20';
-      case 'high': return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
-      case 'medium': return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
-      case 'low': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-      default: return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
-    }
-  };
 
   if (loading) {
     return (
