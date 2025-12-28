@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from './ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { CheckCircle, AlertTriangle, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { CheckCircle, AlertTriangle, User, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAnalytics } from '../services/analytics';
 import { supabase } from '../lib/supabaseClient';
 
@@ -231,7 +231,14 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                 disabled={loading}
                 className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-3"
               >
-                {loading ? 'Signing In...' : 'Sign In'}
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing In...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
               </Button>
             </form>
           </TabsContent>
@@ -344,7 +351,14 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                 disabled={loading}
                 className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-semibold py-3"
               >
-                {loading ? 'Creating Account...' : 'Create Account'}
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating Account...
+                  </>
+                ) : (
+                  'Create Account'
+                )}
               </Button>
             </form>
           </TabsContent>
