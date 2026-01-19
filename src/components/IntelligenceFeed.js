@@ -18,7 +18,7 @@ const IntelligenceFeed = () => {
         setLoading(true);
         const data = await getFeed();
         // API returns { reports: [...] }
-        setReports(data.reports || []);
+        setReports(Array.isArray(data) ? data : (data.reports || []));
       } catch (err) {
         console.error('Failed to fetch feed:', err);
         setError('Failed to load reports. Please try again.');
