@@ -6,6 +6,13 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { Target, ArrowRight, CheckCircle, Zap, Eye, Bell, LogIn } from 'lucide-react';
 import Header from './Header';
 import AuthModal from './AuthModal';
@@ -22,7 +29,8 @@ const LandingPage = () => {
   const [formData, setFormData] = useState({
     term: '',
     email: '',
-    phone: ''
+    phone: '',
+    frequency: 'daily'
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -66,9 +74,9 @@ const LandingPage = () => {
     setMessage('');
 
     try {
-      const response = await axios.post(`${API}/subscribe`, {
+      const response = await axios.post(`${API}/monitors`, {
         term: formData.term,
-        email: user.email
+        frequency: formData.frequency
       }, {
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,
@@ -76,7 +84,7 @@ const LandingPage = () => {
         }
       });
 
-      setMessage(`Now monitoring attacks related to "${formData.term}". You'll receive alerts via email.`);
+      setMessage(`Now monitoring attacks related to "${formData.term}" (${formData.frequency}). You'll receive alerts via email.`);
       setMessageType('success');
 
       // Redirect to intelligence feed after 2 seconds
@@ -307,6 +315,25 @@ const LandingPage = () => {
                       className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
                       required
                     />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="frequency" className="text-gray-300">
+                      Monitoring Frequency
+                    </Label>
+                    <Select
+                      value={formData.frequency}
+                      onValueChange={(value) => setFormData({ ...formData, frequency: value })}
+                    >
+                      <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-white">
+                        <SelectValue placeholder="Select frequency" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                        <SelectItem value="daily">Daily</SelectItem>
+                        <SelectItem value="weekly">Weekly</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {user && (
