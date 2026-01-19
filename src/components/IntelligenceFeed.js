@@ -4,7 +4,8 @@ import { getFeed, downloadReport } from '../lib/api';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { Download, Shield, AlertTriangle, FileText, Loader2 } from 'lucide-react';
+import { Download, AlertTriangle, FileText, Loader2 } from 'lucide-react';
+import Header from './Header';
 
 const IntelligenceFeed = () => {
   const [reports, setReports] = useState([]);
@@ -59,12 +60,11 @@ const IntelligenceFeed = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <header className="flex items-center space-x-3 mb-8">
-          <Shield className="h-8 w-8 text-cyan-500" />
-          <h1 className="text-2xl font-bold text-white">Intelligence Feed</h1>
-        </header>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
+      <Header />
+
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
+        <h1 className="text-2xl font-bold text-white">Intelligence Feed</h1>
 
         {reports.length === 0 ? (
           <Card className="bg-slate-900 border-slate-800">

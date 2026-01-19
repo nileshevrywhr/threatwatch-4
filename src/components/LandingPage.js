@@ -6,10 +6,9 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
-import { Shield, Eye, Bell, Target, ArrowRight, CheckCircle, Zap, LogIn, UserPlus } from 'lucide-react';
+import { Target, ArrowRight, CheckCircle, Zap, Eye, Bell, LogIn } from 'lucide-react';
+import Header from './Header';
 import AuthModal from './AuthModal';
-import SubscriptionPlans from './SubscriptionPlans';
-import UserMenu from './UserMenu';
 import { useAnalytics } from '../services/analytics';
 import { useAuth } from './AuthProvider';
 
@@ -18,7 +17,7 @@ const API = `${BACKEND_URL}/api`;
 
 const LandingPage = () => {
   const analytics = useAnalytics();
-  const { user, session, signOut } = useAuth(); // Use AuthProvider context
+  const { user, session } = useAuth();
 
   const [formData, setFormData] = useState({
     term: '',
@@ -36,25 +35,9 @@ const LandingPage = () => {
   });
   const [feedEmail, setFeedEmail] = useState('');
   const [feedLoading, setFeedLoading] = useState(false);
-  
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showSubscriptionPlans, setShowSubscriptionPlans] = useState(false);
-  
+
   const navigate = useNavigate();
-
-  const handleAuthSuccess = () => {
-    // AuthProvider updates the user state automatically.
-    // Navigate to feed on success as requested.
-    setShowAuthModal(false);
-    navigate('/feed');
-  };
-
-  const handleLogout = async () => {
-    await signOut();
-    // Clear any session storage
-    const quickScanKeys = Object.keys(sessionStorage).filter(key => key.startsWith('quickScanResult_'));
-    quickScanKeys.forEach(key => sessionStorage.removeItem(key));
-  };
 
   const handleInputChange = (e) => {
     setFormData({
@@ -95,7 +78,7 @@ const LandingPage = () => {
 
       setMessage(`Now monitoring attacks related to "${formData.term}". You'll receive alerts via email.`);
       setMessageType('success');
-      
+
       // Redirect to intelligence feed after 2 seconds
       setTimeout(() => {
         navigate(`/feed?email=${encodeURIComponent(user.email)}`);
@@ -122,7 +105,7 @@ const LandingPage = () => {
       setMessage('Please sign in to perform Quick Scans');
       setMessageType('error');
       setShowAuthModal(true);
-      
+
       // Track authentication barrier for drop-off analysis
       analytics.trackFunnelStep('scan_to_download', 'auth_required', false);
       return;
@@ -130,11 +113,11 @@ const LandingPage = () => {
 
     // Track Quick Scan initiation - Key Metric #2: Searches per user
     const scanStartTime = Date.now();
-    analytics.trackQuickScanUI('initiated', { 
+    analytics.trackQuickScanUI('initiated', {
       query: formData.term,
-      user_authenticated: true 
+      user_authenticated: true
     });
-    
+
     setQuickScanLoading(true);
     setMessage('');
 
@@ -183,7 +166,7 @@ const LandingPage = () => {
 
       // Track successful scan completion
       const scanDuration = (Date.now() - scanStartTime) / 1000;
-      analytics.trackQuickScanUI('completed', { 
+      analytics.trackQuickScanUI('completed', {
         query: formData.term,
         scan_duration: scanDuration,
         articles_found: response.data.discovered_links?.length || 0,
@@ -209,9 +192,9 @@ const LandingPage = () => {
     } catch (error) {
       const errorMessage = error.response?.data?.detail || 'Quick scan failed. Please try again.';
       const scanDuration = (Date.now() - scanStartTime) / 1000;
-      
+
       // Track scan failure analytics
-      analytics.trackQuickScanUI('failed', { 
+      analytics.trackQuickScanUI('failed', {
         query: formData.term,
         error_message: errorMessage,
         scan_duration: scanDuration,
@@ -263,55 +246,7 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
-      {/* Header */}
-      <header className="py-6 px-4 border-b border-gray-800">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Shield className="h-8 w-8 text-cyan-400" />
-            <span className="text-2xl font-bold text-white font-mono">ThreatWatch</span>
-          </div>
-          
-          <div className="flex items-center space-x-6">
-            <div className="hidden md:flex items-center space-x-6 text-gray-300">
-              <div className="flex items-center space-x-2">
-                <Eye className="h-4 w-4" />
-                <span className="text-sm">Real-time Monitoring</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Bell className="h-4 w-4" />
-                <span className="text-sm">Instant Alerts</span>
-              </div>
-            </div>
-            
-            {/* Authentication Section */}
-            {user ? (
-              <UserMenu 
-                user={user} 
-                onLogout={handleLogout}
-                onShowSubscriptionPlans={() => setShowSubscriptionPlans(true)}
-              />
-            ) : (
-              <div className="flex items-center space-x-3">
-                <Button
-                  onClick={() => setShowAuthModal(true)}
-                  variant="ghost"
-                  className="text-gray-300 hover:text-white hover:bg-gray-800"
-                >
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Sign In
-                </Button>
-                <Button
-                  onClick={() => setShowAuthModal(true)}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
-                >
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Get Started
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <Header onAuthSuccess={() => navigate('/feed')} />
 
       {/* Hero Section */}
       <section className="py-20 px-4">
@@ -322,7 +257,7 @@ const LandingPage = () => {
               <span className="block gradient-text">Industry & Products</span>
             </h1>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-              We monitor security incidents, reports, and attacks happening worldwide. 
+              We monitor security incidents, reports, and attacks happening worldwide.
               Subscribe to alerts on the terms that matter to you.
             </p>
           </div>
@@ -348,7 +283,7 @@ const LandingPage = () => {
 
           {/* Action Cards */}
           <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
-            
+
             {/* Start New Monitoring */}
             <Card className="glass border-gray-700">
               <CardHeader className="text-center">
@@ -462,13 +397,13 @@ const LandingPage = () => {
                       {quickScanLoading ? (
                         <div className="w-full">
                           {/* Progress bar background */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-orange-600/20" 
-                               style={{ 
-                                 width: `${quickScanProgress.progress}%`,
-                                 transition: 'width 0.8s ease-in-out'
-                               }}>
+                          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-orange-600/20"
+                            style={{
+                              width: `${quickScanProgress.progress}%`,
+                              transition: 'width 0.8s ease-in-out'
+                            }}>
                           </div>
-                          
+
                           {/* Progress content */}
                           <div className="relative z-10 flex flex-col items-center space-y-1">
                             <div className="flex items-center space-x-2">
@@ -476,7 +411,7 @@ const LandingPage = () => {
                               <span className="text-sm">{quickScanProgress.message}</span>
                             </div>
                             <div className="w-full bg-gray-700 rounded-full h-1.5 mt-2">
-                              <div 
+                              <div
                                 className="bg-gradient-to-r from-orange-400 to-orange-500 h-1.5 rounded-full transition-all duration-800 ease-out"
                                 style={{ width: `${quickScanProgress.progress}%` }}
                               ></div>
@@ -517,7 +452,7 @@ const LandingPage = () => {
                         <span className="text-xs capitalize text-cyan-400 font-semibold">{user.user_metadata?.subscription_tier || 'free'}</span>
                       </div>
                     </div>
-                    
+
                     <Button
                       onClick={() => navigate(`/feed?email=${encodeURIComponent(user.email)}`)}
                       className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-semibold py-3 transition-all duration-300"
@@ -549,19 +484,14 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Authentication Modal */}
-      <AuthModal 
+      {/* Authentication Modal for page content triggers */}
+      <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        onAuthSuccess={handleAuthSuccess}
-      />
-
-      {/* Subscription Plans Modal */}
-      <SubscriptionPlans
-        isOpen={showSubscriptionPlans}
-        onClose={() => setShowSubscriptionPlans(false)}
-        currentUser={user}
-        authToken={session?.access_token}
+        onAuthSuccess={() => {
+          setShowAuthModal(false);
+          navigate('/feed');
+        }}
       />
     </div>
   );
