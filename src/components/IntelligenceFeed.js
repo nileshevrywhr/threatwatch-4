@@ -80,7 +80,7 @@ const IntelligenceFeed = () => {
         ) : (
           <div className="grid gap-4">
             {reports.map((report) => (
-              <Card key={report.id} className="bg-slate-900 border-slate-800">
+              <Card key={report.report_id} className="bg-slate-900 border-slate-800">
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
@@ -117,7 +117,7 @@ const IntelligenceFeed = () => {
                     variant="outline"
                     size="sm"
                     className="w-full sm:w-auto border-slate-700 text-slate-300 hover:bg-slate-800"
-                    onClick={() => downloadReport(report.id)}
+                    onClick={() => downloadReport(report.report_id)}
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Download Report

@@ -47,10 +47,43 @@ export const getFeed = () => {
   return apiClient('/api/feed');
 };
 
-export const downloadReport = (reportId) => {
-  // Redirect-based download as requested.
-  // Note: This does not attach the Bearer token header, so the endpoint
-  // must rely on cookies or be accessible without the header for this flow.
-  const url = `${API_BASE_URL}/api/reports/${reportId}/download`;
-  window.location.href = url;
+export const downloadReport = async (reportId) => {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session?.access_token) {
+    throw new Error('No active session');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/reports/${reportId}/download`, {
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      redirect: 'follow', // Follow the redirect to the PDF URL
+    });
+
+    if (response.status === 401) {
+      throw new Error('Session expired or invalid');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to download report');
+    }
+
+    // Get the blob from the response (will be the PDF after redirect)
+    const blob = await response.blob();
+
+    // Create a download link
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `threat-report-${reportId}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Download failed:', error);
+    throw error;
+  }
 };
