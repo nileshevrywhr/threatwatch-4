@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Shield, Eye, Bell, LogIn, UserPlus } from 'lucide-react';
@@ -7,7 +7,7 @@ import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
 import { useAuth } from './AuthProvider';
 
-const Header = ({ onAuthSuccess }) => {
+const Header = memo(({ onAuthSuccess }) => {
     const navigate = useNavigate();
     const { user, session, signOut } = useAuth();
 
@@ -104,6 +104,6 @@ const Header = ({ onAuthSuccess }) => {
             />
         </>
     );
-};
+});
 
 export default Header;
