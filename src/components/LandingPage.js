@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Target, ArrowRight, CheckCircle, Zap, Eye, Bell, LogIn } from 'lucide-react';
+import { Target, ArrowRight, CheckCircle, Zap, Eye, Bell, LogIn, Loader2 } from 'lucide-react';
 import Header from './Header';
 import AuthModal from './AuthModal';
 import { useAnalytics } from '../services/analytics';
@@ -404,7 +404,8 @@ const LandingPage = () => {
                     >
                       {loading ? (
                         <div className="flex items-center space-x-2">
-                          <div className="animate-pulse">Setting up monitoring...</div>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <span>Setting up monitoring...</span>
                         </div>
                       ) : (
                         <div className="flex items-center space-x-2">
@@ -432,12 +433,18 @@ const LandingPage = () => {
                           </div>
 
                           {/* Progress content */}
-                          <div className="relative z-10 flex flex-col items-center space-y-1">
+                          <div className="relative z-10 flex flex-col items-center space-y-1" role="status" aria-live="polite">
                             <div className="flex items-center space-x-2">
-                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-400 border-t-transparent"></div>
+                              <Loader2 className="h-4 w-4 animate-spin text-orange-400" />
                               <span className="text-sm">{quickScanProgress.message}</span>
                             </div>
-                            <div className="w-full bg-gray-700 rounded-full h-1.5 mt-2">
+                            <div
+                              role="progressbar"
+                              aria-valuenow={quickScanProgress.progress}
+                              aria-valuemin="0"
+                              aria-valuemax="100"
+                              className="w-full bg-gray-700 rounded-full h-1.5 mt-2"
+                            >
                               <div
                                 className="bg-gradient-to-r from-orange-400 to-orange-500 h-1.5 rounded-full transition-all duration-800 ease-out"
                                 style={{ width: `${quickScanProgress.progress}%` }}
