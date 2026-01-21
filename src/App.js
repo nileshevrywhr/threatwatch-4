@@ -1,15 +1,25 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import { PostHogProvider } from "./components/PostHogProvider";
 import { AuthProvider } from "./components/AuthProvider";
 import LandingPage from "./components/LandingPage";
-import IntelligenceFeed from "./components/IntelligenceFeed";
-import PaymentSuccess from "./components/PaymentSuccess";
-import LoginPage from "./components/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { TooltipProvider } from "./components/ui/tooltip";
+
+// Lazy load route components for performance optimization
+const IntelligenceFeed = lazy(() => import("./components/IntelligenceFeed"));
+const LoginPage = lazy(() => import("./components/LoginPage"));
+const PaymentSuccess = lazy(() => import("./components/PaymentSuccess"));
+
+const LoadingFallback = () => (
+  <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center" role="status" aria-label="Loading application">
+    <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
+    <p className="mt-4 text-slate-400 animate-pulse font-medium">Loading...</p>
+  </div>
+);
 
 function App() {
   return (
@@ -19,19 +29,21 @@ function App() {
           <div className="App">
             <BrowserRouter>
               <ErrorBoundary>
-                <Routes>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route
-                    path="/feed"
-                    element={
-                      <ProtectedRoute>
-                        <IntelligenceFeed />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="/payment-success" element={<PaymentSuccess />} />
-                </Routes>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Routes>
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route
+                      path="/feed"
+                      element={
+                        <ProtectedRoute>
+                          <IntelligenceFeed />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="/payment-success" element={<PaymentSuccess />} />
+                  </Routes>
+                </Suspense>
               </ErrorBoundary>
             </BrowserRouter>
           </div>
