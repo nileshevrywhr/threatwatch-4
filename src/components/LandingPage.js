@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from './ui/button';
@@ -46,6 +46,10 @@ const LandingPage = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const navigate = useNavigate();
+
+  const handleHeaderAuthSuccess = useCallback(() => {
+    navigate('/feed');
+  }, [navigate]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -254,7 +258,7 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
-      <Header onAuthSuccess={() => navigate('/feed')} />
+      <Header onAuthSuccess={handleHeaderAuthSuccess} />
 
       {/* Hero Section */}
       <section className="py-20 px-4">

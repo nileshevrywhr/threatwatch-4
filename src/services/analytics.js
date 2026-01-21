@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 /**
  * PostHog Analytics Service for ThreatWatch Frontend
  * Handles user journey tracking, drop-off analysis, and business metrics
