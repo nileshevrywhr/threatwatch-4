@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Shield, Eye, Bell, LogIn, UserPlus } from 'lucide-react';
-import AuthModal from './AuthModal';
-import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
 import { useAuth } from './AuthProvider';
+
+// Lazy load modals to reduce initial bundle size and improve TTI
+const AuthModal = lazy(() => import('./AuthModal'));
+const SubscriptionPlans = lazy(() => import('./SubscriptionPlans'));
 
 const Header = ({ onAuthSuccess }) => {
     const navigate = useNavigate();
@@ -89,19 +91,27 @@ const Header = ({ onAuthSuccess }) => {
             </header>
 
             {/* Authentication Modal */}
-            <AuthModal
-                isOpen={showAuthModal}
-                onClose={() => setShowAuthModal(false)}
-                onAuthSuccess={handleAuthSuccess}
-            />
+            {/* ⚡ Performance: Suspense wrapper allows lazy loading */}
+            <Suspense fallback={null}>
+                <AuthModal
+                    isOpen={showAuthModal}
+                    onClose={() => setShowAuthModal(false)}
+                    onAuthSuccess={handleAuthSuccess}
+                />
+            </Suspense>
 
             {/* Subscription Plans Modal */}
-            <SubscriptionPlans
-                isOpen={showSubscriptionPlans}
-                onClose={() => setShowSubscriptionPlans(false)}
-                currentUser={user}
-                authToken={session?.access_token}
-            />
+            {/* ⚡ Performance: Conditionally render to avoid fetching chunk until needed */}
+            {showSubscriptionPlans && (
+                <Suspense fallback={null}>
+                    <SubscriptionPlans
+                        isOpen={showSubscriptionPlans}
+                        onClose={() => setShowSubscriptionPlans(false)}
+                        currentUser={user}
+                        authToken={session?.access_token}
+                    />
+                </Suspense>
+            )}
         </>
     );
 };
