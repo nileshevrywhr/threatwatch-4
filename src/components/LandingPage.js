@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from './ui/button';
@@ -15,9 +15,11 @@ import {
 } from "./ui/select";
 import { Target, ArrowRight, CheckCircle, Zap, Eye, Bell, LogIn, Loader2 } from 'lucide-react';
 import Header from './Header';
-import AuthModal from './AuthModal';
 import { useAnalytics } from '../services/analytics';
 import { useAuth } from './AuthProvider';
+
+// Lazy load AuthModal to reduce main bundle size
+const AuthModal = lazy(() => import('./AuthModal'));
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -519,14 +521,16 @@ const LandingPage = () => {
       </section>
 
       {/* Authentication Modal for page content triggers */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onAuthSuccess={() => {
-          setShowAuthModal(false);
-          navigate('/feed');
-        }}
-      />
+      <Suspense fallback={null}>
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onAuthSuccess={() => {
+            setShowAuthModal(false);
+            navigate('/feed');
+          }}
+        />
+      </Suspense>
     </div>
   );
 };
