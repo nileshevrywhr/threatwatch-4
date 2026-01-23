@@ -1,8 +1,8 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { Download } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 
 const getSeverityColor = (severity) => {
   switch (severity?.toLowerCase()) {
@@ -15,6 +15,19 @@ const getSeverityColor = (severity) => {
 };
 
 const ReportCard = memo(({ report, onDownload }) => {
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    try {
+      setIsDownloading(true);
+      await onDownload(report.report_id);
+    } catch (error) {
+      console.error('Download failed:', error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <Card className="bg-slate-900 border-slate-800">
       <CardHeader className="pb-2">
@@ -53,10 +66,20 @@ const ReportCard = memo(({ report, onDownload }) => {
           variant="outline"
           size="sm"
           className="w-full sm:w-auto border-slate-700 text-slate-300 hover:bg-slate-800"
-          onClick={() => onDownload(report.report_id)}
+          onClick={handleDownload}
+          disabled={isDownloading}
         >
-          <Download className="h-4 w-4 mr-2" />
-          Download Report
+          {isDownloading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Downloading...
+            </>
+          ) : (
+            <>
+              <Download className="h-4 w-4 mr-2" />
+              Download Report
+            </>
+          )}
         </Button>
       </CardFooter>
     </Card>
