@@ -387,4 +387,5 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   );
 };
 
-export default AuthModal;
+// Memoized to prevent re-renders when parent LandingPage updates
+export default React.memo(AuthModal);
