@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -10,7 +10,7 @@ import { CheckCircle, AlertTriangle, User, Mail, Lock, Eye, EyeOff, Loader2 } fr
 import { useAnalytics } from '../services/analytics';
 import { supabase } from '../lib/supabaseClient';
 
-const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
+const AuthModal = memo(({ isOpen, onClose, onAuthSuccess }) => {
   const analytics = useAnalytics();
   const [activeTab, setActiveTab] = useState('login');
   const [loading, setLoading] = useState(false);
@@ -385,6 +385,6 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
       </DialogContent>
     </Dialog>
   );
-};
+});
 
 export default AuthModal;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { 
@@ -11,7 +11,7 @@ import {
 } from './ui/dropdown-menu';
 import { User, Crown, Zap, Shield, Settings, LogOut, CreditCard } from 'lucide-react';
 
-const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
+const UserMenu = memo(({ user, onLogout, onShowSubscriptionPlans }) => {
   const getTierIcon = (tier) => {
     switch (tier) {
       case 'enterprise':
@@ -119,6 +119,6 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-};
+});
 
 export default UserMenu;
