@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Shield, Eye, Bell, LogIn, UserPlus } from 'lucide-react';
@@ -7,28 +7,48 @@ import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
 import { useAuth } from './AuthProvider';
 
-const Header = ({ onAuthSuccess }) => {
+const Header = memo(({ onAuthSuccess }) => {
     const navigate = useNavigate();
     const { user, session, signOut } = useAuth();
 
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showSubscriptionPlans, setShowSubscriptionPlans] = useState(false);
 
-    const handleAuthSuccess = () => {
+    const handleAuthSuccess = useCallback(() => {
         setShowAuthModal(false);
         if (onAuthSuccess) {
             onAuthSuccess();
         } else {
             navigate('/feed');
         }
-    };
+    }, [onAuthSuccess, navigate]);
 
-    const handleLogout = async () => {
+    const handleLogout = useCallback(async () => {
         await signOut();
         // Clear any session storage
         const quickScanKeys = Object.keys(sessionStorage).filter(key => key.startsWith('quickScanResult_'));
         quickScanKeys.forEach(key => sessionStorage.removeItem(key));
-    };
+    }, [signOut]);
+
+    const handleLogoClick = useCallback(() => {
+        navigate('/');
+    }, [navigate]);
+
+    const handleAuthModalClose = useCallback(() => {
+        setShowAuthModal(false);
+    }, []);
+
+    const handleShowAuthModal = useCallback(() => {
+        setShowAuthModal(true);
+    }, []);
+
+    const handleShowSubscriptionPlans = useCallback(() => {
+        setShowSubscriptionPlans(true);
+    }, []);
+
+    const handleSubscriptionPlansClose = useCallback(() => {
+        setShowSubscriptionPlans(false);
+    }, []);
 
     return (
         <>
@@ -60,12 +80,12 @@ const Header = ({ onAuthSuccess }) => {
                             <UserMenu
                                 user={user}
                                 onLogout={handleLogout}
-                                onShowSubscriptionPlans={() => setShowSubscriptionPlans(true)}
+                                onShowSubscriptionPlans={handleShowSubscriptionPlans}
                             />
                         ) : (
                             <div className="flex items-center space-x-3">
                                 <Button
-                                    onClick={() => setShowAuthModal(true)}
+                                    onClick={handleShowAuthModal}
                                     variant="ghost"
                                     className="text-gray-300 hover:text-white hover:bg-gray-800"
                                 >
@@ -73,7 +93,7 @@ const Header = ({ onAuthSuccess }) => {
                                     Sign In
                                 </Button>
                                 <Button
-                                    onClick={() => setShowAuthModal(true)}
+                                    onClick={handleShowAuthModal}
                                     className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
                                 >
                                     <UserPlus className="h-4 w-4 mr-2" />
@@ -88,19 +108,19 @@ const Header = ({ onAuthSuccess }) => {
             {/* Authentication Modal */}
             <AuthModal
                 isOpen={showAuthModal}
-                onClose={() => setShowAuthModal(false)}
+                onClose={handleAuthModalClose}
                 onAuthSuccess={handleAuthSuccess}
             />
 
             {/* Subscription Plans Modal */}
             <SubscriptionPlans
                 isOpen={showSubscriptionPlans}
-                onClose={() => setShowSubscriptionPlans(false)}
+                onClose={handleSubscriptionPlansClose}
                 currentUser={user}
                 authToken={session?.access_token}
             />
         </>
     );
-};
+});
 
 export default Header;
