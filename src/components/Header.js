@@ -1,5 +1,5 @@
-import React, { useState, lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, lazy, Suspense, memo, useCallback } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Shield, Eye, Bell, LogIn, UserPlus, Loader2 } from 'lucide-react';
 import UserMenu from './UserMenu';
@@ -9,44 +9,61 @@ import { useAuth } from './AuthProvider';
 const AuthModal = lazy(() => import('./AuthModal'));
 const SubscriptionPlans = lazy(() => import('./SubscriptionPlans'));
 
-const Header = ({ onAuthSuccess }) => {
+const Header = memo(({ onAuthSuccess }) => {
     const navigate = useNavigate();
     const { user, session, signOut } = useAuth();
 
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showSubscriptionPlans, setShowSubscriptionPlans] = useState(false);
 
-    const handleAuthSuccess = () => {
+    const handleAuthSuccess = useCallback(() => {
         setShowAuthModal(false);
         if (onAuthSuccess) {
             onAuthSuccess();
         } else {
             navigate('/feed');
         }
-    };
+    }, [onAuthSuccess, navigate]);
 
-    const handleLogout = async () => {
+    const handleLogout = useCallback(async () => {
         await signOut();
         // Clear any session storage
         const quickScanKeys = Object.keys(sessionStorage).filter(key => key.startsWith('quickScanResult_'));
         quickScanKeys.forEach(key => sessionStorage.removeItem(key));
-    };
+    }, [signOut]);
 
-    const handleLogoClick = () => {
+    const handleLogoClick = useCallback(() => {
         navigate('/');
-    };
+    }, [navigate]);
+
+    const handleAuthModalClose = useCallback(() => {
+        setShowAuthModal(false);
+    }, []);
+
+    const handleShowAuthModal = useCallback(() => {
+        setShowAuthModal(true);
+    }, []);
+
+    const handleShowSubscriptionPlans = useCallback(() => {
+        setShowSubscriptionPlans(true);
+    }, []);
+
+    const handleSubscriptionPlansClose = useCallback(() => {
+        setShowSubscriptionPlans(false);
+    }, []);
 
     return (
         <>
             <header className="py-6 px-4 border-b border-gray-800">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div
-                        className="flex items-center space-x-2 cursor-pointer"
-                        onClick={handleLogoClick}
+                    <Link
+                        to="/"
+                        className="flex items-center space-x-2 focus-visible:ring-2 focus-visible:ring-cyan-400 rounded-lg p-1 -m-1 transition-colors hover:opacity-90"
+                        aria-label="ThreatWatch Home"
                     >
                         <Shield className="h-8 w-8 text-cyan-400" />
                         <span className="text-2xl font-bold text-white font-mono">ThreatWatch</span>
-                    </div>
+                    </Link>
 
                     <div className="flex items-center space-x-6">
                         <div className="hidden md:flex items-center space-x-6 text-gray-300">
@@ -65,12 +82,12 @@ const Header = ({ onAuthSuccess }) => {
                             <UserMenu
                                 user={user}
                                 onLogout={handleLogout}
-                                onShowSubscriptionPlans={() => setShowSubscriptionPlans(true)}
+                                onShowSubscriptionPlans={handleShowSubscriptionPlans}
                             />
                         ) : (
                             <div className="flex items-center space-x-3">
                                 <Button
-                                    onClick={() => setShowAuthModal(true)}
+                                    onClick={handleShowAuthModal}
                                     variant="ghost"
                                     className="text-gray-300 hover:text-white hover:bg-gray-800"
                                 >
@@ -78,7 +95,7 @@ const Header = ({ onAuthSuccess }) => {
                                     Sign In
                                 </Button>
                                 <Button
-                                    onClick={() => setShowAuthModal(true)}
+                                    onClick={handleShowAuthModal}
                                     className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
                                 >
                                     <UserPlus className="h-4 w-4 mr-2" />
@@ -119,9 +136,9 @@ const Header = ({ onAuthSuccess }) => {
                         authToken={session?.access_token}
                     />
                 )}
-            </Suspense>
+            </Suspense>           
         </>
     );
-};
+});
 
 export default Header;
