@@ -1,15 +1,15 @@
-import React, { useState, lazy, Suspense, memo, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, Suspense, lazy } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Shield, Eye, Bell, LogIn, UserPlus, Loader2 } from 'lucide-react';
+import { Shield, Eye, Bell, LogIn, UserPlus } from 'lucide-react';
 import UserMenu from './UserMenu';
 import { useAuth } from './AuthProvider';
 
-// Optimization: Lazy load heavy components to reduce initial bundle size
+// Lazy load modals to reduce initial bundle size and improve TTI
 const AuthModal = lazy(() => import('./AuthModal'));
 const SubscriptionPlans = lazy(() => import('./SubscriptionPlans'));
 
-const Header = memo(({ onAuthSuccess }) => {
+const Header = ({ onAuthSuccess }) => {
     const navigate = useNavigate();
     const { user, session, signOut } = useAuth();
 
