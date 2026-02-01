@@ -141,4 +141,5 @@ const Header = memo(({ onAuthSuccess }) => {
     );
 });
 
-export default Header;
+// Memoized to prevent re-renders when parent LandingPage updates
+export default React.memo(Header);
