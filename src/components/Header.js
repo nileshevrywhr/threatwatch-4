@@ -1,11 +1,13 @@
-import React, { useState, memo, useCallback } from 'react';
+import React, { useState, lazy, Suspense, memo, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Shield, Eye, Bell, LogIn, UserPlus } from 'lucide-react';
-import AuthModal from './AuthModal';
-import SubscriptionPlans from './SubscriptionPlans';
+import { Shield, Eye, Bell, LogIn, UserPlus, Loader2 } from 'lucide-react';
 import UserMenu from './UserMenu';
 import { useAuth } from './AuthProvider';
+
+// Optimization: Lazy load heavy components to reduce initial bundle size
+const AuthModal = lazy(() => import('./AuthModal'));
+const SubscriptionPlans = lazy(() => import('./SubscriptionPlans'));
 
 const Header = memo(({ onAuthSuccess }) => {
     const navigate = useNavigate();
@@ -106,19 +108,35 @@ const Header = memo(({ onAuthSuccess }) => {
             </header>
 
             {/* Authentication Modal */}
-            <AuthModal
-                isOpen={showAuthModal}
-                onClose={handleAuthModalClose}
-                onAuthSuccess={handleAuthSuccess}
-            />
+            <Suspense fallback={
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
+                </div>
+            }>
+                {showAuthModal && (
+                    <AuthModal
+                        isOpen={showAuthModal}
+                        onClose={() => setShowAuthModal(false)}
+                        onAuthSuccess={handleAuthSuccess}
+                    />
+                )}
+            </Suspense>
 
             {/* Subscription Plans Modal */}
-            <SubscriptionPlans
-                isOpen={showSubscriptionPlans}
-                onClose={handleSubscriptionPlansClose}
-                currentUser={user}
-                authToken={session?.access_token}
-            />
+            <Suspense fallback={
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
+                </div>
+            }>
+                {showSubscriptionPlans && (
+                    <SubscriptionPlans
+                        isOpen={showSubscriptionPlans}
+                        onClose={() => setShowSubscriptionPlans(false)}
+                        currentUser={user}
+                        authToken={session?.access_token}
+                    />
+                )}
+            </Suspense>           
         </>
     );
 });
