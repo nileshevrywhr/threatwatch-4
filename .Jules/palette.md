@@ -6,6 +6,10 @@
 **Learning:** Interactive elements inside input wrappers (like password toggles) are often overlooked for keyboard focus styles. They need explicit `focus-visible` states to be accessible.
 **Action:** Use `focus-visible:ring-2` and `rounded-sm` on auxiliary buttons to ensure they have a visible focus indicator without affecting mouse users.
 
+## 2026-01-25 - Focus Visibility on Auxiliary Controls
+**Learning:** Keyboard users often lose context when navigating inside complex inputs (like password fields with toggles) if the internal buttons lack focus indicators.
+**Action:** Ensure auxiliary interactive elements (like "show password" toggles) inside input wrappers have explicit `focus-visible` styles (e.g., `ring-2`) that match the primary input's focus behavior.
+
 ## 2026-01-26 - Keyboard Accessible Navigation
 **Learning:** Core navigation elements like logos are often implemented as `div`s with `onClick`, making them inaccessible to keyboard users.
 **Action:** Always use semantic `<a>` or `<Link>` tags for navigation, and ensure they have visible focus states (`focus-visible`) and `aria-label`s if they lack visible text.
