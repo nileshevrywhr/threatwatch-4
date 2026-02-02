@@ -47,6 +47,14 @@ export const getFeed = () => {
   return apiClient('/api/feed');
 };
 
+export const getMonitors = () => {
+  return apiClient('/api/monitors');
+};
+
+export const getReportsForMonitor = (monitorId) => {
+  return apiClient(`/api/monitors/${monitorId}/reports`);
+};
+
 export const downloadReport = async (reportId) => {
   const { data: { session } } = await supabase.auth.getSession();
 
