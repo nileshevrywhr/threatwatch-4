@@ -59,6 +59,13 @@ export const getReportsForMonitor = (monitorId) => {
   return apiClient(`/api/monitors/${encodedMonitorId}/reports`);
 };
 
+export const createMonitor = (data) => {
+  return apiClient('/api/monitors', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
 export const downloadReport = async (reportId) => {
   const { data: { session } } = await supabase.auth.getSession();
 
