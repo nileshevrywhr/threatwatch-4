@@ -65,7 +65,7 @@ class ThreatWatchFrontendAnalytics {
         url: window.location.href,
         pathname: window.location.pathname,
         user_agent: navigator.userAgent,
-        screen_resolution: `${window.screen.width}x${window.screen.height}`,
+        screen_resolution: `${screen.width}x${screen.height}`,
         viewport_size: `${window.innerWidth}x${window.innerHeight}`,
         tracking_source: 'frontend'
       }
