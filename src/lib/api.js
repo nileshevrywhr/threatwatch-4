@@ -52,7 +52,11 @@ export const getMonitors = () => {
 };
 
 export const getReportsForMonitor = (monitorId) => {
-  return apiClient(`/api/monitors/${monitorId}/reports`);
+  if (!monitorId) {
+    return Promise.reject(new Error('monitorId is required'));
+  }
+  const encodedMonitorId = encodeURIComponent(monitorId);
+  return apiClient(`/api/monitors/${encodedMonitorId}/reports`);
 };
 
 export const downloadReport = async (reportId) => {
