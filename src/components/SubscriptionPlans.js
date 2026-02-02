@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import axios from 'axios';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -10,7 +10,7 @@ import { secureLog } from '../utils/secureLogger';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
+const SubscriptionPlans = memo(({ isOpen, onClose, currentUser, authToken }) => {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
 
@@ -254,6 +254,6 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
       </DialogContent>
     </Dialog>
   );
-};
+});
 
 export default SubscriptionPlans;
