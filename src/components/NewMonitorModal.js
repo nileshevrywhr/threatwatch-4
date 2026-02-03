@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from './ui/select';
 import { Alert, AlertDescription } from './ui/alert';
-import { Loader2, CheckCircle } from 'lucide-react';
+import { Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { createMonitor } from '../lib/api';
 
 const NewMonitorModal = ({ isOpen, onClose }) => {
@@ -114,7 +114,11 @@ const NewMonitorModal = ({ isOpen, onClose }) => {
           </div>
           {message && (
             <Alert className={messageType === 'success' ? 'border-green-500 bg-green-900/20' : 'border-red-500 bg-red-900/20'}>
-              <CheckCircle className="h-4 w-4" />
+              {messageType === 'success' ? (
+                <CheckCircle className="h-4 w-4" />
+              ) : (
+                <AlertTriangle className="h-4 w-4" />
+              )}
               <AlertDescription className={messageType === 'success' ? 'text-green-300' : 'text-red-300'}>
                 {message}
               </AlertDescription>
