@@ -6,15 +6,13 @@ import AuthModal from './AuthModal';
 import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
 import { useAuth } from './AuthProvider';
-import NewMonitorModal from './NewMonitorModal';
 
-const Header = ({ onAuthSuccess }) => {
+const Header = ({ onAuthSuccess, onNewMonitorClick }) => {
     const navigate = useNavigate();
     const { user, session, signOut } = useAuth();
 
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showSubscriptionPlans, setShowSubscriptionPlans] = useState(false);
-    const [showNewMonitorModal, setShowNewMonitorModal] = useState(false);
 
     const handleAuthSuccess = () => {
         setShowAuthModal(false);
@@ -64,7 +62,7 @@ const Header = ({ onAuthSuccess }) => {
                         {user ? (
                             <div className="flex items-center space-x-3">
                                 <Button
-                                    onClick={() => setShowNewMonitorModal(true)}
+                                    onClick={onNewMonitorClick}
                                     variant="outline"
                                     className="text-gray-300 hover:text-white hover:bg-gray-800 border-gray-600"
                                 >
@@ -113,12 +111,6 @@ const Header = ({ onAuthSuccess }) => {
                 onClose={() => setShowSubscriptionPlans(false)}
                 currentUser={user}
                 authToken={session?.access_token}
-            />
-
-            {/* New Monitor Modal */}
-            <NewMonitorModal
-                isOpen={showNewMonitorModal}
-                onClose={() => setShowNewMonitorModal(false)}
             />
         </>
     );
