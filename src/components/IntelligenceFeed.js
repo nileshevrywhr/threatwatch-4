@@ -23,6 +23,9 @@ const IntelligenceFeed = () => {
       setMonitors(monitorsData.monitors || []);
       if (monitorsData.monitors && monitorsData.monitors.length > 0) {
         setSelectedMonitor(monitorsData.monitors[0]);
+      } else {
+        setSelectedMonitor(null);
+        setReports([]);
       }
     } catch (err) {
       console.error('Failed to fetch monitors:', err);
