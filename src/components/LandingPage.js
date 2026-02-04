@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from './ui/button';
@@ -15,12 +15,9 @@ import {
 } from "./ui/select";
 import { Target, ArrowRight, CheckCircle, Zap, Eye, Bell, LogIn, Loader2 } from 'lucide-react';
 import Header from './Header';
+import AuthModal from './AuthModal';
 import { useAnalytics } from '../services/analytics';
-
 import { useAuth } from './AuthProvider';
-
-// Optimization: Lazy load AuthModal to reduce initial bundle size
-const AuthModal = lazy(() => import('./AuthModal'));
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -255,22 +252,9 @@ const LandingPage = () => {
     }
   };
 
-  const handleHeaderAuthSuccess = useCallback(() => {
-    navigate('/feed');
-  }, [navigate]);
-
-  const handleAuthModalClose = useCallback(() => {
-    setShowAuthModal(false);
-  }, []);
-
-  const handleAuthModalSuccess = useCallback(() => {
-    setShowAuthModal(false);
-    navigate('/feed');
-  }, [navigate]);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
-      <Header onAuthSuccess={handleHeaderAuthSuccess} />
+      <Header onAuthSuccess={() => navigate('/feed')} />
 
       {/* Hero Section */}
       <section className="py-20 px-4">
@@ -535,22 +519,14 @@ const LandingPage = () => {
       </section>
 
       {/* Authentication Modal for page content triggers */}
-      <Suspense fallback={
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
-        </div>
-      }>
-        {showAuthModal && (
-          <AuthModal
-            isOpen={showAuthModal}
-            onClose={() => setShowAuthModal(false)}
-            onAuthSuccess={() => {
-              setShowAuthModal(false);
-              navigate('/feed');
-            }}
-          />
-        )}
-      </Suspense>
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={() => {
+          setShowAuthModal(false);
+          navigate('/feed');
+        }}
+      />
     </div>
   );
 };

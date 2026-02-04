@@ -1,69 +1,52 @@
-import React, { useState, lazy, Suspense, memo, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Shield, Eye, Bell, LogIn, UserPlus, Loader2 } from 'lucide-react';
+import { Shield, Eye, Bell, LogIn, UserPlus, PlusCircle } from 'lucide-react';
+import AuthModal from './AuthModal';
+import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
 import { useAuth } from './AuthProvider';
+import NewMonitorModal from './NewMonitorModal';
 
-// Optimization: Lazy load heavy components to reduce initial bundle size
-const AuthModal = lazy(() => import('./AuthModal'));
-const SubscriptionPlans = lazy(() => import('./SubscriptionPlans'));
-
-const Header = memo(({ onAuthSuccess }) => {
+const Header = ({ onAuthSuccess }) => {
     const navigate = useNavigate();
     const { user, session, signOut } = useAuth();
 
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [showSubscriptionPlans, setShowSubscriptionPlans] = useState(false);
+    const [showNewMonitorModal, setShowNewMonitorModal] = useState(false);
 
-    const handleAuthSuccess = useCallback(() => {
+    const handleAuthSuccess = () => {
         setShowAuthModal(false);
         if (onAuthSuccess) {
             onAuthSuccess();
         } else {
             navigate('/feed');
         }
-    }, [onAuthSuccess, navigate]);
+    };
 
-    const handleLogout = useCallback(async () => {
+    const handleLogout = async () => {
         await signOut();
         // Clear any session storage
         const quickScanKeys = Object.keys(sessionStorage).filter(key => key.startsWith('quickScanResult_'));
         quickScanKeys.forEach(key => sessionStorage.removeItem(key));
-    }, [signOut]);
+    };
 
-    const handleLogoClick = useCallback(() => {
+    const handleLogoClick = () => {
         navigate('/');
-    }, [navigate]);
-
-    const handleAuthModalClose = useCallback(() => {
-        setShowAuthModal(false);
-    }, []);
-
-    const handleShowAuthModal = useCallback(() => {
-        setShowAuthModal(true);
-    }, []);
-
-    const handleShowSubscriptionPlans = useCallback(() => {
-        setShowSubscriptionPlans(true);
-    }, []);
-
-    const handleSubscriptionPlansClose = useCallback(() => {
-        setShowSubscriptionPlans(false);
-    }, []);
+    };
 
     return (
         <>
             <header className="py-6 px-4 border-b border-gray-800">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <Link
-                        to="/"
-                        className="flex items-center space-x-2 focus-visible:ring-2 focus-visible:ring-cyan-400 rounded-lg p-1 -m-1 transition-colors hover:opacity-90"
-                        aria-label="ThreatWatch Home"
+                    <div
+                        className="flex items-center space-x-2 cursor-pointer"
+                        onClick={handleLogoClick}
                     >
                         <Shield className="h-8 w-8 text-cyan-400" />
                         <span className="text-2xl font-bold text-white font-mono">ThreatWatch</span>
-                    </Link>
+                    </div>
 
                     <div className="flex items-center space-x-6">
                         <div className="hidden md:flex items-center space-x-6 text-gray-300">
@@ -79,15 +62,25 @@ const Header = memo(({ onAuthSuccess }) => {
 
                         {/* Authentication Section */}
                         {user ? (
-                            <UserMenu
-                                user={user}
-                                onLogout={handleLogout}
-                                onShowSubscriptionPlans={handleShowSubscriptionPlans}
-                            />
+                            <div className="flex items-center space-x-3">
+                                <Button
+                                    onClick={() => setShowNewMonitorModal(true)}
+                                    variant="outline"
+                                    className="text-gray-300 hover:text-white hover:bg-gray-800 border-gray-600"
+                                >
+                                    <PlusCircle className="h-4 w-4 mr-2" />
+                                    New Monitor
+                                </Button>
+                                <UserMenu
+                                    user={user}
+                                    onLogout={handleLogout}
+                                    onShowSubscriptionPlans={() => setShowSubscriptionPlans(true)}
+                                />
+                            </div>
                         ) : (
                             <div className="flex items-center space-x-3">
                                 <Button
-                                    onClick={handleShowAuthModal}
+                                    onClick={() => setShowAuthModal(true)}
                                     variant="ghost"
                                     className="text-gray-300 hover:text-white hover:bg-gray-800"
                                 >
@@ -95,7 +88,7 @@ const Header = memo(({ onAuthSuccess }) => {
                                     Sign In
                                 </Button>
                                 <Button
-                                    onClick={handleShowAuthModal}
+                                    onClick={() => setShowAuthModal(true)}
                                     className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
                                 >
                                     <UserPlus className="h-4 w-4 mr-2" />
@@ -108,38 +101,27 @@ const Header = memo(({ onAuthSuccess }) => {
             </header>
 
             {/* Authentication Modal */}
-            <Suspense fallback={
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
-                </div>
-            }>
-                {showAuthModal && (
-                    <AuthModal
-                        isOpen={showAuthModal}
-                        onClose={() => setShowAuthModal(false)}
-                        onAuthSuccess={handleAuthSuccess}
-                    />
-                )}
-            </Suspense>
+            <AuthModal
+                isOpen={showAuthModal}
+                onClose={() => setShowAuthModal(false)}
+                onAuthSuccess={handleAuthSuccess}
+            />
 
             {/* Subscription Plans Modal */}
-            <Suspense fallback={
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
-                </div>
-            }>
-                {showSubscriptionPlans && (
-                    <SubscriptionPlans
-                        isOpen={showSubscriptionPlans}
-                        onClose={() => setShowSubscriptionPlans(false)}
-                        currentUser={user}
-                        authToken={session?.access_token}
-                    />
-                )}
-            </Suspense>           
+            <SubscriptionPlans
+                isOpen={showSubscriptionPlans}
+                onClose={() => setShowSubscriptionPlans(false)}
+                currentUser={user}
+                authToken={session?.access_token}
+            />
+
+            {/* New Monitor Modal */}
+            <NewMonitorModal
+                isOpen={showNewMonitorModal}
+                onClose={() => setShowNewMonitorModal(false)}
+            />
         </>
     );
-});
+};
 
-// Memoized to prevent re-renders when parent LandingPage updates
-export default React.memo(Header);
+export default Header;

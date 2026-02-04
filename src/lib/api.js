@@ -47,6 +47,25 @@ export const getFeed = () => {
   return apiClient('/api/feed');
 };
 
+export const getMonitors = () => {
+  return apiClient('/api/monitors');
+};
+
+export const getReportsForMonitor = (monitorId) => {
+  if (!monitorId) {
+    return Promise.reject(new Error('monitorId is required'));
+  }
+  const encodedMonitorId = encodeURIComponent(monitorId);
+  return apiClient(`/api/monitors/${encodedMonitorId}/reports`);
+};
+
+export const createMonitor = (data) => {
+  return apiClient('/api/monitors', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
 export const downloadReport = async (reportId) => {
   const { data: { session } } = await supabase.auth.getSession();
 
