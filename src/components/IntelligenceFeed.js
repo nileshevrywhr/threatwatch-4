@@ -5,9 +5,11 @@ import { Button } from './ui/button';
 import { AlertTriangle, FileText, Loader2 } from 'lucide-react';
 import Header from './Header';
 import ReportCard from './ReportCard';
+import NewMonitorModal from './NewMonitorModal';
 
 const IntelligenceFeed = () => {
   const [monitors, setMonitors] = useState([]);
+  const [showNewMonitorModal, setShowNewMonitorModal] = useState(false);
   const [selectedMonitor, setSelectedMonitor] = useState(null);
   const [reports, setReports] = useState([]);
   const [monitorsLoading, setMonitorsLoading] = useState(true);
@@ -70,29 +72,14 @@ const IntelligenceFeed = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div
-        className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4"
-        role="alert"
-      >
-        <AlertTriangle className="h-12 w-12 text-red-500 mb-4" aria-hidden="true" />
-        <h2 className="text-xl font-semibold text-white mb-2">Unable to load feed</h2>
-        <p className="text-slate-400 mb-6 text-center max-w-md">{error}</p>
-        <Button
-          onClick={fetchMonitors}
-          variant="outline"
-          className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
-        >
-          Retry Connection
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
-      <Header />
+      <Header onNewMonitorClick={() => setShowNewMonitorModal(true)} />
+
+      <NewMonitorModal
+        isOpen={showNewMonitorModal}
+        onClose={() => setShowNewMonitorModal(false)}
+      />
 
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Left Column: Monitors */}
@@ -100,8 +87,27 @@ const IntelligenceFeed = () => {
           <h2 className="text-lg font-semibold text-white mb-4">Monitors</h2>
           <Card className="bg-slate-900 border-slate-800">
             <CardContent className="p-4 space-y-2">
-              {monitors.length === 0 ? (
-                <p className="text-slate-400 text-sm">No monitors yet.</p>
+              {error ? (
+                <div className="text-center">
+                  <p className="text-red-400 text-sm mb-4">{error}</p>
+                  <Button
+                    onClick={fetchMonitors}
+                    variant="outline"
+                    className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                  >
+                    Retry
+                  </Button>
+                </div>
+              ) : monitors.length === 0 ? (
+                <div className="text-center">
+                  <p className="text-slate-400 text-sm mb-4">No monitors yet.</p>
+                  <Button
+                    onClick={() => setShowNewMonitorModal(true)}
+                    className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
+                  >
+                    Create First Monitor
+                  </Button>
+                </div>
               ) : (
                 monitors.map((monitor) => (
                   <button
