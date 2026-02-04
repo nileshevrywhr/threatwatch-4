@@ -26,6 +26,7 @@ const IntelligenceFeed = () => {
       } else {
         setSelectedMonitor(null);
         setReports([]);
+        setReportsError(null);
       }
     } catch (err) {
       console.error('Failed to fetch monitors:', err);
