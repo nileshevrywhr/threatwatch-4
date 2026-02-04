@@ -125,8 +125,8 @@ const IntelligenceFeed = () => {
         <div className="md:col-span-3">
           <h1 className="text-2xl font-bold text-white mb-4">Intelligence Feed</h1>
           {reportsLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+            <div className="flex justify-center items-center h-64" role="status" aria-label="Loading reports">
+              <Loader2 className="h-8 w-8 animate-spin text-cyan-500" aria-hidden="true" />
             </div>
           ) : reportsError ? (
             <Card className="bg-red-900/20 border-red-500">
