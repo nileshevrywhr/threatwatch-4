@@ -22,9 +22,10 @@ const IntelligenceFeed = () => {
       setMonitorsLoading(true);
       setError(null);
       const monitorsData = await getMonitors();
-      setMonitors(monitorsData.monitors || []);
-      if (monitorsData.monitors && monitorsData.monitors.length > 0) {
-        setSelectedMonitor(monitorsData.monitors[0]);
+      const monitorsArray = Array.isArray(monitorsData) ? monitorsData : (monitorsData.monitors || []);
+      setMonitors(monitorsArray);
+      if (monitorsArray.length > 0) {
+        setSelectedMonitor(monitorsArray[0]);
       }
     } catch (err) {
       console.error('Failed to fetch monitors:', err);
@@ -40,7 +41,9 @@ const IntelligenceFeed = () => {
       setReportsLoading(true);
       setReportsError(null);
       const reportsData = await getReportsForMonitor(monitor.monitor_id);
-      setReports(reportsData.reports || []);
+      const reportsArray = Array.isArray(reportsData) ? reportsData : (reportsData.reports || []);
+      const enrichedReports = reportsArray.map(r => ({ ...r, term: r.term || monitor.term }));
+      setReports(enrichedReports);
     } catch (err) {
       console.error(`Failed to fetch reports for ${monitor.term}:`, err);
       setReportsError(`Failed to load reports for ${monitor.term}. Please try again.`);

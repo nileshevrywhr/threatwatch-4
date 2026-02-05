@@ -60,11 +60,19 @@ export const getReportsForMonitor = (monitorId) => {
 };
 
 export const createMonitor = (data) => {
-  return apiClient('/api/monitors', {
-    method: 'POST',
-    body: JSON.stringify(data),
+  const params = new URLSearchParams({
+    monitor_id: (typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15)),
+    term: data.term,
+    frequency: data.frequency,
+    created_at: new Date().toISOString(),
+    next_run_at: new Date().toISOString(),
+    status: "active"
+  });
+  return apiClient(`/api/monitors?${params.toString()}`, {
+    method: "POST",
   });
 };
+
 
 export const downloadReport = async (reportId) => {
   const { data: { session } } = await supabase.auth.getSession();
