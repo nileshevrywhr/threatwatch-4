@@ -22,7 +22,7 @@ const IntelligenceFeed = () => {
       setMonitorsLoading(true);
       setError(null);
       const monitorsData = await getMonitors();
-      const monitorsArray = Array.isArray(monitorsData) ? monitorsData : (monitorsData.monitors || []);
+      const monitorsArray = Array.isArray(monitorsData) ? monitorsData : (monitorsData?.monitors || []);
       setMonitors(monitorsArray);
       if (monitorsArray.length > 0) {
         setSelectedMonitor(monitorsArray[0]);
@@ -41,7 +41,7 @@ const IntelligenceFeed = () => {
       setReportsLoading(true);
       setReportsError(null);
       const reportsData = await getReportsForMonitor(monitor.monitor_id);
-      const reportsArray = Array.isArray(reportsData) ? reportsData : (reportsData.reports || []);
+      const reportsArray = Array.isArray(reportsData) ? reportsData : (reportsData?.reports || []);
       const enrichedReports = reportsArray.map(r => ({ ...r, term: r.term || monitor.term }));
       setReports(enrichedReports);
     } catch (err) {
