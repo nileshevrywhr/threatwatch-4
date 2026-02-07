@@ -1,3 +1,20 @@
+
+const generateUUID = () => {
+  try {
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+      return window.crypto.randomUUID();
+    }
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+  } catch (e) {}
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
 import { supabase } from './supabaseClient';
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
@@ -60,11 +77,22 @@ export const getReportsForMonitor = (monitorId) => {
 };
 
 export const createMonitor = (data) => {
-  return apiClient('/api/monitors', {
+  const payload = {
+    monitor_id: generateUUID(),
+    term: data.term,
+    frequency: data.frequency,
+    created_at: new Date().toISOString(),
+    next_run_at: new Date().toISOString(),
+    status: 'active'
+  };
+
+  const query = new URLSearchParams(payload).toString();
+  return apiClient(`/api/monitors?${query}`, {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload) // Include body as well for robustness
   });
 };
+
 
 export const downloadReport = async (reportId) => {
   const { data: { session } } = await supabase.auth.getSession();
