@@ -19,12 +19,14 @@ payload = {
 }
 
 print("Testing POST with body...")
-r = requests.post(URL, headers=headers, json=payload)
+TIMEOUT_SECONDS = 10
+
+r = requests.post(URL, headers=headers, json=payload, timeout=TIMEOUT_SECONDS)
 print(f"Status: {r.status_code}")
 print(f"Response: {r.text}")
 
 print("\nTesting POST with query params...")
 params = payload
-r = requests.post(URL, headers=headers, params=params)
+r = requests.post(URL, headers=headers, params=params, timeout=TIMEOUT_SECONDS)
 print(f"Status: {r.status_code}")
 print(f"Response: {r.text}")
