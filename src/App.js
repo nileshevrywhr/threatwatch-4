@@ -13,6 +13,7 @@ import { TooltipProvider } from "./components/ui/tooltip";
 const IntelligenceFeed = lazy(() => import("./components/IntelligenceFeed"));
 const LoginPage = lazy(() => import("./components/LoginPage"));
 const PaymentSuccess = lazy(() => import("./components/PaymentSuccess"));
+const AuthCallback = lazy(() => import("./components/AuthCallback"));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center" role="status" aria-label="Loading application">
@@ -42,6 +43,7 @@ function App() {
                       }
                     />
                     <Route path="/payment-success" element={<PaymentSuccess />} />
+                    <Route path="/auth/callback" element={<AuthCallback />} />
                   </Routes>
                 </Suspense>
               </ErrorBoundary>
