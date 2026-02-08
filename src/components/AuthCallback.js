@@ -7,29 +7,31 @@ const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleCallback = async () => {
-      try {
-        // Supabase automatically handles the auth token from the URL hash/query
-        // Calling getSession() ensures we wait for the session to be established
-        const { data: { session }, error } = await supabase.auth.getSession();
+    // Set a timeout as a fallback in case Supabase fails to establish a session
+    const timeout = setTimeout(() => {
+      console.error('Auth callback timeout: No session established within 10 seconds.');
+      navigate('/login?error=Authentication%20timed%20out.%20Please%20try%20signing%20in%20again.', { replace: true });
+    }, 10000);
 
-        if (error) throw error;
+    // Use onAuthStateChange to wait for the session to be established
+    // This is more reliable than getSession() which might be called too early
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // If we have a session, the auth process was successful
+      if (session) {
+        clearTimeout(timeout);
+        navigate('/feed', { replace: true });
+      }
 
-        if (session) {
-          // Success! Redirect to feed
-          navigate('/feed', { replace: true });
-        } else {
-          // No session found, might be an invalid or expired link
-          throw new Error('No active session found.');
-        }
-      } catch (error) {
-        console.error('Auth callback error:', error);
-        const errorMessage = error.message || 'Authentication failed';
-        navigate(`/login?error=${encodeURIComponent(errorMessage)}`, { replace: true });
+      // We can also handle explicit sign out or failure events if needed,
+      // but session presence is the ultimate indicator of success here.
+    });
+
+    return () => {
+      clearTimeout(timeout);
+      if (subscription) {
+        subscription.unsubscribe();
       }
     };
-
-    handleCallback();
   }, [navigate]);
 
   return (
