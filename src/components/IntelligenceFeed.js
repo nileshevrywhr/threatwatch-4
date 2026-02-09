@@ -102,11 +102,14 @@ const IntelligenceFeed = () => {
                   </Button>
                 </div>
               ) : monitors.length === 0 ? (
-                <div className="text-center">
-                  <p className="text-slate-400 text-sm mb-4">No monitors yet.</p>
+                <div className="text-center py-4">
+                  <div className="bg-cyan-500/10 rounded-lg p-4 mb-4 border border-cyan-500/20">
+                    <p className="text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-2">Getting Started</p>
+                    <p className="text-slate-300 text-sm">Create your first monitor to start receiving intelligence reports.</p>
+                  </div>
                   <Button
                     onClick={() => setShowNewMonitorModal(true)}
-                    className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
+                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/20"
                   >
                     Create First Monitor
                   </Button>
@@ -146,14 +149,21 @@ const IntelligenceFeed = () => {
               </CardContent>
             </Card>
           ) : reports.length === 0 ? (
-            <Card className="bg-slate-900 border-slate-800">
+            <Card className="bg-slate-900/50 border-slate-800 backdrop-blur">
               <CardContent className="flex flex-col items-center justify-center p-12 text-center">
-                <FileText className="h-12 w-12 text-slate-600 mb-4" />
-                <h3 className="text-lg font-semibold text-white mb-2">
+                <div className="bg-slate-800/50 rounded-full p-4 mb-4">
+                  <FileText className="h-12 w-12 text-slate-500" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">
                   {selectedMonitor
-                    ? `No reports for "${selectedMonitor.term}" yet.`
-                    : 'No reports yet.'}
+                    ? `Gathering intelligence for "${selectedMonitor.term}"...`
+                    : 'Your feed is empty'}
                 </h3>
+                <p className="text-slate-400 max-w-sm mx-auto">
+                  {selectedMonitor
+                    ? 'Our AI agents are currently scanning threat sources for relevant matches. This may take a few minutes for new monitors.'
+                    : 'Create a monitor on the left to start tracking threats and vulnerabilities related to your products or brand.'}
+                </p>
               </CardContent>
             </Card>
           ) : (
