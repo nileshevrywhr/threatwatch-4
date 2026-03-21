@@ -8,10 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { CheckCircle, AlertTriangle, User, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAnalytics } from '../services/analytics';
-import { supabase } from '../lib/supabaseClient';
+import { useSearchParams } from 'react-router-dom';
+import { supabase, AUTH_REDIRECT_BASE } from '../lib/supabaseClient';
 
 const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   const analytics = useAnalytics();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('login');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -25,6 +27,15 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
       if (timerId) clearTimeout(timerId);
     };
   }, [timerId]);
+
+  useEffect(() => {
+    const error = searchParams.get('error');
+    const errorDesc = searchParams.get('error_description');
+    if (error || errorDesc) {
+      setMessage(errorDesc || error);
+      setMessageType('error');
+    }
+  }, [searchParams]);
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -111,6 +122,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             full_name: registerData.full_name,
             subscription_tier: 'free',
           },
+          emailRedirectTo: `${AUTH_REDIRECT_BASE}/auth/callback`,
         },
       });
 

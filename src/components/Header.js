@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Shield, Eye, Bell, LogIn, UserPlus } from 'lucide-react';
+import { Shield, Eye, Bell, LogIn, UserPlus, PlusCircle } from 'lucide-react';
 import AuthModal from './AuthModal';
 import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
 import { useAuth } from './AuthProvider';
 
-const Header = ({ onAuthSuccess }) => {
+const Header = ({ onAuthSuccess, onNewMonitorClick }) => {
     const navigate = useNavigate();
     const { user, session, signOut } = useAuth();
 
@@ -60,11 +60,21 @@ const Header = ({ onAuthSuccess }) => {
 
                         {/* Authentication Section */}
                         {user ? (
-                            <UserMenu
-                                user={user}
-                                onLogout={handleLogout}
-                                onShowSubscriptionPlans={() => setShowSubscriptionPlans(true)}
-                            />
+                            <div className="flex items-center space-x-3">
+                                <Button
+                                    onClick={onNewMonitorClick}
+                                    variant="outline"
+                                    className="text-gray-300 hover:text-white hover:bg-gray-800 border-gray-600"
+                                >
+                                    <PlusCircle className="h-4 w-4 mr-2" />
+                                    New Monitor
+                                </Button>
+                                <UserMenu
+                                    user={user}
+                                    onLogout={handleLogout}
+                                    onShowSubscriptionPlans={() => setShowSubscriptionPlans(true)}
+                                />
+                            </div>
                         ) : (
                             <div className="flex items-center space-x-3">
                                 <Button
