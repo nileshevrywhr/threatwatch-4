@@ -47,6 +47,10 @@ const LandingPage = () => {
 
   const navigate = useNavigate();
 
+  const handleHeaderAuthSuccess = useCallback(() => {
+    navigate('/feed');
+  }, [navigate]);
+
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
