@@ -22,7 +22,7 @@ const ReportCard = memo(({ report, onDownload }) => {
       setIsDownloading(true);
       await onDownload(report.report_id);
     } catch (error) {
-      console.error('Download failed:', error);
+      console.error("Download failed", error);
     } finally {
       setIsDownloading(false);
     }
