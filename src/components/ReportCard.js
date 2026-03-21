@@ -70,11 +70,16 @@ const ReportCard = memo(({ report, onDownload }) => {
           disabled={isDownloading}
         >
           {isDownloading ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Downloading...
+            </>
           ) : (
-            <Download className="h-4 w-4 mr-2" />
+            <>
+              <Download className="h-4 w-4 mr-2" />
+              Download Report
+            </>
           )}
-          {isDownloading ? 'Downloading...' : 'Download Report'}
         </Button>
       </CardFooter>
     </Card>
