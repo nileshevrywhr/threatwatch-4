@@ -116,4 +116,6 @@ const Header = memo(({ onAuthSuccess }) => {
     );
 });
 
+Header.displayName = 'Header';
+
 export default Header;

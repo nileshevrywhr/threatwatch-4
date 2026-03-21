@@ -256,9 +256,14 @@ const LandingPage = () => {
     }
   };
 
+  // Optimized: Memoize callback to maintain referential stability for Header memoization
+  const handleAuthSuccess = useCallback(() => {
+    navigate('/feed');
+  }, [navigate]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
-      <Header onAuthSuccess={handleHeaderAuthSuccess} />
+      <Header onAuthSuccess={handleAuthSuccess} />
 
       {/* Hero Section */}
       <section className="py-20 px-4">
