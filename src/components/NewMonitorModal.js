@@ -62,7 +62,15 @@ const NewMonitorModal = ({ isOpen, onClose }) => {
         window.location.reload();
       }, 2000);
     } catch (error) {
-      const errorMessage = error.response?.data?.detail || 'Failed to create monitor. Please try again.';
+      let errorMessage = 'Failed to create monitor. Please try again.';
+      if (error.response?.data?.detail) {
+        const detail = error.response.data.detail;
+        errorMessage = typeof detail === 'string' ? detail : 
+                       Array.isArray(detail) ? detail.map(d => d.msg || JSON.stringify(d)).join(', ') : 
+                       JSON.stringify(detail);
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
       setMessage(errorMessage);
       setMessageType('error');
     } finally {

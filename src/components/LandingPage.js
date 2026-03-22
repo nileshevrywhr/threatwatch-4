@@ -97,7 +97,15 @@ const LandingPage = () => {
       }, 2000);
 
     } catch (error) {
-      const errorMessage = error.response?.data?.detail || 'Subscription failed. Please try again.';
+      let errorMessage = 'Subscription failed. Please try again.';
+      if (error.response?.data?.detail) {
+        const detail = error.response.data.detail;
+        errorMessage = typeof detail === 'string' ? detail : 
+                       Array.isArray(detail) ? detail.map(d => d.msg || JSON.stringify(d)).join(', ') : 
+                       JSON.stringify(detail);
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
       setMessage(errorMessage);
       setMessageType('error');
     } finally {
@@ -202,7 +210,15 @@ const LandingPage = () => {
       navigate(`/feed?email=${encodeURIComponent(userEmail)}&quickScan=true`);
 
     } catch (error) {
-      const errorMessage = error.response?.data?.detail || 'Quick scan failed. Please try again.';
+      let errorMessage = 'Quick scan failed. Please try again.';
+      if (error.response?.data?.detail) {
+        const detail = error.response.data.detail;
+        errorMessage = typeof detail === 'string' ? detail : 
+                       Array.isArray(detail) ? detail.map(d => d.msg || JSON.stringify(d)).join(', ') : 
+                       JSON.stringify(detail);
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
       const scanDuration = (Date.now() - scanStartTime) / 1000;
 
       // Track scan failure analytics
@@ -249,7 +265,15 @@ const LandingPage = () => {
       navigate(`/feed?email=${encodeURIComponent(feedEmail)}`);
 
     } catch (error) {
-      const errorMessage = error.response?.data?.detail || 'Failed to load feed. Please try again.';
+      let errorMessage = 'Failed to load feed. Please try again.';
+      if (error.response?.data?.detail) {
+        const detail = error.response.data.detail;
+        errorMessage = typeof detail === 'string' ? detail : 
+                       Array.isArray(detail) ? detail.map(d => d.msg || JSON.stringify(d)).join(', ') : 
+                       JSON.stringify(detail);
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
       setMessage(errorMessage);
       setMessageType('feed-error');
       setFeedLoading(false);
