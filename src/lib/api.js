@@ -1,4 +1,3 @@
-
 const generateUUID = () => {
   try {
     if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
@@ -78,18 +77,19 @@ export const getReportsForMonitor = (monitorId) => {
 
 export const createMonitor = (data) => {
   const payload = {
-    monitor_id: generateUUID(),
-    term: data.term,
+    id: generateUUID(),
+    query_text: data.term,
     frequency: data.frequency,
     created_at: new Date().toISOString(),
     next_run_at: new Date().toISOString(),
-    status: 'active'
+    active: true
   };
 
+  // Backend expects fields as query parameters
   const query = new URLSearchParams(payload).toString();
   return apiClient(`/api/monitors?${query}`, {
     method: 'POST',
-    body: JSON.stringify(payload) // Include body as well for robustness
+    body: JSON.stringify(payload) // Also include body for robustness
   });
 };
 
