@@ -76,20 +76,21 @@ export const getReportsForMonitor = (monitorId) => {
 };
 
 export const createMonitor = (data) => {
+  // Use fields expected by the backend API based on observed failures
   const payload = {
-    id: generateUUID(),
-    query_text: data.term,
+    monitor_id: generateUUID(),
+    term: data.term,
     frequency: data.frequency,
     created_at: new Date().toISOString(),
     next_run_at: new Date().toISOString(),
-    active: true
+    status: 'active'
   };
 
   // Backend expects fields as query parameters
   const query = new URLSearchParams(payload).toString();
   return apiClient(`/api/monitors?${query}`, {
     method: 'POST',
-    body: JSON.stringify(payload) // Also include body for robustness
+    body: JSON.stringify(payload)
   });
 };
 
