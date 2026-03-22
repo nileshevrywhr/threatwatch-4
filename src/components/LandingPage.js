@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { createMonitor } from '../lib/api';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -78,14 +79,9 @@ const LandingPage = () => {
     setMessage('');
 
     try {
-      const response = await axios.post(`${API}/monitors`, {
+      await createMonitor({
         term: formData.term,
         frequency: formData.frequency
-      }, {
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
-          'Content-Type': 'application/json'
-        }
       });
 
       setMessage(`Now monitoring attacks related to "${formData.term}" (${formData.frequency}). You'll receive alerts via email.`);
