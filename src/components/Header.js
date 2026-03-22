@@ -7,7 +7,7 @@ import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
 import { useAuth } from './AuthProvider';
 
-const Header = memo(({ onAuthSuccess }) => {
+const Header = memo(({ onAuthSuccess, onNewMonitorClick }) => {
     const navigate = useNavigate();
     const { user, session, signOut } = useAuth();
 
