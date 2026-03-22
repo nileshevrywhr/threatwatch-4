@@ -40,13 +40,13 @@ const IntelligenceFeed = () => {
     try {
       setReportsLoading(true);
       setReportsError(null);
-      const reportsData = await getReportsForMonitor(monitor.id);
+      const reportsData = await getReportsForMonitor(monitor.monitor_id);
       const reportsArray = Array.isArray(reportsData) ? reportsData : (reportsData?.reports || []);
-      const enrichedReports = reportsArray.map(r => ({ ...r, term: r.term || monitor.query_text }));
+      const enrichedReports = reportsArray.map(r => ({ ...r, term: r.term || monitor.term }));
       setReports(enrichedReports);
     } catch (err) {
-      console.error(`Failed to fetch reports for ${monitor.query_text}:`, err);
-      setReportsError(`Failed to load reports for ${monitor.query_text}. Please try again.`);
+      console.error(`Failed to fetch reports for ${monitor.term}:`, err);
+      setReportsError(`Failed to load reports for ${monitor.term}. Please try again.`);
     } finally {
       setReportsLoading(false);
     }
@@ -117,15 +117,15 @@ const IntelligenceFeed = () => {
               ) : (
                 monitors.map((monitor) => (
                   <button
-                    key={monitor.id}
+                    key={monitor.monitor_id}
                     onClick={() => setSelectedMonitor(monitor)}
                     className={`w-full text-left p-2 rounded-md transition-colors ${
-                      selectedMonitor?.id === monitor.id
+                      selectedMonitor?.monitor_id === monitor.monitor_id
                         ? 'bg-slate-800 font-bold text-white'
                         : 'text-slate-400 hover:bg-slate-800'
                     }`}
                   >
-                    {monitor.query_text}
+                    {monitor.term}
                   </button>
                 ))
               )}
@@ -156,7 +156,7 @@ const IntelligenceFeed = () => {
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">
                   {selectedMonitor
-                    ? `Gathering intelligence for "${selectedMonitor.query_text}"...`
+                    ? `Gathering intelligence for "${selectedMonitor.term}"...`
                     : 'Your feed is empty'}
                 </h3>
                 <p className="text-slate-400 max-w-sm mx-auto">

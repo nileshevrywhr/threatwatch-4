@@ -10,3 +10,7 @@
 
 ## UI Feedback
 - **Success/Error States**: Consistently use `Alert` components with `CheckCircle` or `AlertTriangle` icons to provide clear visual feedback to users after form submissions.
+
+## Backend Consistency and Field Names
+- **Field Name Persistence**: When fixing database discrepancies, ensure that the API client and all consuming components are updated in sync. If the backend still expects the original field names (e.g., `monitor_id`, `term`, `status`) despite database schema changes, stick to the API's contract until the backend is also updated.
+- **Verification of UI State**: Always verify that list items (like monitors in a sidebar) correctly populate their identifying fields (like `monitor_id`) to avoid "undefined" errors when fetching dependent data (like reports).
