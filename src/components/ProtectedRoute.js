@@ -10,12 +10,12 @@ const ProtectedRoute = ({ children }) => {
   if (loading) {
     return (
       <div
-        className="min-h-screen bg-slate-950 flex flex-col items-center justify-center space-y-4"
+        className="min-h-screen bg-background flex flex-col items-center justify-center space-y-4"
         role="status"
         aria-label="Verifying authentication"
       >
         <Loader2 className="h-10 w-10 animate-spin text-cyan-500" aria-hidden="true" />
-        <p className="text-slate-400 animate-pulse font-medium">Verifying authentication...</p>
+        <p className="text-muted-foreground animate-pulse font-medium">Verifying authentication...</p>
       </div>
     );
   }

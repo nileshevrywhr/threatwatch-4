@@ -10,7 +10,7 @@ const getSeverityColor = (severity) => {
     case 'high': return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
     case 'medium': return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
     case 'low': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-    default: return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+    default: return 'bg-muted text-muted-foreground border-border';
   }
 };
 
@@ -29,12 +29,12 @@ const ReportCard = memo(({ report, onDownload }) => {
   };
 
   return (
-    <Card className="bg-slate-900 border-slate-800">
+    <Card className="border-border">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
-              <CardTitle className="text-lg text-white font-medium">
+              <CardTitle className="text-lg font-medium">
                 {report.term}
               </CardTitle>
               {report.severity && (
@@ -43,12 +43,12 @@ const ReportCard = memo(({ report, onDownload }) => {
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-muted-foreground">
               {report.created_at ? new Date(report.created_at).toLocaleDateString() : 'Unknown Date'}
             </p>
           </div>
           {report.status && (
-            <Badge variant="secondary" className="bg-slate-800 text-slate-300">
+            <Badge variant="secondary">
               {report.status}
             </Badge>
           )}
@@ -56,7 +56,7 @@ const ReportCard = memo(({ report, onDownload }) => {
       </CardHeader>
       {report.summary && (
         <CardContent className="pb-4">
-          <p className="text-slate-300 text-sm">
+          <p className="text-muted-foreground text-sm">
             {report.summary}
           </p>
         </CardContent>
@@ -65,7 +65,7 @@ const ReportCard = memo(({ report, onDownload }) => {
         <Button
           variant="outline"
           size="sm"
-          className="w-full sm:w-auto border-slate-700 text-slate-300 hover:bg-slate-800"
+          className="w-full sm:w-auto"
           onClick={handleDownload}
           disabled={isDownloading}
         >

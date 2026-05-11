@@ -68,19 +68,19 @@ const PaymentSuccess = () => {
   };
 
   const getPlanColor = (tier) => {
-    return tier === 'enterprise' ? 'border-purple-400/50' : 'border-orange-400/50';
+    return tier === 'enterprise' ? 'border-purple-500/50' : 'border-orange-500/50';
   };
 
   if (authLoading || paymentStatus === 'checking') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
-        <Card className="glass border-gray-700 max-w-md w-full mx-4">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="border-border max-w-md w-full mx-4">
           <CardContent className="p-8 text-center">
             <Loader2 className="h-12 w-12 text-cyan-400 mx-auto mb-4 animate-spin" />
-            <h2 className="text-xl font-semibold text-white mb-2">
+            <h2 className="text-xl font-semibold mb-2">
               {authLoading ? 'Verifying Session' : 'Processing Payment'}
             </h2>
-            <p className="text-gray-400">Please wait while we confirm your details...</p>
+            <p className="text-muted-foreground">Please wait while we confirm your details...</p>
           </CardContent>
         </Card>
       </div>
@@ -89,14 +89,14 @@ const PaymentSuccess = () => {
 
   if (paymentStatus === 'auth_required') {
      return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
-        <Card className="glass border-gray-700 max-w-md w-full mx-4">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="border-border max-w-md w-full mx-4">
           <CardContent className="p-8 text-center">
             <div className="h-12 w-12 bg-cyan-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                <LogIn className="h-6 w-6 text-cyan-400" />
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2">Authentication Required</h2>
-            <p className="text-gray-400 mb-6">Please log in to verify your payment and activate your subscription.</p>
+            <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
+            <p className="text-muted-foreground mb-6">Please log in to verify your payment and activate your subscription.</p>
             <Button
               onClick={() => setShowAuthModal(true)}
               className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
@@ -106,7 +106,7 @@ const PaymentSuccess = () => {
             <Button
                 onClick={() => navigate('/')}
                 variant="ghost"
-                className="mt-4 text-gray-400 hover:text-white"
+                className="mt-4"
             >
                 Return to Home
             </Button>
@@ -123,17 +123,17 @@ const PaymentSuccess = () => {
 
   if (paymentStatus === 'error') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
-        <Card className="glass border-red-500/50 max-w-md w-full mx-4">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="border-destructive max-w-md w-full mx-4">
           <CardContent className="p-8 text-center">
-            <div className="h-12 w-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-red-400 text-xl">⚠️</span>
+            <div className="h-12 w-12 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-destructive text-xl">⚠️</span>
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2">Payment Error</h2>
-            <p className="text-gray-400 mb-6">There was an issue processing your payment. Please try again or contact support.</p>
+            <h2 className="text-xl font-semibold mb-2">Payment Error</h2>
+            <p className="text-muted-foreground mb-6">There was an issue processing your payment. Please try again or contact support.</p>
             <Button
               onClick={() => navigate('/')}
-              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
+              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
             >
               Return to Home
             </Button>
@@ -145,16 +145,16 @@ const PaymentSuccess = () => {
 
   if (paymentStatus === 'success') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
-        <Card className={`glass ${getPlanColor(paymentData?.subscription_tier)} max-w-md w-full mx-4`}>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className={`border-border ${getPlanColor(paymentData?.subscription_tier)} max-w-md w-full mx-4`}>
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <div className="h-16 w-16 bg-green-500/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-8 w-8 text-green-400" />
+                <CheckCircle className="h-8 w-8 text-green-500" />
               </div>
             </div>
-            <CardTitle className="text-2xl text-white">Payment Successful!</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-2xl">Payment Successful!</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Your subscription has been activated
             </CardDescription>
           </CardHeader>
@@ -163,18 +163,18 @@ const PaymentSuccess = () => {
             <div className="text-center">
               <div className="flex items-center justify-center space-x-2 mb-2">
                 {paymentData?.subscription_tier && getPlanIcon(paymentData.subscription_tier)}
-                <span className="text-xl font-semibold text-white capitalize">
+                <span className="text-xl font-semibold capitalize">
                   {paymentData?.subscription_tier} Plan
                 </span>
               </div>
-              <p className="text-gray-400 text-sm">
+              <p className="text-muted-foreground text-sm">
                 You now have access to advanced threat monitoring features!
               </p>
             </div>
 
-            <div className="bg-gray-800/50 rounded-lg p-4 space-y-2">
-              <h4 className="text-white font-semibold">What's included:</h4>
-              <ul className="text-sm text-gray-300 space-y-1">
+            <div className="bg-muted rounded-lg p-4 space-y-2">
+              <h4 className="font-semibold">What's included:</h4>
+              <ul className="text-sm text-muted-foreground space-y-1">
                 {paymentData?.subscription_tier === 'pro' && (
                   <>
                     <li>• 50 Quick Scans per day</li>
@@ -219,7 +219,7 @@ const PaymentSuccess = () => {
               <Button
                 onClick={() => navigate('/')}
                 variant="outline"
-                className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
+                className="w-full"
               >
                 Return to Home
               </Button>
