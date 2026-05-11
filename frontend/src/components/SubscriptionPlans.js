@@ -127,23 +127,23 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-4xl bg-gray-900 border-gray-700 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl bg-background border-border max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-3xl text-white text-center">Choose Your Plan</DialogTitle>
-          <DialogDescription className="text-gray-400 text-center">
+          <DialogTitle className="text-3xl text-foreground text-center">Choose Your Plan</DialogTitle>
+          <DialogDescription className="text-muted-foreground text-center">
             Upgrade your threat monitoring capabilities with advanced features
           </DialogDescription>
         </DialogHeader>
 
         {/* Current Plan Status */}
         {currentPlan && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg border border-gray-600">
+          <div className="mb-6 p-4 bg-gradient-to-r from-gray-800 to-gray-700 rounded-lg border border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <currentPlan.icon className="h-6 w-6 text-cyan-400" />
                 <div>
-                  <h4 className="text-white font-semibold">Current Plan: {currentPlan.name}</h4>
-                  <p className="text-sm text-gray-400">
+                  <h4 className="text-foreground font-semibold">Current Plan: {currentPlan.name}</h4>
+                  <p className="text-sm text-muted-foreground">
                     {currentUser?.subscription_tier === 'free' ? 'Free forever' : `${currentPlan.price} ${currentPlan.period}`}
                   </p>
                 </div>
@@ -161,8 +161,8 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
             const isCurrentPlan = currentUser?.subscription_tier === plan.id;
 
             return (
-              <Card key={plan.id} className={`relative glass ${
-                plan.popular ? 'border-orange-400/50' : 'border-gray-700'
+              <Card key={plan.id} className={`relative bg-card ${
+                plan.popular ? 'border-orange-400/50' : 'border-border'
               } ${isCurrentPlan ? 'ring-2 ring-cyan-400' : ''}`}>
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -173,26 +173,26 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
                 <CardHeader className="text-center">
                   <div className="flex justify-center mb-4">
                     <PlanIcon className={`h-12 w-12 ${
-                      plan.id === 'free' ? 'text-gray-400' :
+                      plan.id === 'free' ? 'text-muted-foreground' :
                       plan.id === 'pro' ? 'text-orange-400' : 'text-purple-400'
                     }`} />
                   </div>
-                  <CardTitle className="text-2xl text-white">{plan.name}</CardTitle>
-                  <CardDescription className="text-gray-400">{plan.description}</CardDescription>
+                  <CardTitle className="text-2xl text-foreground">{plan.name}</CardTitle>
+                  <CardDescription className="text-muted-foreground">{plan.description}</CardDescription>
                   <div className="text-center mt-4">
-                    <span className="text-4xl font-bold text-white">{plan.price}</span>
-                    <span className="text-gray-400 ml-2">{plan.period}</span>
+                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
+                    <span className="text-muted-foreground ml-2">{plan.period}</span>
                   </div>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="text-white font-semibold mb-3">Features included:</h4>
+                    <h4 className="text-foreground font-semibold mb-3">Features included:</h4>
                     <ul className="space-y-2">
                       {plan.features.map((feature, index) => (
                         <li key={index} className="flex items-start space-x-2">
                           <CheckCircle className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-300 text-sm">{feature}</span>
+                          <span className="text-muted-foreground text-sm">{feature}</span>
                         </li>
                       ))}
                     </ul>
@@ -200,10 +200,10 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
 
                   {plan.limitations.length > 0 && (
                     <div>
-                      <h4 className="text-gray-400 font-semibold mb-2 text-sm">Limitations:</h4>
+                      <h4 className="text-muted-foreground font-semibold mb-2 text-sm">Limitations:</h4>
                       <ul className="space-y-1">
                         {plan.limitations.map((limitation, index) => (
-                          <li key={index} className="text-gray-500 text-xs">
+                          <li key={index} className="text-muted-foreground text-xs">
                             • {limitation}
                           </li>
                         ))}
@@ -216,12 +216,12 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
                     disabled={plan.disabled || loading}
                     className={`w-full font-semibold py-3 transition-all duration-300 ${
                       isCurrentPlan
-                        ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                        ? 'bg-muted text-muted-foreground cursor-not-allowed'
                         : plan.id === 'pro'
-                        ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white'
+                        ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-foreground'
                         : plan.id === 'enterprise'
-                        ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white'
-                        : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                        ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-foreground'
+                        : 'bg-accent text-muted-foreground cursor-not-allowed'
                     }`}
                   >
                     {loading && selectedPlan === plan.id ? (
@@ -246,7 +246,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
           })}
         </div>
 
-        <div className="mt-6 text-center text-sm text-gray-500">
+        <div className="mt-6 text-center text-sm text-muted-foreground">
           <p>• All plans include secure threat intelligence monitoring</p>
           <p>• Cancel or change your plan anytime</p>
           <p>• 30-day money-back guarantee on paid plans</p>

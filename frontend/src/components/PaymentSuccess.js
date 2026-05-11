@@ -72,12 +72,12 @@ const PaymentSuccess = () => {
 
   if (paymentStatus === 'checking') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
-        <Card className="glass border-gray-700 max-w-md w-full mx-4">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="bg-card border-border max-w-md w-full mx-4">
           <CardContent className="p-8 text-center">
             <Loader2 className="h-12 w-12 text-cyan-400 mx-auto mb-4 animate-spin" />
-            <h2 className="text-xl font-semibold text-white mb-2">Processing Payment</h2>
-            <p className="text-gray-400">Please wait while we confirm your payment...</p>
+            <h2 className="text-xl font-semibold text-foreground mb-2">Processing Payment</h2>
+            <p className="text-muted-foreground">Please wait while we confirm your payment...</p>
           </CardContent>
         </Card>
       </div>
@@ -86,14 +86,14 @@ const PaymentSuccess = () => {
 
   if (paymentStatus === 'error') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
-        <Card className="glass border-red-500/50 max-w-md w-full mx-4">
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="bg-card border-red-500/50 max-w-md w-full mx-4">
           <CardContent className="p-8 text-center">
-            <div className="h-12 w-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="h-12 w-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-white">
               <span className="text-red-400 text-xl">⚠️</span>
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2">Payment Error</h2>
-            <p className="text-gray-400 mb-6">There was an issue processing your payment. Please try again or contact support.</p>
+            <h2 className="text-xl font-semibold text-foreground mb-2">Payment Error</h2>
+            <p className="text-muted-foreground mb-6">There was an issue processing your payment. Please try again or contact support.</p>
             <Button
               onClick={() => navigate('/')}
               className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
@@ -108,16 +108,16 @@ const PaymentSuccess = () => {
 
   if (paymentStatus === 'success') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
-        <Card className={`glass ${getPlanColor(paymentData?.subscription_tier)} max-w-md w-full mx-4`}>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className={`bg-card ${getPlanColor(paymentData?.subscription_tier)} max-w-md w-full mx-4`}>
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <div className="h-16 w-16 bg-green-500/20 rounded-full flex items-center justify-center">
+              <div className="h-16 w-16 bg-green-500/20 rounded-full flex items-center justify-center text-white">
                 <CheckCircle className="h-8 w-8 text-green-400" />
               </div>
             </div>
-            <CardTitle className="text-2xl text-white">Payment Successful!</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-2xl text-foreground">Payment Successful!</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Your subscription has been activated
             </CardDescription>
           </CardHeader>
@@ -126,18 +126,18 @@ const PaymentSuccess = () => {
             <div className="text-center">
               <div className="flex items-center justify-center space-x-2 mb-2">
                 {paymentData?.subscription_tier && getPlanIcon(paymentData.subscription_tier)}
-                <span className="text-xl font-semibold text-white capitalize">
+                <span className="text-xl font-semibold text-foreground capitalize">
                   {paymentData?.subscription_tier} Plan
                 </span>
               </div>
-              <p className="text-gray-400 text-sm">
+              <p className="text-muted-foreground text-sm">
                 You now have access to advanced threat monitoring features!
               </p>
             </div>
 
-            <div className="bg-gray-800/50 rounded-lg p-4 space-y-2">
-              <h4 className="text-white font-semibold">What's included:</h4>
-              <ul className="text-sm text-gray-300 space-y-1">
+            <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+              <h4 className="text-foreground font-semibold">What's included:</h4>
+              <ul className="text-sm text-muted-foreground space-y-1">
                 {paymentData?.subscription_tier === 'pro' && (
                   <>
                     <li>• 50 Quick Scans per day</li>
@@ -172,7 +172,7 @@ const PaymentSuccess = () => {
                   paymentData?.subscription_tier === 'enterprise'
                     ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700'
                     : 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700'
-                } text-white`}
+                } text-foreground`}
               >
                 <div className="flex items-center space-x-2">
                   <span>Go to My Intelligence Feed</span>
@@ -183,7 +183,7 @@ const PaymentSuccess = () => {
               <Button
                 onClick={() => navigate('/')}
                 variant="outline"
-                className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
+                className="w-full border-border text-muted-foreground hover:bg-muted"
               >
                 Return to Home
               </Button>

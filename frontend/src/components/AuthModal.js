@@ -161,20 +161,20 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-gray-900 border-gray-700">
+      <DialogContent className="sm:max-w-md bg-background border-border">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-white text-center">Welcome to ThreatWatch</DialogTitle>
-          <DialogDescription className="text-gray-400 text-center">
+          <DialogTitle className="text-2xl text-foreground text-center">Welcome to ThreatWatch</DialogTitle>
+          <DialogDescription className="text-muted-foreground text-center">
             Sign in to access advanced threat monitoring features
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-gray-800">
-            <TabsTrigger value="login" className="text-gray-300 data-[state=active]:bg-gray-700 data-[state=active]:text-white">
+          <TabsList className="grid w-full grid-cols-2 bg-muted">
+            <TabsTrigger value="login" className="text-muted-foreground data-[state=active]:bg-accent data-[state=active]:text-foreground">
               Sign In
             </TabsTrigger>
-            <TabsTrigger value="register" className="text-gray-300 data-[state=active]:bg-gray-700 data-[state=active]:text-white">
+            <TabsTrigger value="register" className="text-muted-foreground data-[state=active]:bg-accent data-[state=active]:text-foreground">
               Sign Up
             </TabsTrigger>
           </TabsList>
@@ -182,9 +182,9 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
           <TabsContent value="login" className="space-y-4 mt-6">
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <Label htmlFor="loginEmail" className="text-gray-300">Email</Label>
+                <Label htmlFor="loginEmail" className="text-muted-foreground">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     id="loginEmail"
                     name="email"
@@ -192,16 +192,16 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     placeholder="your@email.com"
                     value={loginData.email}
                     onChange={(e) => handleInputChange(e, 'login')}
-                    className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                    className="pl-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-cyan-400"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="loginPassword" className="text-gray-300">Password</Label>
+                <Label htmlFor="loginPassword" className="text-muted-foreground">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     id="loginPassword"
                     name="password"
@@ -209,13 +209,13 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     placeholder="Enter your password"
                     value={loginData.password}
                     onChange={(e) => handleInputChange(e, 'login')}
-                    className="pl-10 pr-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                    className="pl-10 pr-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-cyan-400"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -235,9 +235,9 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
           <TabsContent value="register" className="space-y-4 mt-6">
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
-                <Label htmlFor="registerName" className="text-gray-300">Full Name</Label>
+                <Label htmlFor="registerName" className="text-muted-foreground">Full Name</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     id="registerName"
                     name="full_name"
@@ -245,16 +245,16 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     placeholder="Your full name"
                     value={registerData.full_name}
                     onChange={(e) => handleInputChange(e, 'register')}
-                    className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                    className="pl-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-cyan-400"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="registerEmail" className="text-gray-300">Email</Label>
+                <Label htmlFor="registerEmail" className="text-muted-foreground">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     id="registerEmail"
                     name="email"
@@ -262,16 +262,16 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     placeholder="your@email.com"
                     value={registerData.email}
                     onChange={(e) => handleInputChange(e, 'register')}
-                    className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                    className="pl-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-cyan-400"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="registerPassword" className="text-gray-300">Password</Label>
+                <Label htmlFor="registerPassword" className="text-muted-foreground">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     id="registerPassword"
                     name="password"
@@ -279,26 +279,26 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     placeholder="Create a strong password"
                     value={registerData.password}
                     onChange={(e) => handleInputChange(e, 'register')}
-                    className="pl-10 pr-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                    className="pl-10 pr-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-cyan-400"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Must include uppercase, lowercase, number, and be 8+ characters
                 </p>
               </div>
 
               <div>
-                <Label htmlFor="confirmPassword" className="text-gray-300">Confirm Password</Label>
+                <Label htmlFor="confirmPassword" className="text-muted-foreground">Confirm Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     id="confirmPassword"
                     name="confirm_password"
@@ -306,13 +306,13 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     placeholder="Confirm your password"
                     value={registerData.confirm_password}
                     onChange={(e) => handleInputChange(e, 'register')}
-                    className="pl-10 pr-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                    className="pl-10 pr-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-cyan-400"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                   >
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -343,7 +343,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
           </Alert>
         )}
 
-        <div className="text-center text-sm text-gray-500 mt-4">
+        <div className="text-center text-sm text-muted-foreground mt-4">
           By signing up, you start with our <span className="text-cyan-400 font-semibold">Free Plan</span>
           <br />
           3 Quick Scans per day • Upgrade anytime for more features

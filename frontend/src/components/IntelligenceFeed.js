@@ -519,12 +519,12 @@ const IntelligenceFeed = () => {
 
   if (authChecking || (loading && !user)) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-pulse text-cyan-400 mb-4">
             <Shield className="h-16 w-16 mx-auto" />
           </div>
-          <p className="text-gray-300">
+          <p className="text-muted-foreground">
             {authChecking ? 'Checking authentication...' : 'Loading intelligence feed...'}
           </p>
         </div>
@@ -534,7 +534,7 @@ const IntelligenceFeed = () => {
 
   if (error && !userData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="max-w-md w-full mx-4">
           <Alert className="border-red-500 bg-red-900/20">
             <AlertTriangle className="h-4 w-4" />
@@ -544,7 +544,7 @@ const IntelligenceFeed = () => {
           </Alert>
           <Button 
             onClick={() => navigate('/')} 
-            className="w-full mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+            className="w-full mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
           >
             Return to Home
           </Button>
@@ -554,17 +554,17 @@ const IntelligenceFeed = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="py-6 px-4 border-b border-gray-800">
+      <header className="py-6 px-4 border-b border-border">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
               <Shield className="h-8 w-8 text-cyan-400" />
-              <span className="text-2xl font-bold text-white font-mono">ThreatWatch</span>
+              <span className="text-2xl font-bold text-foreground font-mono">ThreatWatch</span>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-gray-400 text-sm">
+              <div className="flex items-center space-x-2 text-muted-foreground text-sm">
                 <Clock className="h-4 w-4" />
                 <span>Last updated: {lastRefresh.toLocaleTimeString()}</span>
               </div>
@@ -572,14 +572,14 @@ const IntelligenceFeed = () => {
                 onClick={fetchUserData}
                 variant="outline"
                 size="sm"
-                className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                className="border-border text-muted-foreground hover:bg-muted"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
               </Button>
               <Button
                 onClick={() => navigate('/')}
-                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Keyword
@@ -596,7 +596,7 @@ const IntelligenceFeed = () => {
                 <Button
                   onClick={() => setShowAuthModal(true)}
                   variant="outline"
-                  className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                  className="border-border text-muted-foreground hover:bg-muted"
                 >
                   <LogIn className="h-4 w-4 mr-2" />
                   Sign In
@@ -605,8 +605,8 @@ const IntelligenceFeed = () => {
             </div>
           </div>
           
-          <h1 className="text-3xl font-bold text-white">My Intelligence Feed</h1>
-          <p className="text-gray-400 mt-2">
+          <h1 className="text-3xl font-bold text-foreground">My Intelligence Feed</h1>
+          <p className="text-muted-foreground mt-2">
             Monitoring threats for: {user?.email || userEmail || 'Please sign in'}
           </p>
         </div>
@@ -615,16 +615,16 @@ const IntelligenceFeed = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Subscriptions Section */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">Active Subscriptions</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">Active Subscriptions</h2>
           {userData?.subscriptions?.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {userData.subscriptions.map((subscription) => (
-                <Card key={subscription.id} className="glass border-gray-700">
+                <Card key={subscription.id} className="bg-card border-border">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="font-semibold text-white">{subscription.term}</h3>
-                        <p className="text-sm text-gray-400">
+                        <h3 className="font-semibold text-foreground">{subscription.term}</h3>
+                        <p className="text-sm text-muted-foreground">
                           Since {formatDate(subscription.created_at)}
                         </p>
                       </div>
@@ -637,12 +637,12 @@ const IntelligenceFeed = () => {
               ))}
             </div>
           ) : (
-            <Card className="glass border-gray-700">
+            <Card className="bg-card border-border">
               <CardContent className="p-6 text-center">
-                <p className="text-gray-400">No active subscriptions found.</p>
+                <p className="text-muted-foreground">No active subscriptions found.</p>
                 <Button
                   onClick={() => navigate('/')}
-                  className="mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+                  className="mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
                 >
                   Add Your First Keyword
                 </Button>
@@ -655,7 +655,7 @@ const IntelligenceFeed = () => {
         {quickScanResult && (
           <section className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-white flex items-center space-x-2">
+              <h2 className="text-xl font-semibold text-foreground flex items-center space-x-2">
                 <Zap className="h-5 w-5 text-orange-400" />
                 <span>Quick Scan Results</span>
               </h2>
@@ -681,7 +681,7 @@ const IntelligenceFeed = () => {
                 </Button>
                 <Button
                   onClick={handleSubscribeToQuickScan}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Subscribe to Monitor
@@ -691,7 +691,7 @@ const IntelligenceFeed = () => {
             
             <div className="space-y-4">
               {convertQuickScanToMatches(quickScanResult).map((match, index) => (
-                <Card key={`${match.id}-${index}`} className={`glass ${match.type === 'quick-scan-summary' ? 'border-orange-400/30' : 'border-yellow-400/30'} hover-glow`}>
+                <Card key={`${match.id}-${index}`} className={`bg-card ${match.type === 'quick-scan-summary' ? 'border-orange-400/30' : 'border-yellow-400/30'} hover-glow`}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -707,8 +707,8 @@ const IntelligenceFeed = () => {
                             </Badge>
                           )}
                         </div>
-                        <CardTitle className="text-white text-lg">{match.incident_title}</CardTitle>
-                        <CardDescription className="text-gray-400 mt-2">
+                        <CardTitle className="text-foreground text-lg">{match.incident_title}</CardTitle>
+                        <CardDescription className="text-muted-foreground mt-2">
                           <div className="flex items-center justify-between text-sm">
                             <span>Source: {match.source}</span>
                             <span>{formatDate(match.date)}</span>
@@ -739,12 +739,12 @@ const IntelligenceFeed = () => {
                             )}
                             
                             {/* AI Summary */}
-                            <div className="bg-gray-800/50 rounded-lg p-4 border border-orange-400/30">
+                            <div className="bg-muted/50 rounded-lg p-4 border border-orange-400/30">
                               <div className="flex items-center space-x-2 mb-3">
                                 <span className="text-orange-400">🤖</span>
                                 <span className="text-orange-300 font-semibold text-sm">AI-Generated Threat Analysis</span>
                               </div>
-                              <pre className="text-gray-300 text-sm whitespace-pre-wrap font-sans leading-relaxed">
+                              <pre className="text-muted-foreground text-sm whitespace-pre-wrap font-sans leading-relaxed">
                                 {match.summary}
                               </pre>
                             </div>
@@ -754,7 +754,7 @@ const IntelligenceFeed = () => {
                       {match.type === 'quick-scan-summary' ? (
                         <Zap className="h-5 w-5 text-orange-400 ml-4 flex-shrink-0" />
                       ) : (
-                        <ExternalLink className="h-5 w-5 text-gray-400 ml-4 flex-shrink-0" />
+                        <ExternalLink className="h-5 w-5 text-muted-foreground ml-4 flex-shrink-0" />
                       )}
                     </div>
                   </CardHeader>
@@ -763,13 +763,13 @@ const IntelligenceFeed = () => {
             </div>
             
             {/* Success message for quick scan */}
-            <Card className="glass border-green-500/30 mt-4">
+            <Card className="bg-card border-green-500/30 mt-4">
               <CardContent className="p-4">
                 <div className="flex items-center space-x-3">
                   <CheckCircle className="h-5 w-5 text-green-400" />
                   <div>
                     <p className="text-green-300 font-semibold">Quick Scan Completed</p>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-muted-foreground text-sm">
                       AI analysis of "{quickScanResult.query}" threats completed. Click "Subscribe to Monitor" for ongoing surveillance.
                     </p>
                   </div>
@@ -782,7 +782,7 @@ const IntelligenceFeed = () => {
         {/* Intelligence Matches Section */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-white">
+            <h2 className="text-xl font-semibold text-foreground">
               All Intelligence Matches ({getFilteredAndSortedMatches().length})
             </h2>
             <div className="flex items-center space-x-2">
@@ -790,7 +790,7 @@ const IntelligenceFeed = () => {
                 onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                 variant="outline"
                 size="sm"
-                className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                className="border-border text-muted-foreground hover:bg-muted"
               >
                 {sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
               </Button>
@@ -802,12 +802,12 @@ const IntelligenceFeed = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Search Filter */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search threats..."
                   value={filterTerm}
                   onChange={(e) => setFilterTerm(e.target.value)}
-                  className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                  className="pl-10 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-cyan-400"
                 />
               </div>
 
@@ -816,7 +816,7 @@ const IntelligenceFeed = () => {
                 <select
                   value={severityFilter}
                   onChange={(e) => setSeverityFilter(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:border-cyan-400"
+                  className="w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground focus:border-cyan-400"
                 >
                   <option value="all">All Severities</option>
                   <option value="critical">Critical</option>
@@ -831,7 +831,7 @@ const IntelligenceFeed = () => {
                 <select
                   value={sourceFilter}
                   onChange={(e) => setSourceFilter(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:border-cyan-400"
+                  className="w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground focus:border-cyan-400"
                 >
                   <option value="all">All Sources</option>
                   <option value="quick-scan">Quick Scan Results</option>
@@ -847,7 +847,7 @@ const IntelligenceFeed = () => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:border-cyan-400"
+                  className="w-full px-3 py-2 bg-muted border border-border rounded-md text-foreground focus:border-cyan-400"
                 >
                   <option value="date">Sort by Date</option>
                   <option value="severity">Sort by Severity</option>
@@ -859,8 +859,8 @@ const IntelligenceFeed = () => {
             {/* Active Filters Display */}
             {(filterTerm || severityFilter !== 'all' || sourceFilter !== 'all') && (
               <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-gray-400" />
-                <span className="text-sm text-gray-400">Active filters:</span>
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Active filters:</span>
                 {filterTerm && (
                   <Badge variant="outline" className="border-cyan-400 text-cyan-400">
                     Search: {filterTerm}
@@ -896,9 +896,9 @@ const IntelligenceFeed = () => {
           {getFilteredAndSortedMatches().length > 0 ? (
             <div className="space-y-4">
               {getFilteredAndSortedMatches().map((match, index) => (
-                <Card key={`${match.id}-${index}`} className={`glass hover-glow ${
+                <Card key={`${match.id}-${index}`} className={`bg-card hover-glow ${
                   match.type === 'quick-scan-summary' ? 'border-orange-400/30' : 
-                  match.type === 'discovered-link' ? 'border-blue-400/30' : 'border-gray-700'
+                  match.type === 'discovered-link' ? 'border-blue-400/30' : 'border-border'
                 }`}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -925,7 +925,7 @@ const IntelligenceFeed = () => {
                             </Badge>
                           )}
                         </div>
-                        <CardTitle className="text-white text-lg">
+                        <CardTitle className="text-foreground text-lg">
                           {match.url ? (
                             <a 
                               href={match.url} 
@@ -939,13 +939,13 @@ const IntelligenceFeed = () => {
                             match.incident_title
                           )}
                         </CardTitle>
-                        <CardDescription className="text-gray-400 mt-2">
+                        <CardDescription className="text-muted-foreground mt-2">
                           <div className="flex items-center justify-between text-sm">
                             <span>Source: {match.source}</span>
                             <span>{formatDate(match.date)}</span>
                           </div>
                           {match.snippet && (
-                            <div className="mt-2 text-gray-300 text-sm">
+                            <div className="mt-2 text-muted-foreground text-sm">
                               {match.snippet}
                             </div>
                           )}
@@ -975,12 +975,12 @@ const IntelligenceFeed = () => {
                             )}
                             
                             {/* AI Summary */}
-                            <div className="bg-gray-800/50 rounded-lg p-4 border border-orange-400/30">
+                            <div className="bg-muted/50 rounded-lg p-4 border border-orange-400/30">
                               <div className="flex items-center space-x-2 mb-3">
                                 <span className="text-orange-400">🤖</span>
                                 <span className="text-orange-300 font-semibold text-sm">AI-Generated Threat Analysis</span>
                               </div>
-                              <pre className="text-gray-300 text-sm whitespace-pre-wrap font-sans leading-relaxed">
+                              <pre className="text-muted-foreground text-sm whitespace-pre-wrap font-sans leading-relaxed">
                                 {match.summary}
                               </pre>
                             </div>
@@ -994,12 +994,12 @@ const IntelligenceFeed = () => {
                           rel="noopener noreferrer"
                           className="ml-4 flex-shrink-0"
                         >
-                          <ExternalLink className="h-5 w-5 text-gray-400 hover:text-cyan-400 transition-colors" />
+                          <ExternalLink className="h-5 w-5 text-muted-foreground hover:text-cyan-400 transition-colors" />
                         </a>
                       ) : match.type === 'quick-scan-summary' ? (
                         <Zap className="h-5 w-5 text-orange-400 ml-4 flex-shrink-0" />
                       ) : (
-                        <ExternalLink className="h-5 w-5 text-gray-400 ml-4 flex-shrink-0" />
+                        <ExternalLink className="h-5 w-5 text-muted-foreground ml-4 flex-shrink-0" />
                       )}
                     </div>
                   </CardHeader>
@@ -1007,16 +1007,16 @@ const IntelligenceFeed = () => {
               ))}
             </div>
           ) : (
-            <Card className="glass border-gray-700">
+            <Card className="bg-card border-border">
               <CardContent className="p-6 text-center">
-                <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-400 mb-2">
+                <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-2">
                   {filterTerm || severityFilter !== 'all' || sourceFilter !== 'all'
                     ? 'No intelligence matches found for the current filters.'
                     : 'No intelligence matches found yet.'
                   }
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   {filterTerm || severityFilter !== 'all' || sourceFilter !== 'all'
                     ? 'Try adjusting your filters or perform a Quick Scan to discover new threats.'
                     : "Perform a Quick Scan or set up monitoring to start discovering threats."

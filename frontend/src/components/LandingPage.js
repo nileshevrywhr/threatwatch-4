@@ -283,17 +283,17 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="py-6 px-4 border-b border-gray-800">
+      <header className="py-6 px-4 border-b border-border">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Shield className="h-8 w-8 text-cyan-400" />
-            <span className="text-2xl font-bold text-white font-mono">ThreatWatch</span>
+            <span className="text-2xl font-bold text-foreground font-mono">ThreatWatch</span>
           </div>
           
           <div className="flex items-center space-x-6">
-            <div className="hidden md:flex items-center space-x-6 text-gray-300">
+            <div className="hidden md:flex items-center space-x-6 text-muted-foreground">
               <div className="flex items-center space-x-2">
                 <Eye className="h-4 w-4" />
                 <span className="text-sm">Real-time Monitoring</span>
@@ -316,7 +316,7 @@ const LandingPage = () => {
                 <Button
                   onClick={() => setShowAuthModal(true)}
                   variant="ghost"
-                  className="text-gray-300 hover:text-white hover:bg-gray-800"
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted"
                 >
                   <LogIn className="h-4 w-4 mr-2" />
                   Sign In
@@ -338,11 +338,11 @@ const LandingPage = () => {
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <div className="mb-8">
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
               Track Attacks on Your
               <span className="block gradient-text">Industry & Products</span>
             </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               We monitor security incidents, reports, and attacks happening worldwide. 
               Subscribe to alerts on the terms that matter to you.
             </p>
@@ -350,20 +350,20 @@ const LandingPage = () => {
 
           {/* Features Grid */}
           <div className="grid md:grid-cols-3 gap-6 mb-16">
-            <div className="glass rounded-lg p-6 hover-glow">
+            <div className="bg-card rounded-lg p-6 hover-glow">
               <Target className="h-12 w-12 text-cyan-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">Targeted Intelligence</h3>
-              <p className="text-gray-400 text-sm">Monitor specific keywords, products, and threat vectors</p>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Targeted Intelligence</h3>
+              <p className="text-muted-foreground text-sm">Monitor specific keywords, products, and threat vectors</p>
             </div>
-            <div className="glass rounded-lg p-6 hover-glow">
+            <div className="bg-card rounded-lg p-6 hover-glow">
               <Bell className="h-12 w-12 text-orange-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">Real-time Alerts</h3>
-              <p className="text-gray-400 text-sm">Get notified immediately when threats are detected</p>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Real-time Alerts</h3>
+              <p className="text-muted-foreground text-sm">Get notified immediately when threats are detected</p>
             </div>
-            <div className="glass rounded-lg p-6 hover-glow">
+            <div className="bg-card rounded-lg p-6 hover-glow">
               <Eye className="h-12 w-12 text-green-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">Global Coverage</h3>
-              <p className="text-gray-400 text-sm">Comprehensive monitoring across all threat sources</p>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Global Coverage</h3>
+              <p className="text-muted-foreground text-sm">Comprehensive monitoring across all threat sources</p>
             </div>
           </div>
 
@@ -371,17 +371,17 @@ const LandingPage = () => {
           <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
             
             {/* Start New Monitoring */}
-            <Card className="glass border-gray-700">
+            <Card className="bg-card border-border">
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl text-white">Start Monitoring</CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardTitle className="text-2xl text-foreground">Start Monitoring</CardTitle>
+                <CardDescription className="text-muted-foreground">
                   Enter a keyword or product name to begin threat monitoring
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <Label htmlFor="term" className="text-gray-300">
+                    <Label htmlFor="term" className="text-muted-foreground">
                       Keyword/Product Name *
                     </Label>
                     <Input
@@ -390,20 +390,20 @@ const LandingPage = () => {
                       placeholder="e.g., ATM fraud, POS malware, NCR"
                       value={formData.term}
                       onChange={handleInputChange}
-                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                      className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-cyan-400"
                       required
                     />
                   </div>
 
                   {user && (
-                    <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-600">
+                    <div className="bg-muted/50 rounded-lg p-3 border border-border">
                       <div className="flex items-center space-x-2">
                         <CheckCircle className="h-4 w-4 text-green-400" />
-                        <span className="text-sm text-gray-300">
-                          Monitoring for: <span className="text-white font-semibold">{user.email}</span>
+                        <span className="text-sm text-muted-foreground">
+                          Monitoring for: <span className="text-foreground font-semibold">{user.email}</span>
                         </span>
                       </div>
-                      <div className="text-xs text-gray-400 mt-1">
+                      <div className="text-xs text-muted-foreground mt-1">
                         {user.subscription_tier === 'free' && `${user.monitoring_terms_count || 0}/0 monitoring terms (upgrade to add more)`}
                         {user.subscription_tier === 'pro' && `${user.monitoring_terms_count || 0}/10 monitoring terms used`}
                         {user.subscription_tier === 'enterprise' && `${user.monitoring_terms_count || 0}/50 monitoring terms used`}
@@ -414,7 +414,7 @@ const LandingPage = () => {
                   {!user && (
                     <>
                       <div>
-                        <Label htmlFor="email" className="text-gray-300">
+                        <Label htmlFor="email" className="text-muted-foreground">
                           Email Address *
                         </Label>
                         <Input
@@ -424,13 +424,13 @@ const LandingPage = () => {
                           placeholder="your@email.com"
                           value={formData.email}
                           onChange={handleInputChange}
-                          className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                          className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-cyan-400"
                           required
                         />
                       </div>
 
                       <div>
-                        <Label htmlFor="phone" className="text-gray-300">
+                        <Label htmlFor="phone" className="text-muted-foreground">
                           Phone Number (optional)
                         </Label>
                         <Input
@@ -440,7 +440,7 @@ const LandingPage = () => {
                           placeholder="+1 (555) 123-4567"
                           value={formData.phone}
                           onChange={handleInputChange}
-                          className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                          className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-cyan-400"
                         />
                       </div>
                     </>
@@ -496,9 +496,9 @@ const LandingPage = () => {
                               <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-400 border-t-transparent"></div>
                               <span className="text-sm">{quickScanProgress.message}</span>
                             </div>
-                            <div className="w-full bg-gray-700 rounded-full h-1.5 mt-2">
+                            <div className="w-full bg-accent rounded-full h-1.5 mt-2">
                               <div 
-                                className="bg-gradient-to-r from-orange-400 to-orange-500 h-1.5 rounded-full transition-all duration-800 ease-out"
+                                className="bg-gradient-to-r from-orange-400 to-orange-500 h-1.5 rounded-full transition-all duration-800 ease-out text-white"
                                 style={{ width: `${quickScanProgress.progress}%` }}
                               ></div>
                             </div>
@@ -517,24 +517,24 @@ const LandingPage = () => {
             </Card>
 
             {/* View Existing Feed */}
-            <Card className="glass border-gray-700">
+            <Card className="bg-card border-border">
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl text-white">View My Feed</CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardTitle className="text-2xl text-foreground">View My Feed</CardTitle>
+                <CardDescription className="text-muted-foreground">
                   Access your existing intelligence feed and subscriptions
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {user ? (
                   <div className="space-y-4">
-                    <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-600">
+                    <div className="bg-muted/50 rounded-lg p-4 border border-border">
                       <div className="flex items-center space-x-2 mb-2">
                         <CheckCircle className="h-4 w-4 text-green-400" />
-                        <span className="text-white font-semibold">{user.full_name}</span>
+                        <span className="text-foreground font-semibold">{user.full_name}</span>
                       </div>
-                      <p className="text-sm text-gray-400">{user.email}</p>
+                      <p className="text-sm text-muted-foreground">{user.email}</p>
                       <div className="mt-2 flex items-center space-x-2">
-                        <span className="text-xs text-gray-500">Plan:</span>
+                        <span className="text-xs text-muted-foreground">Plan:</span>
                         <span className="text-xs capitalize text-cyan-400 font-semibold">{user.subscription_tier}</span>
                       </div>
                     </div>
@@ -551,7 +551,7 @@ const LandingPage = () => {
                   </div>
                 ) : (
                   <div className="text-center space-y-4">
-                    <p className="text-gray-400">Sign in to access your personalized intelligence feed</p>
+                    <p className="text-muted-foreground">Sign in to access your personalized intelligence feed</p>
                     <Button
                       onClick={() => setShowAuthModal(true)}
                       className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-semibold py-3 transition-all duration-300"
