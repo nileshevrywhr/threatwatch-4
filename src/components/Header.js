@@ -36,18 +36,18 @@ const Header = memo(({ onAuthSuccess, onNewMonitorClick }) => {
 
     return (
         <>
-            <header className="py-6 px-4 border-b border-gray-800">
+            <header className="py-6 px-4 border-b border-border bg-background">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div
                         className="flex items-center space-x-2 cursor-pointer"
                         onClick={handleLogoClick}
                     >
                         <Shield className="h-8 w-8 text-cyan-400" />
-                        <span className="text-2xl font-bold text-white font-mono">ThreatWatch</span>
+                        <span className="text-2xl font-bold font-mono">ThreatWatch</span>
                     </div>
 
                     <div className="flex items-center space-x-6">
-                        <div className="hidden md:flex items-center space-x-6 text-gray-300">
+                        <div className="hidden md:flex items-center space-x-6 text-muted-foreground">
                             <div className="flex items-center space-x-2">
                                 <Eye className="h-4 w-4" />
                                 <span className="text-sm">Real-time Monitoring</span>
@@ -64,7 +64,7 @@ const Header = memo(({ onAuthSuccess, onNewMonitorClick }) => {
                                 <Button
                                     onClick={onNewMonitorClick}
                                     variant="outline"
-                                    className="text-gray-300 hover:text-white hover:bg-gray-800 border-gray-600"
+                                    className="border-border"
                                 >
                                     <PlusCircle className="h-4 w-4 mr-2" />
                                     New Monitor
@@ -80,7 +80,6 @@ const Header = memo(({ onAuthSuccess, onNewMonitorClick }) => {
                                 <Button
                                     onClick={() => setShowAuthModal(true)}
                                     variant="ghost"
-                                    className="text-gray-300 hover:text-white hover:bg-gray-800"
                                 >
                                     <LogIn className="h-4 w-4 mr-2" />
                                     Sign In

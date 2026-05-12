@@ -1,41 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Alert, AlertDescription } from './ui/alert';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { CheckCircle, AlertTriangle, User, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { useAnalytics } from '../services/analytics';
-import { useSearchParams } from 'react-router-dom';
-import { supabase, AUTH_REDIRECT_BASE } from '../lib/supabaseClient';
+import {
+  Mail,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  Loader2,
+  CheckCircle,
+  AlertTriangle
+} from 'lucide-react';
+import { Alert, AlertDescription } from './ui/alert';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "./ui/tooltip";
+import { supabase } from '../lib/supabaseClient';
 
 const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
-  const analytics = useAnalytics();
-  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('login');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('');
+  const [messageType, setMessageType] = useState('success');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [timerId, setTimerId] = useState(null);
-
-  useEffect(() => {
-    return () => {
-      if (timerId) clearTimeout(timerId);
-    };
-  }, [timerId]);
-
-  useEffect(() => {
-    const error = searchParams.get('error');
-    const errorDesc = searchParams.get('error_description');
-    if (error || errorDesc) {
-      setMessage(errorDesc || error);
-      setMessageType('error');
-    }
-  }, [searchParams]);
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -43,20 +42,23 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   });
 
   const [registerData, setRegisterData] = useState({
+    full_name: '',
     email: '',
     password: '',
-    confirm_password: '',
-    full_name: ''
+    confirm_password: ''
   });
+
+  const handleInputChange = (e, form) => {
+    const { name, value } = e.target;
+    if (form === 'login') {
+      setLoginData(prev => ({ ...prev, [name]: value }));
+    } else {
+      setRegisterData(prev => ({ ...prev, [name]: value }));
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!loginData.email || !loginData.password) {
-      setMessage('Please fill in all fields');
-      setMessageType('error');
-      return;
-    }
-
     setLoading(true);
     setMessage('');
 
@@ -68,29 +70,14 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
 
       if (error) throw error;
 
-      analytics.trackAuthEvent('login', true);
-      analytics.identify(data.user.id, {
-        email: data.user.email,
-        full_name: data.user.user_metadata?.full_name,
-      });
-
-      setMessage('Login successful!');
       setMessageType('success');
-
-      if (onAuthSuccess) {
-        onAuthSuccess(data.user, data.session?.access_token);
-      }
-
-      const id = setTimeout(() => {
-        onClose();
+      setMessage('Successfully signed in!');
+      setTimeout(() => {
+        onAuthSuccess(data.user);
       }, 1000);
-      setTimerId(id);
-
-    } catch (error) {
-      const errorMessage = error.message || 'Login failed. Please try again.';
-      analytics.trackAuthEvent('login', false, errorMessage);
-      setMessage(errorMessage);
+    } catch (err) {
       setMessageType('error');
+      setMessage(err.message || 'Failed to sign in. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -98,20 +85,15 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (!registerData.email || !registerData.password || !registerData.confirm_password || !registerData.full_name) {
-      setMessage('Please fill in all fields');
-      setMessageType('error');
-      return;
-    }
-
-    if (registerData.password !== registerData.confirm_password) {
-      setMessage('Passwords do not match');
-      setMessageType('error');
-      return;
-    }
-
     setLoading(true);
     setMessage('');
+
+    if (registerData.password !== registerData.confirm_password) {
+      setMessageType('error');
+      setMessage('Passwords do not match.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -120,79 +102,57 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
         options: {
           data: {
             full_name: registerData.full_name,
-            subscription_tier: 'free',
-          },
-          emailRedirectTo: `${AUTH_REDIRECT_BASE}/auth/callback`,
-        },
+            subscription_tier: 'free'
+          }
+        }
       });
 
       if (error) throw error;
 
-      analytics.trackAuthEvent('register', true);
-      analytics.identify(data.user.id, {
-        email: data.user.email,
-        full_name: registerData.full_name,
-        signup_timestamp: new Date().toISOString()
-      });
-
-      setMessage('Registration successful! You are now logged in.');
       setMessageType('success');
-
-      if (onAuthSuccess) {
-        onAuthSuccess(data.user, data.session?.access_token);
+      setMessage('Account created! Please check your email for confirmation.');
+      // Auto-login after successful registration (if confirmation is not required)
+      if (data.session) {
+        setTimeout(() => {
+          onAuthSuccess(data.user);
+        }, 1500);
       }
-
-      const id = setTimeout(() => {
-        onClose();
-      }, 1000);
-      setTimerId(id);
-
-    } catch (error) {
-      const errorMessage = error.message || 'Registration failed. Please try again.';
-      analytics.trackAuthEvent('register', false, errorMessage);
-      setMessage(errorMessage);
+    } catch (err) {
       setMessageType('error');
+      setMessage(err.message || 'Failed to create account. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e, formType) => {
-    const { name, value } = e.target;
-    if (formType === 'login') {
-      setLoginData(prev => ({ ...prev, [name]: value }));
-    } else {
-      setRegisterData(prev => ({ ...prev, [name]: value }));
-    }
-    setMessage(''); // Clear any existing messages
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-gray-900 border-gray-700">
+      <DialogContent className="sm:max-w-[425px] border-border bg-card">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-white text-center">Welcome to ThreatWatch</DialogTitle>
-          <DialogDescription className="text-gray-400 text-center">
-            Sign in to access advanced threat monitoring features
+          <DialogTitle className="text-2xl font-bold text-center">ThreatWatch</DialogTitle>
+          <DialogDescription className="text-center">
+            {activeTab === 'login'
+              ? 'Access your intelligence dashboard'
+              : 'Create an account to start monitoring'}
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-gray-800">
-            <TabsTrigger value="login" className="text-gray-300 data-[state=active]:bg-gray-700 data-[state=active]:text-white">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="login">
               Sign In
             </TabsTrigger>
-            <TabsTrigger value="register" className="text-gray-300 data-[state=active]:bg-gray-700 data-[state=active]:text-white">
+            <TabsTrigger value="register">
               Sign Up
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="login" className="space-y-4 mt-6">
             <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <Label htmlFor="loginEmail" className="text-gray-300">Email</Label>
+              <div className="space-y-2">
+                <Label htmlFor="loginEmail">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     id="loginEmail"
                     name="email"
@@ -200,16 +160,16 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     placeholder="your@email.com"
                     value={loginData.email}
                     onChange={(e) => handleInputChange(e, 'login')}
-                    className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                    className="pl-10"
                     required
                   />
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="loginPassword" className="text-gray-300">Password</Label>
+              <div className="space-y-2">
+                <Label htmlFor="loginPassword">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     id="loginPassword"
                     name="password"
@@ -217,7 +177,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     placeholder="Enter your password"
                     value={loginData.password}
                     onChange={(e) => handleInputChange(e, 'login')}
-                    className="pl-10 pr-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                    className="pl-10 pr-10"
                     required
                   />
                   <Tooltip>
@@ -225,7 +185,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                         aria-label={showPassword ? "Hide password" : "Show password"}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -257,10 +217,10 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
 
           <TabsContent value="register" className="space-y-4 mt-6">
             <form onSubmit={handleRegister} className="space-y-4">
-              <div>
-                <Label htmlFor="registerName" className="text-gray-300">Full Name</Label>
+              <div className="space-y-2">
+                <Label htmlFor="registerName">Full Name</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     id="registerName"
                     name="full_name"
@@ -268,16 +228,16 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     placeholder="Your full name"
                     value={registerData.full_name}
                     onChange={(e) => handleInputChange(e, 'register')}
-                    className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                    className="pl-10"
                     required
                   />
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="registerEmail" className="text-gray-300">Email</Label>
+              <div className="space-y-2">
+                <Label htmlFor="registerEmail">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     id="registerEmail"
                     name="email"
@@ -285,16 +245,16 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     placeholder="your@email.com"
                     value={registerData.email}
                     onChange={(e) => handleInputChange(e, 'register')}
-                    className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                    className="pl-10"
                     required
                   />
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="registerPassword" className="text-gray-300">Password</Label>
+              <div className="space-y-2">
+                <Label htmlFor="registerPassword">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     id="registerPassword"
                     name="password"
@@ -302,7 +262,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     placeholder="Create a strong password"
                     value={registerData.password}
                     onChange={(e) => handleInputChange(e, 'register')}
-                    className="pl-10 pr-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                    className="pl-10 pr-10"
                     required
                   />
                   <Tooltip>
@@ -310,7 +270,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                         aria-label={showPassword ? "Hide password" : "Show password"}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -321,15 +281,15 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Must include uppercase, lowercase, number, and be 8+ characters
                 </p>
               </div>
 
-              <div>
-                <Label htmlFor="confirmPassword" className="text-gray-300">Confirm Password</Label>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     id="confirmPassword"
                     name="confirm_password"
@@ -337,7 +297,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     placeholder="Confirm your password"
                     value={registerData.confirm_password}
                     onChange={(e) => handleInputChange(e, 'register')}
-                    className="pl-10 pr-10 bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
+                    className="pl-10 pr-10"
                     required
                   />
                   <Tooltip>
@@ -345,7 +305,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                         aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                       >
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -377,19 +337,19 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
         </Tabs>
 
         {message && (
-          <Alert className={`mt-4 ${messageType === 'success' ? 'border-green-500 bg-green-900/20' : 'border-red-500 bg-red-900/20'}`}>
+          <Alert variant={messageType === 'success' ? 'default' : 'destructive'} className={`mt-4 ${messageType === 'success' ? 'border-green-500 bg-green-500/10' : ''}`}>
             {messageType === 'success' ? (
-              <CheckCircle className="h-4 w-4" />
+              <CheckCircle className="h-4 w-4 text-green-500" />
             ) : (
               <AlertTriangle className="h-4 w-4" />
             )}
-            <AlertDescription className={messageType === 'success' ? 'text-green-300' : 'text-red-300'}>
+            <AlertDescription className={messageType === 'success' ? 'text-green-500' : ''}>
               {message}
             </AlertDescription>
           </Alert>
         )}
 
-        <div className="text-center text-sm text-gray-500 mt-4">
+        <div className="text-center text-sm text-muted-foreground mt-4">
           By signing up, you start with our <span className="text-cyan-400 font-semibold">Free Plan</span>
           <br />
           3 Quick Scans per day • Upgrade anytime for more features

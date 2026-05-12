@@ -1,12 +1,28 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { createMonitor } from '../lib/api';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './ui/card';
+import { Badge } from './ui/badge';
 import { Alert, AlertDescription } from './ui/alert';
+import {
+  Shield,
+  Search,
+  Zap,
+  Bell,
+  Lock,
+  ChevronRight,
+  CheckCircle,
+  ArrowRight,
+  Loader2,
+  Eye,
+  LogIn,
+  Monitor,
+  Globe,
+  Database,
+  BarChart
+} from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -14,96 +30,72 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Target, ArrowRight, CheckCircle, Zap, Eye, Bell, LogIn, Loader2 } from 'lucide-react';
 import Header from './Header';
 import AuthModal from './AuthModal';
-import { useAnalytics } from '../services/analytics';
+import { createMonitor, quickScan } from '../lib/api';
 import { useAuth } from './AuthProvider';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import { useAnalytics } from '../services/analytics';
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const analytics = useAnalytics();
-  const { user, session } = useAuth();
 
   const [formData, setFormData] = useState({
     term: '',
+    frequency: 'daily',
     email: '',
-    phone: '',
-    frequency: 'daily'
+    phone: ''
   });
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('');
   const [quickScanLoading, setQuickScanLoading] = useState(false);
-  const [quickScanProgress, setQuickScanProgress] = useState({
-    stage: 0,
-    message: '',
-    progress: 0
-  });
-  const [feedEmail, setFeedEmail] = useState('');
-  const [feedLoading, setFeedLoading] = useState(false);
+  const [quickScanProgress, setQuickScanProgress] = useState({ progress: 0, message: '' });
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success');
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const navigate = useNavigate();
-
-  const handleHeaderAuthSuccess = useCallback(() => {
-    navigate('/feed');
-  }, [navigate]);
-
   const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFrequencyChange = (value) => {
+    setFormData(prev => ({ ...prev, frequency: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.term) {
-      setMessage('Please enter a keyword to monitor');
-      setMessageType('error');
-      return;
-    }
-
-    // Check if user is authenticated
-    if (!user) {
-      setMessage('Please sign in to set up monitoring');
-      setMessageType('error');
-      setShowAuthModal(true);
-      return;
-    }
-
     setLoading(true);
     setMessage('');
 
     try {
-      await createMonitor({
-        term: formData.term,
-        frequency: formData.frequency
-      });
-
-      setMessage(`Now monitoring attacks related to "${formData.term}" (${formData.frequency}). You'll receive alerts via email.`);
-      setMessageType('success');
-
-      // Redirect to intelligence feed after 2 seconds
-      setTimeout(() => {
-        navigate(`/feed?email=${encodeURIComponent(user.email)}`);
-      }, 2000);
-
-    } catch (error) {
-      let errorMessage = 'Subscription failed. Please try again.';
-      if (error.response?.data?.detail) {
-        const detail = error.response.data.detail;
-        errorMessage = typeof detail === 'string' ? detail : 
-                       Array.isArray(detail) ? detail.map(d => d.msg || JSON.stringify(d)).join(', ') : 
-                       JSON.stringify(detail);
-      } else if (error.message) {
-        errorMessage = error.message;
+      if (!user && !formData.email) {
+        setMessageType('error');
+        setMessage('Please provide an email address or sign in.');
+        setLoading(false);
+        return;
       }
-      setMessage(errorMessage);
+
+      const monitorData = {
+        term: formData.term,
+        frequency: formData.frequency,
+        email: user ? user.email : formData.email,
+        phone: formData.phone,
+        active: true
+      };
+
+      await createMonitor(monitorData);
+
+      if (!user) {
+        setMessageType('success');
+        setMessage('Monitor created! Please sign in to view your feed.');
+        setShowAuthModal(true);
+      } else {
+        navigate('/feed');
+      }
+    } catch (err) {
       setMessageType('error');
+      setMessage(err.message || 'Failed to create monitor. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -111,23 +103,19 @@ const LandingPage = () => {
 
   const handleQuickScan = async () => {
     if (!formData.term) {
-      setMessage('Please enter a keyword to scan');
       setMessageType('error');
+      setMessage('Please enter a search term for the quick scan.');
       return;
     }
 
-    // Check if user is authenticated
     if (!user) {
-      setMessage('Please sign in to perform Quick Scans');
       setMessageType('error');
+      setMessage('Please sign in to perform Quick Scans');
       setShowAuthModal(true);
-
-      // Track authentication barrier for drop-off analysis
       analytics.trackFunnelStep('scan_to_download', 'auth_required', false);
       return;
     }
 
-    // Track Quick Scan initiation - Key Metric #2: Searches per user
     const scanStartTime = Date.now();
     analytics.trackQuickScanUI('initiated', {
       query: formData.term,
@@ -135,229 +123,104 @@ const LandingPage = () => {
     });
 
     setQuickScanLoading(true);
-    setMessage('');
-
-    // Progress stages
-    const stages = [
-      { message: 'Preparing search query...', progress: 10 },
-      { message: 'Searching Google for recent news...', progress: 30 },
-      { message: 'Analyzing discovered articles...', progress: 60 },
-      { message: 'Generating AI-powered insights...', progress: 85 },
-      { message: 'Finalizing results...', progress: 100 }
-    ];
+    setQuickScanProgress({ progress: 10, message: 'Initializing AI agents...' });
 
     try {
-      // Simulate progress updates
-      for (let i = 0; i < stages.length - 1; i++) {
-        setQuickScanProgress({
-          stage: i,
-          message: stages[i].message,
-          progress: stages[i].progress
-        });
-        await new Promise(resolve => setTimeout(resolve, 800)); // 800ms between stages
+      const progressSteps = [
+        { progress: 30, message: 'Scanning threat databases...' },
+        { progress: 50, message: 'Analyzing data leaks...' },
+        { progress: 75, message: 'Processing with GPT-4...' },
+        { progress: 90, message: 'Generating report...' }
+      ];
+
+      for (const step of progressSteps) {
+        await new Promise(resolve => setTimeout(resolve, 800));
+        setQuickScanProgress(step);
       }
 
-      // Set final stage before API call
-      setQuickScanProgress({
-        stage: stages.length - 2,
-        message: stages[stages.length - 2].message,
-        progress: stages[stages.length - 2].progress
-      });
+      const result = await quickScan(formData.term);
+      sessionStorage.setItem(`quickScanResult_${formData.term}`, JSON.stringify(result));
 
-      const response = await axios.post(`${API}/quick-scan`, {
-        query: formData.term
-      }, {
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      // Complete progress
-      setQuickScanProgress({
-        stage: stages.length - 1,
-        message: stages[stages.length - 1].message,
-        progress: stages[stages.length - 1].progress
-      });
-
-      // Track successful scan completion
       const scanDuration = (Date.now() - scanStartTime) / 1000;
       analytics.trackQuickScanUI('completed', {
         query: formData.term,
         scan_duration: scanDuration,
-        articles_found: response.data.discovered_links?.length || 0,
         success: true
       });
-
-      // Track funnel progression
       analytics.trackFunnelStep('scan_to_download', 'scan_completed', true, scanDuration);
 
-      // Short delay before redirect to show completion
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Store enhanced quick scan results with email association and redirect
-      const userEmail = user.email;
-      const quickScanData = {
-        ...response.data,
-        userEmail: userEmail,
-        timestamp: new Date().toISOString()
-      };
-      sessionStorage.setItem(`quickScanResult_${userEmail}`, JSON.stringify(quickScanData));
-      navigate(`/feed?email=${encodeURIComponent(userEmail)}&quickScan=true`);
-
-    } catch (error) {
-      let errorMessage = 'Quick scan failed. Please try again.';
-      if (error.response?.data?.detail) {
-        const detail = error.response.data.detail;
-        errorMessage = typeof detail === 'string' ? detail : 
-                       Array.isArray(detail) ? detail.map(d => d.msg || JSON.stringify(d)).join(', ') : 
-                       JSON.stringify(detail);
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      const scanDuration = (Date.now() - scanStartTime) / 1000;
-
-      // Track scan failure analytics
+      setQuickScanProgress({ progress: 100, message: 'Scan complete!' });
+      setTimeout(() => {
+        navigate(`/feed?term=${encodeURIComponent(formData.term)}`);
+      }, 500);
+    } catch (err) {
+      setMessageType('error');
+      setMessage(err.message || 'Quick scan failed. Please try again.');
+      setQuickScanLoading(false);
       analytics.trackQuickScanUI('failed', {
         query: formData.term,
-        error_message: errorMessage,
-        scan_duration: scanDuration,
-        success: false
+        error: err.message
       });
-
-      // Track API error
-      analytics.trackAPIError('/api/quick-scan', error.response?.status || 500, errorMessage, {
-        method: 'POST',
-        duration: scanDuration
-      });
-
-      setMessage(errorMessage);
-      setMessageType('error');
-      setQuickScanLoading(false);
-      setQuickScanProgress({ stage: 0, message: '', progress: 0 });
     }
   };
-
-  const handleViewFeed = async (e) => {
-    e.preventDefault();
-    if (!feedEmail) {
-      setMessage('Please enter your email address');
-      setMessageType('feed-error');
-      return;
-    }
-
-    setFeedLoading(true);
-    setMessage('');
-
-    try {
-      // Check if user has any subscriptions by calling the status endpoint
-      // This part might need auth if backend requires it, but keeping it as is for now
-      const response = await axios.get(`${API}/status`, {
-        params: { email: feedEmail }
-      });
-
-      // Navigate to feed regardless of whether they have subscriptions
-      // This allows users to see their empty feed and add subscriptions
-      navigate(`/feed?email=${encodeURIComponent(feedEmail)}`);
-
-    } catch (error) {
-      let errorMessage = 'Failed to load feed. Please try again.';
-      if (error.response?.data?.detail) {
-        const detail = error.response.data.detail;
-        errorMessage = typeof detail === 'string' ? detail : 
-                       Array.isArray(detail) ? detail.map(d => d.msg || JSON.stringify(d)).join(', ') : 
-                       JSON.stringify(detail);
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      setMessage(errorMessage);
-      setMessageType('feed-error');
-      setFeedLoading(false);
-    }
-  };
-
-  // Optimized: Memoize callback to maintain referential stability for Header memoization
-  const handleAuthSuccess = useCallback(() => {
-    navigate('/feed');
-  }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
-      <Header onAuthSuccess={handleAuthSuccess} />
+    <div className="min-h-screen bg-background">
+      <Header onAuthSuccess={() => navigate('/feed')} />
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="mb-8">
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              Track Attacks on Your
-              <span className="block gradient-text">Industry & Products</span>
+      <section className="relative pt-20 pb-32 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-cyan-500/10 text-cyan-400 border-cyan-500/20 px-4 py-1 text-sm">
+              Enterprise-Grade Threat Intelligence
+            </Badge>
+            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
+              Protect Your Brand with <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-600">
+                AI-Driven Vigilance
+              </span>
             </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-              We monitor security incidents, reports, and attacks happening worldwide.
-              Subscribe to alerts on the terms that matter to you.
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Monitor the deep web, social platforms, and threat databases in real-time.
+              Get instant alerts when your company, products, or data are mentioned in risk contexts.
             </p>
           </div>
 
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-3 gap-6 mb-16">
-            <div className="glass rounded-lg p-6 hover-glow">
-              <Target className="h-12 w-12 text-cyan-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">Targeted Intelligence</h3>
-              <p className="text-gray-400 text-sm">Monitor specific keywords, products, and threat vectors</p>
-            </div>
-            <div className="glass rounded-lg p-6 hover-glow">
-              <Bell className="h-12 w-12 text-orange-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">Real-time Alerts</h3>
-              <p className="text-gray-400 text-sm">Get notified immediately when threats are detected</p>
-            </div>
-            <div className="glass rounded-lg p-6 hover-glow">
-              <Eye className="h-12 w-12 text-green-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">Global Coverage</h3>
-              <p className="text-gray-400 text-sm">Comprehensive monitoring across all threat sources</p>
-            </div>
-          </div>
-
-          {/* Action Cards */}
-          <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
-
-            {/* Start New Monitoring */}
-            <Card className="glass border-gray-700">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl text-white">Start Monitoring</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Enter a keyword or product name to begin threat monitoring
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Monitoring Form */}
+            <Card className="border-border bg-card">
+              <CardHeader>
+                <CardTitle className="text-2xl">Start Monitoring</CardTitle>
+                <CardDescription>
+                  Configure your first monitoring term and get real-time alerts
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="term" className="text-gray-300">
-                      Keyword/Product Name *
-                    </Label>
-                    <Input
-                      id="term"
-                      name="term"
-                      placeholder="e.g., ATM fraud, POS malware, NCR"
-                      value={formData.term}
-                      onChange={handleInputChange}
-                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
-                      required
-                    />
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="term">What do you want to monitor? *</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="term"
+                        name="term"
+                        placeholder="Company name, product, or keyword"
+                        value={formData.term}
+                        onChange={handleInputChange}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="frequency" className="text-gray-300">
-                      Monitoring Frequency
-                    </Label>
-                    <Select
-                      value={formData.frequency}
-                      onValueChange={(value) => setFormData({ ...formData, frequency: value })}
-                    >
-                      <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-white">
+                  <div className="space-y-2">
+                    <Label>Monitoring Frequency</Label>
+                    <Select value={formData.frequency} onValueChange={handleFrequencyChange}>
+                      <SelectTrigger>
                         <SelectValue placeholder="Select frequency" />
                       </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                      <SelectContent>
                         <SelectItem value="daily">Daily</SelectItem>
                         <SelectItem value="weekly">Weekly</SelectItem>
                         <SelectItem value="monthly">Monthly</SelectItem>
@@ -366,14 +229,14 @@ const LandingPage = () => {
                   </div>
 
                   {user && (
-                    <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-600">
+                    <div className="bg-muted rounded-lg p-3 border border-border">
                       <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4 text-green-400" />
-                        <span className="text-sm text-gray-300">
-                          Monitoring for: <span className="text-white font-semibold">{user.email}</span>
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span className="text-sm">
+                          Monitoring for: <span className="font-semibold">{user.email}</span>
                         </span>
                       </div>
-                      <div className="text-xs text-gray-400 mt-1">
+                      <div className="text-xs text-muted-foreground mt-1">
                         {(user.user_metadata?.subscription_tier === 'free' || !user.user_metadata?.subscription_tier) && `${user.monitoring_terms_count || 0}/0 monitoring terms (upgrade to add more)`}
                         {user.user_metadata?.subscription_tier === 'pro' && `${user.monitoring_terms_count || 0}/10 monitoring terms used`}
                         {user.user_metadata?.subscription_tier === 'enterprise' && `${user.monitoring_terms_count || 0}/50 monitoring terms used`}
@@ -383,10 +246,8 @@ const LandingPage = () => {
 
                   {!user && (
                     <>
-                      <div>
-                        <Label htmlFor="email" className="text-gray-300">
-                          Email Address *
-                        </Label>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email Address *</Label>
                         <Input
                           id="email"
                           name="email"
@@ -394,15 +255,12 @@ const LandingPage = () => {
                           placeholder="your@email.com"
                           value={formData.email}
                           onChange={handleInputChange}
-                          className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
                           required
                         />
                       </div>
 
-                      <div>
-                        <Label htmlFor="phone" className="text-gray-300">
-                          Phone Number (optional)
-                        </Label>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number (optional)</Label>
                         <Input
                           id="phone"
                           name="phone"
@@ -410,16 +268,15 @@ const LandingPage = () => {
                           placeholder="+1 (555) 123-4567"
                           value={formData.phone}
                           onChange={handleInputChange}
-                          className="bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
                         />
                       </div>
                     </>
                   )}
 
                   {message && (
-                    <Alert className={messageType === 'success' ? 'border-green-500 bg-green-900/20' : 'border-red-500 bg-red-900/20'}>
+                    <Alert variant={messageType === 'success' ? 'default' : 'destructive'} className={messageType === 'success' ? 'border-green-500 bg-green-500/10' : ''}>
                       <CheckCircle className="h-4 w-4" />
-                      <AlertDescription className={messageType === 'success' ? 'text-green-300' : 'text-red-300'}>
+                      <AlertDescription className={messageType === 'success' ? 'text-green-500' : ''}>
                         {message}
                       </AlertDescription>
                     </Alert>
@@ -449,12 +306,12 @@ const LandingPage = () => {
                       onClick={handleQuickScan}
                       disabled={loading || quickScanLoading}
                       variant="outline"
-                      className="w-full border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white font-semibold py-3 transition-all duration-300 relative overflow-hidden"
+                      className="w-full border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white font-semibold py-3 transition-all duration-300 relative overflow-hidden"
                     >
                       {quickScanLoading ? (
                         <div className="w-full">
                           {/* Progress bar background */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-orange-600/20"
+                          <div className="absolute inset-0 bg-orange-500/10"
                             style={{
                               width: `${quickScanProgress.progress}%`,
                               transition: 'width 0.8s ease-in-out'
@@ -464,7 +321,7 @@ const LandingPage = () => {
                           {/* Progress content */}
                           <div className="relative z-10 flex flex-col items-center space-y-1" role="status" aria-live="polite">
                             <div className="flex items-center space-x-2">
-                              <Loader2 className="h-4 w-4 animate-spin text-orange-400" />
+                              <Loader2 className="h-4 w-4 animate-spin" />
                               <span className="text-sm">{quickScanProgress.message}</span>
                             </div>
                             <div
@@ -472,10 +329,10 @@ const LandingPage = () => {
                               aria-valuenow={quickScanProgress.progress}
                               aria-valuemin="0"
                               aria-valuemax="100"
-                              className="w-full bg-gray-700 rounded-full h-1.5 mt-2"
+                              className="w-full bg-muted rounded-full h-1.5 mt-2"
                             >
                               <div
-                                className="bg-gradient-to-r from-orange-400 to-orange-500 h-1.5 rounded-full transition-all duration-800 ease-out"
+                                className="bg-orange-500 h-1.5 rounded-full transition-all duration-800 ease-out"
                                 style={{ width: `${quickScanProgress.progress}%` }}
                               ></div>
                             </div>
@@ -494,24 +351,24 @@ const LandingPage = () => {
             </Card>
 
             {/* View Existing Feed */}
-            <Card className="glass border-gray-700">
+            <Card className="border-border bg-card">
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl text-white">View My Feed</CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardTitle className="text-2xl">View My Feed</CardTitle>
+                <CardDescription>
                   Access your existing intelligence feed and subscriptions
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {user ? (
                   <div className="space-y-4">
-                    <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-600">
+                    <div className="bg-muted rounded-lg p-4 border border-border">
                       <div className="flex items-center space-x-2 mb-2">
-                        <CheckCircle className="h-4 w-4 text-green-400" />
-                        <span className="text-white font-semibold">{user.user_metadata?.full_name || 'User'}</span>
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span className="font-semibold">{user.user_metadata?.full_name || 'User'}</span>
                       </div>
-                      <p className="text-sm text-gray-400">{user.email}</p>
+                      <p className="text-sm text-muted-foreground">{user.email}</p>
                       <div className="mt-2 flex items-center space-x-2">
-                        <span className="text-xs text-gray-500">Plan:</span>
+                        <span className="text-xs text-muted-foreground">Plan:</span>
                         <span className="text-xs capitalize text-cyan-400 font-semibold">{user.user_metadata?.subscription_tier || 'free'}</span>
                       </div>
                     </div>
@@ -528,7 +385,7 @@ const LandingPage = () => {
                   </div>
                 ) : (
                   <div className="text-center space-y-4">
-                    <p className="text-gray-400">Sign in to access your personalized intelligence feed</p>
+                    <p className="text-muted-foreground">Sign in to access your personalized intelligence feed</p>
                     <Button
                       onClick={() => setShowAuthModal(true)}
                       className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-semibold py-3 transition-all duration-300"

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { 
@@ -9,9 +9,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { User, Crown, Zap, Shield, Settings, LogOut, CreditCard } from 'lucide-react';
+import {
+  User,
+  Crown,
+  Zap,
+  Shield,
+  Settings,
+  LogOut,
+  CreditCard,
+  Sun,
+  Moon,
+  Monitor
+} from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
+import { useTheme } from './ThemeProvider';
 
 const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
+  const { theme, setTheme } = useTheme();
+
   const getTierIcon = (tier) => {
     switch (tier) {
       case 'enterprise':
@@ -19,18 +34,18 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
       case 'pro':
         return <Zap className="h-4 w-4 text-orange-400" />;
       default:
-        return <Shield className="h-4 w-4 text-gray-400" />;
+        return <Shield className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
   const getTierColor = (tier) => {
     switch (tier) {
       case 'enterprise':
-        return 'bg-purple-500/20 text-purple-300 border-purple-400';
+        return 'bg-purple-500/10 text-purple-500 border-purple-500/20';
       case 'pro':
-        return 'bg-orange-500/20 text-orange-300 border-orange-400';
+        return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
       default:
-        return 'bg-gray-500/20 text-gray-300 border-gray-400';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -39,7 +54,7 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
       <DropdownMenuTrigger asChild>
       <Button
         variant="ghost"
-        className="flex items-center space-x-2 text-gray-300 hover:text-white hover:bg-gray-800"
+        className="flex items-center space-x-2 text-muted-foreground hover:text-foreground hover:bg-accent"
         aria-label={`User menu for ${user.full_name}`}
       >
           <div className="flex items-center space-x-2">
@@ -47,29 +62,29 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
               <User className="h-4 w-4 text-white" />
             </div>
             <div className="hidden md:block text-left">
-              <div className="text-sm font-medium">{user.full_name}</div>
+              <div className="text-sm font-medium text-foreground">{user.full_name}</div>
               <div className="flex items-center space-x-1">
                 {getTierIcon(user.subscription_tier)}
-                <span className="text-xs capitalize">{user.subscription_tier}</span>
+                <span className="text-xs capitalize text-muted-foreground">{user.subscription_tier}</span>
               </div>
             </div>
           </div>
         </Button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent className="w-56 bg-gray-800 border-gray-700" align="end">
-        <DropdownMenuLabel className="text-gray-300">
+      <DropdownMenuContent className="w-64 bg-card border-border" align="end">
+        <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium text-white">{user.full_name}</p>
-            <p className="text-xs text-gray-400">{user.email}</p>
+            <p className="text-sm font-medium">{user.full_name}</p>
+            <p className="text-xs text-muted-foreground">{user.email}</p>
           </div>
         </DropdownMenuLabel>
         
-        <DropdownMenuSeparator className="bg-gray-700" />
+        <DropdownMenuSeparator />
         
         <div className="px-2 py-1">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-300">Current Plan:</span>
+            <span className="text-sm text-muted-foreground">Current Plan:</span>
             <Badge className={`text-xs ${getTierColor(user.subscription_tier)}`}>
               <div className="flex items-center space-x-1">
                 {getTierIcon(user.subscription_tier)}
@@ -79,39 +94,64 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
           </div>
           
           {user.subscription_tier === 'free' && (
-            <div className="mt-2 text-xs text-gray-400">
+            <div className="mt-2 text-xs text-muted-foreground">
               {user.quick_scans_today || 0}/3 scans used today
             </div>
           )}
           
           {(user.subscription_tier === 'pro' || user.subscription_tier === 'enterprise') && (
-            <div className="mt-2 space-y-1 text-xs text-gray-400">
+            <div className="mt-2 space-y-1 text-xs text-muted-foreground">
               <div>Quick scans: {user.quick_scans_today || 0} used today</div>
               <div>Monitoring terms: {user.monitoring_terms_count || 0} active</div>
             </div>
           )}
         </div>
         
-        <DropdownMenuSeparator className="bg-gray-700" />
+        <DropdownMenuSeparator />
+
+        <div className="flex items-center justify-between px-2 py-1.5">
+          <span className="text-sm font-medium">Theme</span>
+          <ToggleGroup
+            type="single"
+            value={theme}
+            onValueChange={(value) => {
+              if (value) setTheme(value);
+            }}
+            className="border rounded-full p-0.5"
+            size="sm"
+          >
+            <ToggleGroupItem value="system" className="rounded-full w-8 h-8 p-0" title="System">
+              <Monitor className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="light" className="rounded-full w-8 h-8 p-0" title="Light">
+              <Sun className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="dark" className="rounded-full w-8 h-8 p-0" title="Dark">
+              <Moon className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+
+        <DropdownMenuSeparator />
         
         <DropdownMenuItem 
           onClick={onShowSubscriptionPlans}
-          className="text-gray-300 hover:bg-gray-700 hover:text-white cursor-pointer"
+          className="cursor-pointer"
         >
           <CreditCard className="mr-2 h-4 w-4" />
           <span>Manage Subscription</span>
         </DropdownMenuItem>
         
-        <DropdownMenuItem className="text-gray-300 hover:bg-gray-700 hover:text-white cursor-pointer">
+        <DropdownMenuItem className="cursor-pointer">
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>
         
-        <DropdownMenuSeparator className="bg-gray-700" />
+        <DropdownMenuSeparator />
         
         <DropdownMenuItem 
           onClick={onLogout}
-          className="text-red-400 hover:bg-red-900/20 hover:text-red-300 cursor-pointer"
+          className="text-destructive hover:text-destructive cursor-pointer"
         >
           <LogOut className="mr-2 h-4 w-4" />
           <span>Sign Out</span>

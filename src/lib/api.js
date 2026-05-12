@@ -13,13 +13,9 @@ class UnauthorizedError extends Error {
 const apiClient = async (endpoint, options = {}) => {
   const { data: { session } } = await supabase.auth.getSession();
 
-  if (!session?.access_token) {
-    throw new UnauthorizedError('No active session');
-  }
-
   const headers = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${session.access_token}`,
+    ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
     ...options.headers,
   };
 
@@ -69,6 +65,12 @@ export const createMonitor = (data) => {
   });
 };
 
+export const quickScan = (term) => {
+  return apiClient('/api/quick-scan', {
+    method: 'POST',
+    body: JSON.stringify({ term }),
+  });
+};
 
 export const downloadReport = async (reportId) => {
   const { data: { session } } = await supabase.auth.getSession();
@@ -82,7 +84,7 @@ export const downloadReport = async (reportId) => {
       headers: {
         'Authorization': `Bearer ${session.access_token}`,
       },
-      redirect: 'follow', // Follow the redirect to the PDF URL
+      redirect: 'follow',
     });
 
     if (response.status === 401) {
@@ -93,10 +95,7 @@ export const downloadReport = async (reportId) => {
       throw new Error('Failed to download report');
     }
 
-    // Get the blob from the response (will be the PDF after redirect)
     const blob = await response.blob();
-
-    // Create a download link
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
