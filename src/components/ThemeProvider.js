@@ -1,9 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-const ThemeContext = createContext({
-  theme: "system",
-  setTheme: () => null,
-});
+const ThemeContext = createContext(undefined);
 
 export const ThemeProvider = ({
   children,

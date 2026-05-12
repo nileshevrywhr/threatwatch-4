@@ -18,7 +18,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
     {
       id: 'free',
       name: 'Free',
-      price: '$0',
+      price: '-bash',
       period: 'forever',
       description: 'Perfect for getting started with threat monitoring',
       icon: Shield,
@@ -40,7 +40,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
     {
       id: 'pro',
       name: 'Pro',
-      price: '$9',
+      price: '',
       period: 'per month',
       description: 'Advanced monitoring for security professionals',
       icon: Zap,
@@ -60,7 +60,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
     {
       id: 'enterprise',
       name: 'Enterprise',
-      price: '$29',
+      price: '9',
       period: 'per month',
       description: 'Complete threat monitoring for large organizations',
       icon: Crown,
