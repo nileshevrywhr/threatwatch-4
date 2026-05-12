@@ -40,7 +40,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
     {
       id: 'pro',
       name: 'Pro',
-      price: '',
+      price: '$9',
       period: 'per month',
       description: 'Advanced monitoring for security professionals',
       icon: Zap,
