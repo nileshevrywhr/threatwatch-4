@@ -60,7 +60,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
     {
       id: 'enterprise',
       name: 'Enterprise',
-      price: '9',
+      price: '$29',
       period: 'per month',
       description: 'Complete threat monitoring for large organizations',
       icon: Crown,
