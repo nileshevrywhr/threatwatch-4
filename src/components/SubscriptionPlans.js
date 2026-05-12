@@ -18,7 +18,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
     {
       id: 'free',
       name: 'Free',
-      price: '-bash',
+      price: '$0',
       period: 'forever',
       description: 'Perfect for getting started with threat monitoring',
       icon: Shield,
