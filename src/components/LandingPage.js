@@ -34,10 +34,13 @@ import Header from './Header';
 import AuthModal from './AuthModal';
 import { createMonitor, quickScan } from '../lib/api';
 import { useAuth } from './AuthProvider';
+import { useAnalytics } from '../services/analytics';
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const analytics = useAnalytics();
+
   const [formData, setFormData] = useState({
     term: '',
     frequency: 'daily',
@@ -105,6 +108,20 @@ const LandingPage = () => {
       return;
     }
 
+    if (!user) {
+      setMessageType('error');
+      setMessage('Please sign in to perform Quick Scans');
+      setShowAuthModal(true);
+      analytics.trackFunnelStep('scan_to_download', 'auth_required', false);
+      return;
+    }
+
+    const scanStartTime = Date.now();
+    analytics.trackQuickScanUI('initiated', {
+      query: formData.term,
+      user_authenticated: true
+    });
+
     setQuickScanLoading(true);
     setQuickScanProgress({ progress: 10, message: 'Initializing AI agents...' });
 
@@ -124,6 +141,14 @@ const LandingPage = () => {
       const result = await quickScan(formData.term);
       sessionStorage.setItem(`quickScanResult_${formData.term}`, JSON.stringify(result));
 
+      const scanDuration = (Date.now() - scanStartTime) / 1000;
+      analytics.trackQuickScanUI('completed', {
+        query: formData.term,
+        scan_duration: scanDuration,
+        success: true
+      });
+      analytics.trackFunnelStep('scan_to_download', 'scan_completed', true, scanDuration);
+
       setQuickScanProgress({ progress: 100, message: 'Scan complete!' });
       setTimeout(() => {
         navigate(`/feed?term=${encodeURIComponent(formData.term)}`);
@@ -132,6 +157,10 @@ const LandingPage = () => {
       setMessageType('error');
       setMessage(err.message || 'Quick scan failed. Please try again.');
       setQuickScanLoading(false);
+      analytics.trackQuickScanUI('failed', {
+        query: formData.term,
+        error: err.message
+      });
     }
   };
 
