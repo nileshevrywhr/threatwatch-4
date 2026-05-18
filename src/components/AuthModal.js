@@ -32,7 +32,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   const [activeTab, setActiveTab] = useState('login');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('success');
+  const [messageType, setMessageType] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -336,7 +336,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
           </TabsContent>
         </Tabs>
 
-        {message && (
+        {message && messageType && (
           <Alert variant={messageType === 'success' ? 'default' : 'destructive'} className={`mt-4 ${messageType === 'success' ? 'border-green-500 bg-green-500/10' : ''}`}>
             {messageType === 'success' ? (
               <CheckCircle className="h-4 w-4 text-green-500" />

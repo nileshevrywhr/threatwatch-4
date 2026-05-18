@@ -36,6 +36,54 @@ import { createMonitor, quickScan } from '../lib/api';
 import { useAuth } from './AuthProvider';
 import { useAnalytics } from '../services/analytics';
 
+// Configuration for quick scan storage pruning
+const QUICK_SCAN_CONFIG = {
+  MAX_ENTRIES: 10,
+  MAX_AGE_MS: 7 * 24 * 60 * 60 * 1000 // 7 days
+};
+
+// Helper function to prune old/excess quick scan results from sessionStorage
+const pruneSavedQuickScans = () => {
+  try {
+    const allKeys = Object.keys(sessionStorage);
+    const quickScanKeys = allKeys.filter(key => key.startsWith('quickScanResult_'));
+
+    // Parse all entries with timestamps
+    const entries = quickScanKeys.map(key => {
+      try {
+        const data = JSON.parse(sessionStorage.getItem(key));
+        return {
+          key,
+          savedAt: data.savedAt || 0,
+          data
+        };
+      } catch {
+        return { key, savedAt: 0, data: null };
+      }
+    }).filter(entry => entry.data !== null);
+
+    const now = Date.now();
+
+    // Remove entries older than threshold
+    const recentEntries = entries.filter(entry => {
+      if (now - entry.savedAt > QUICK_SCAN_CONFIG.MAX_AGE_MS) {
+        sessionStorage.removeItem(entry.key);
+        return false;
+      }
+      return true;
+    });
+
+    // If still over max count, remove oldest
+    if (recentEntries.length > QUICK_SCAN_CONFIG.MAX_ENTRIES) {
+      const sorted = recentEntries.sort((a, b) => a.savedAt - b.savedAt);
+      const toRemove = sorted.slice(0, recentEntries.length - QUICK_SCAN_CONFIG.MAX_ENTRIES);
+      toRemove.forEach(entry => sessionStorage.removeItem(entry.key));
+    }
+  } catch (error) {
+    console.error('Error pruning quick scans:', error);
+  }
+};
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -139,7 +187,16 @@ const LandingPage = () => {
       }
 
       const result = await quickScan(formData.term);
-      sessionStorage.setItem(`quickScanResult_${formData.term}`, JSON.stringify(result));
+
+      // Wrap result with timestamp metadata
+      const wrappedResult = {
+        ...result,
+        savedAt: Date.now()
+      };
+      sessionStorage.setItem(`quickScanResult_${formData.term}`, JSON.stringify(wrappedResult));
+
+      // Prune old/excess entries after saving
+      pruneSavedQuickScans();
 
       const scanDuration = (Date.now() - scanStartTime) / 1000;
       analytics.trackQuickScanUI('completed', {
@@ -374,7 +431,10 @@ const LandingPage = () => {
                     </div>
 
                     <Button
-                      onClick={() => navigate(`/feed?email=${encodeURIComponent(user.email)}`)}
+                      onClick={() => {
+                        pruneSavedQuickScans();
+                        navigate(`/feed?email=${encodeURIComponent(user.email)}`);
+                      }}
                       className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-semibold py-3 transition-all duration-300"
                     >
                       <div className="flex items-center space-x-2">
