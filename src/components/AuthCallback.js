@@ -89,14 +89,14 @@ const AuthCallback = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4" role="status" aria-label="Authentication Callback">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4" role="status" aria-label="Authentication Callback">
       <div className="max-w-md w-full text-center space-y-6">
         {status === 'verifying' && (
           <>
             <Loader2 className="h-12 w-12 animate-spin text-cyan-500 mx-auto" />
             <div className="space-y-2">
-              <h2 className="text-xl font-semibold text-white">Verifying your account</h2>
-              <p className="text-slate-400">Please wait while we complete the authentication process...</p>
+              <h2 className="text-xl font-semibold">Verifying your account</h2>
+              <p className="text-muted-foreground">Please wait while we complete the authentication process...</p>
             </div>
           </>
         )}
@@ -107,8 +107,8 @@ const AuthCallback = () => {
               <CheckCircle2 className="h-8 w-8 text-green-500" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-xl font-semibold text-white">Account Verified!</h2>
-              <p className="text-slate-400">Redirecting you to your intelligence feed...</p>
+              <h2 className="text-xl font-semibold">Account Verified!</h2>
+              <p className="text-muted-foreground">Redirecting you to your intelligence feed...</p>
             </div>
           </>
         )}
@@ -121,7 +121,7 @@ const AuthCallback = () => {
             <div className="space-y-2">
               <h2 className="text-xl font-semibold text-white">Verification Failed</h2>
               <p className="text-red-400">{errorMessage}</p>
-              <p className="text-slate-500 text-sm mt-4">Redirecting to login page...</p>
+              <p className="text-muted-foreground text-sm mt-4">Redirecting to login page...</p>
             </div>
           </>
         )}

@@ -65,18 +65,18 @@ const IntelligenceFeed = () => {
   if (monitorsLoading) {
     return (
       <div
-        className="min-h-screen bg-slate-950 flex flex-col items-center justify-center space-y-4"
+        className="min-h-screen bg-background flex flex-col items-center justify-center space-y-4"
         role="status"
         aria-label="Loading intelligence reports"
       >
         <Loader2 className="h-10 w-10 animate-spin text-cyan-500" aria-hidden="true" />
-        <p className="text-slate-400 animate-pulse font-medium">Loading intelligence reports...</p>
+        <p className="text-muted-foreground animate-pulse font-medium">Loading intelligence reports...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
+    <div className="min-h-screen bg-background">
       <Header onNewMonitorClick={() => setShowNewMonitorModal(true)} />
 
       <NewMonitorModal
@@ -87,16 +87,16 @@ const IntelligenceFeed = () => {
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Left Column: Monitors */}
         <div className="md:col-span-1">
-          <h2 className="text-lg font-semibold text-white mb-4">Monitors</h2>
-          <Card className="bg-slate-900 border-slate-800">
+          <h2 className="text-lg font-semibold mb-4">Monitors</h2>
+          <Card className="border-border">
             <CardContent className="p-4 space-y-2">
               {error ? (
                 <div className="text-center">
-                  <p className="text-red-400 text-sm mb-4">{error}</p>
+                  <p className="text-destructive text-sm mb-4">{error}</p>
                   <Button
                     onClick={fetchMonitors}
                     variant="outline"
-                    className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                    className="w-full"
                   >
                     Retry
                   </Button>
@@ -105,7 +105,7 @@ const IntelligenceFeed = () => {
                 <div className="text-center py-4">
                   <div className="bg-cyan-500/10 rounded-lg p-4 mb-4 border border-cyan-500/20">
                     <p className="text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-2">Getting Started</p>
-                    <p className="text-slate-300 text-sm">Create your first monitor to start receiving intelligence reports.</p>
+                    <p className="text-muted-foreground text-sm">Create your first monitor to start receiving intelligence reports.</p>
                   </div>
                   <Button
                     onClick={() => setShowNewMonitorModal(true)}
@@ -121,8 +121,8 @@ const IntelligenceFeed = () => {
                     onClick={() => setSelectedMonitor(monitor)}
                     className={`w-full text-left p-2 rounded-md transition-colors ${
                       selectedMonitor?.monitor_id === monitor.monitor_id
-                        ? 'bg-slate-800 font-bold text-white'
-                        : 'text-slate-400 hover:bg-slate-800'
+                        ? 'bg-accent font-bold text-accent-foreground'
+                        : 'text-muted-foreground hover:bg-accent'
                     }`}
                   >
                     {monitor.term}
@@ -135,31 +135,31 @@ const IntelligenceFeed = () => {
 
         {/* Right Column: Reports */}
         <div className="md:col-span-3">
-          <h1 className="text-2xl font-bold text-white mb-4">Intelligence Feed</h1>
+          <h1 className="text-2xl font-bold mb-4">Intelligence Feed</h1>
           {reportsLoading ? (
             <div className="flex justify-center items-center h-64">
               <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
             </div>
           ) : reportsError ? (
-            <Card className="bg-red-900/20 border-red-500">
+            <Card className="bg-destructive/10 border-destructive">
               <CardContent className="flex flex-col items-center justify-center p-12 text-center">
-                <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
-                <h3 className="text-lg font-semibold text-white mb-2">Error</h3>
-                <p className="text-red-300">{reportsError}</p>
+                <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Error</h3>
+                <p className="text-destructive">{reportsError}</p>
               </CardContent>
             </Card>
           ) : reports.length === 0 ? (
-            <Card className="bg-slate-900/50 border-slate-800 backdrop-blur">
+            <Card className="bg-card border-border backdrop-blur">
               <CardContent className="flex flex-col items-center justify-center p-12 text-center">
-                <div className="bg-slate-800/50 rounded-full p-4 mb-4">
-                  <FileText className="h-12 w-12 text-slate-500" />
+                <div className="bg-muted rounded-full p-4 mb-4">
+                  <FileText className="h-12 w-12 text-muted-foreground" />
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">
+                <h3 className="text-xl font-semibold mb-2">
                   {selectedMonitor
                     ? `Gathering intelligence for "${selectedMonitor.term}"...`
                     : 'Your feed is empty'}
                 </h3>
-                <p className="text-slate-400 max-w-sm mx-auto">
+                <p className="text-muted-foreground max-w-sm mx-auto">
                   {selectedMonitor
                     ? 'Our AI agents are currently scanning threat sources for relevant matches. This may take a few minutes for new monitors.'
                     : 'Create a monitor on the left to start tracking threats and vulnerabilities related to your products or brand.'}

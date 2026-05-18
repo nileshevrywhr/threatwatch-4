@@ -80,7 +80,7 @@ const NewMonitorModal = ({ isOpen, onClose }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-gray-800 border-gray-700 text-white">
+      <DialogContent className="sm:max-w-[425px] bg-card border-border">
         <DialogHeader>
           <DialogTitle>Monitor a New Term</DialogTitle>
           <DialogDescription>
@@ -89,7 +89,7 @@ const NewMonitorModal = ({ isOpen, onClose }) => {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="term" className="text-gray-300">
+            <Label htmlFor="term">
               Keyword/Product Name *
             </Label>
             <Input
@@ -98,22 +98,21 @@ const NewMonitorModal = ({ isOpen, onClose }) => {
               placeholder="e.g., ATM fraud, POS malware, NCR"
               value={formData.term}
               onChange={handleInputChange}
-              className="bg-gray-900 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400"
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="frequency" className="text-gray-300">
+            <Label htmlFor="frequency">
               Monitoring Frequency
             </Label>
             <Select
               value={formData.frequency}
               onValueChange={(value) => setFormData({ ...formData, frequency: value })}
             >
-              <SelectTrigger className="w-full bg-gray-900 border-gray-600 text-white">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select frequency" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-700 text-white">
+              <SelectContent>
                 <SelectItem value="daily">Daily</SelectItem>
                 <SelectItem value="weekly">Weekly</SelectItem>
                 <SelectItem value="monthly">Monthly</SelectItem>
@@ -121,13 +120,13 @@ const NewMonitorModal = ({ isOpen, onClose }) => {
             </Select>
           </div>
           {message && (
-            <Alert className={messageType === 'success' ? 'border-green-500 bg-green-900/20' : 'border-red-500 bg-red-900/20'}>
+            <Alert variant={messageType === 'success' ? 'default' : 'destructive'} className={messageType === 'success' ? 'border-green-500 bg-green-500/10' : ''}>
               {messageType === 'success' ? (
-                <CheckCircle className="h-4 w-4" />
+                <CheckCircle className="h-4 w-4 !text-green-500" />
               ) : (
                 <AlertTriangle className="h-4 w-4" />
               )}
-              <AlertDescription className={messageType === 'success' ? 'text-green-300' : 'text-red-300'}>
+              <AlertDescription className={messageType === 'success' ? 'text-green-500' : ''}>
                 {message}
               </AlertDescription>
             </Alert>
