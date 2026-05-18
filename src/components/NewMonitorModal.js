@@ -122,7 +122,7 @@ const NewMonitorModal = ({ isOpen, onClose }) => {
           {message && (
             <Alert variant={messageType === 'success' ? 'default' : 'destructive'} className={messageType === 'success' ? 'border-green-500 bg-green-500/10' : ''}>
               {messageType === 'success' ? (
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 !text-green-500" />
               ) : (
                 <AlertTriangle className="h-4 w-4" />
               )}
