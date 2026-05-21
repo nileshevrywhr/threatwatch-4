@@ -9,6 +9,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export const AUTH_REDIRECT_BASE = process.env.REACT_APP_AUTH_REDIRECT_BASE || process.env.NEXT_PUBLIC_AUTH_REDIRECT_BASE || "https://threatwatch-4.vercel.app";
+export const AUTH_REDIRECT_BASE = process.env.REACT_APP_AUTH_REDIRECT_BASE || process.env.NEXT_PUBLIC_AUTH_REDIRECT_BASE || "https://signalcanary.fyi";
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);

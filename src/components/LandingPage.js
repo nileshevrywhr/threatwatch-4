@@ -226,26 +226,12 @@ const LandingPage = () => {
       <Header onAuthSuccess={() => navigate('/feed')} />
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-32 overflow-hidden">
+      <section className="relative pt-10 pb-20 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-cyan-500/10 text-cyan-400 border-cyan-500/20 px-4 py-1 text-sm">
-              Enterprise-Grade Threat Intelligence
-            </Badge>
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
-              Protect Your Brand with <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-600">
-                AI-Driven Vigilance
-              </span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Monitor the deep web, social platforms, and threat databases in real-time.
-              Get instant alerts when your company, products, or data are mentioned in risk contexts.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Monitoring Form */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            {/* Left Side: Forms */}
+            <div className="space-y-6">
+              {/* Monitoring Form */}
             <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="text-2xl">Start Monitoring</CardTitle>
@@ -343,7 +329,7 @@ const LandingPage = () => {
                     <Button
                       type="submit"
                       disabled={loading || quickScanLoading}
-                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-3 transition-all duration-300"
+                      className="w-full bg-[#00FFB2] hover:bg-[#00E6A0] text-black text-white font-semibold py-3 transition-all duration-300"
                     >
                       {loading ? (
                         <div className="flex items-center space-x-2">
@@ -406,8 +392,7 @@ const LandingPage = () => {
                 </form>
               </CardContent>
             </Card>
-
-            {/* View Existing Feed */}
+              {/* View Existing Feed */}
             <Card className="border-border bg-card">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl">View My Feed</CardTitle>
@@ -426,7 +411,7 @@ const LandingPage = () => {
                       <p className="text-sm text-muted-foreground">{user.email}</p>
                       <div className="mt-2 flex items-center space-x-2">
                         <span className="text-xs text-muted-foreground">Plan:</span>
-                        <span className="text-xs capitalize text-cyan-400 font-semibold">{user.user_metadata?.subscription_tier || 'free'}</span>
+                        <span className="text-xs capitalize text-[#00FFB2] font-semibold">{user.user_metadata?.subscription_tier || 'free'}</span>
                       </div>
                     </div>
 
@@ -435,7 +420,7 @@ const LandingPage = () => {
                         pruneSavedQuickScans();
                         navigate(`/feed?email=${encodeURIComponent(user.email)}`);
                       }}
-                      className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-semibold py-3 transition-all duration-300"
+                      className="w-full bg-[#00FFB2] hover:bg-[#00E6A0] text-black text-white font-semibold py-3 transition-all duration-300"
                     >
                       <div className="flex items-center space-x-2">
                         <Eye className="h-4 w-4" />
@@ -448,7 +433,7 @@ const LandingPage = () => {
                     <p className="text-muted-foreground">Sign in to access your personalized intelligence feed</p>
                     <Button
                       onClick={() => setShowAuthModal(true)}
-                      className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-semibold py-3 transition-all duration-300"
+                      className="w-full bg-[#00FFB2] hover:bg-[#00E6A0] text-black text-white font-semibold py-3 transition-all duration-300"
                     >
                       <div className="flex items-center space-x-2">
                         <LogIn className="h-4 w-4" />
@@ -459,7 +444,26 @@ const LandingPage = () => {
                 )}
               </CardContent>
             </Card>
+            </div>
 
+            {/* Right Side: Copy */}
+            <div className="lg:pt-20">
+              <div className="text-left mb-0">
+            <Badge className="mb-4 bg-[#00FFB2]/10 text-[#00FFB2] border-[#00FFB2]/20 px-4 py-1 text-sm">
+              Catch threats before they hit your product.
+            </Badge>
+            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
+              Terminal Visibility into <br />
+              <span className="text-[#00FFB2]">
+                Open Source Intelligence
+              </span>
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-3xl ">
+              Continuous monitoring of clear, deep, and dark web signals.
+              Get instant alerts when your company, products, or data are mentioned in risk contexts.
+            </p>
+          </div>
+            </div>
           </div>
         </div>
       </section>

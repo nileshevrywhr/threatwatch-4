@@ -1,5 +1,5 @@
 /**
- * PostHog Provider Component for ThreatWatch
+ * PostHog Provider Component for SignalCanary
  * Provides PostHog context throughout the React application
  */
 import React, { createContext, useContext, useEffect, useState } from 'react'

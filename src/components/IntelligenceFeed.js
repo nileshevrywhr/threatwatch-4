@@ -69,7 +69,7 @@ const IntelligenceFeed = () => {
         role="status"
         aria-label="Loading intelligence reports"
       >
-        <Loader2 className="h-10 w-10 animate-spin text-cyan-500" aria-hidden="true" />
+        <Loader2 className="h-10 w-10 animate-spin text-[#00FFB2]" aria-hidden="true" />
         <p className="text-muted-foreground animate-pulse font-medium">Loading intelligence reports...</p>
       </div>
     );
@@ -103,13 +103,13 @@ const IntelligenceFeed = () => {
                 </div>
               ) : monitors.length === 0 ? (
                 <div className="text-center py-4">
-                  <div className="bg-cyan-500/10 rounded-lg p-4 mb-4 border border-cyan-500/20">
-                    <p className="text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-2">Getting Started</p>
+                  <div className="bg-[#00FFB2]/10 rounded-lg p-4 mb-4 border border-[#00FFB2]/20">
+                    <p className="text-[#00FFB2] text-xs font-semibold uppercase tracking-wider mb-2">Getting Started</p>
                     <p className="text-muted-foreground text-sm">Create your first monitor to start receiving intelligence reports.</p>
                   </div>
                   <Button
                     onClick={() => setShowNewMonitorModal(true)}
-                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/20"
+                    className="w-full bg-[#00FFB2] hover:bg-[#00E6A0] text-black shadow-lg shadow-[#00FFB2]/20"
                   >
                     Create First Monitor
                   </Button>
@@ -138,7 +138,7 @@ const IntelligenceFeed = () => {
           <h1 className="text-2xl font-bold mb-4">Intelligence Feed</h1>
           {reportsLoading ? (
             <div className="flex justify-center items-center h-64">
-              <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-[#00FFB2]" />
             </div>
           ) : reportsError ? (
             <Card className="bg-destructive/10 border-destructive">

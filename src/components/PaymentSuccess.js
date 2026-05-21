@@ -76,7 +76,7 @@ const PaymentSuccess = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="border-border max-w-md w-full mx-4">
           <CardContent className="p-8 text-center">
-            <Loader2 className="h-12 w-12 text-cyan-400 mx-auto mb-4 animate-spin" />
+            <Loader2 className="h-12 w-12 text-[#00FFB2] mx-auto mb-4 animate-spin" />
             <h2 className="text-xl font-semibold mb-2">
               {authLoading ? 'Verifying Session' : 'Processing Payment'}
             </h2>
@@ -92,14 +92,14 @@ const PaymentSuccess = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="border-border max-w-md w-full mx-4">
           <CardContent className="p-8 text-center">
-            <div className="h-12 w-12 bg-cyan-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-               <LogIn className="h-6 w-6 text-cyan-400" />
+            <div className="h-12 w-12 bg-[#00FFB2]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+               <LogIn className="h-6 w-6 text-[#00FFB2]" />
             </div>
             <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
             <p className="text-muted-foreground mb-6">Please log in to verify your payment and activate your subscription.</p>
             <Button
               onClick={() => setShowAuthModal(true)}
-              className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+              className="w-full bg-[#00FFB2] hover:bg-[#00E6A0] text-black"
             >
               Log In to Continue
             </Button>
