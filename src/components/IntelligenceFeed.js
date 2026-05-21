@@ -109,7 +109,7 @@ const IntelligenceFeed = () => {
                   </div>
                   <Button
                     onClick={() => setShowNewMonitorModal(true)}
-                    className="w-full bg-[#00FFB2] hover:bg-[#00E6A0] text-black text-white shadow-lg shadow-[#00FFB2]/20"
+                    className="w-full bg-[#00FFB2] hover:bg-[#00E6A0] text-black shadow-lg shadow-[#00FFB2]/20"
                   >
                     Create First Monitor
                   </Button>
