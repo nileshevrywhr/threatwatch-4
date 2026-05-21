@@ -27,6 +27,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import { supabase } from '../lib/supabaseClient';
+import Logo from './Logo';
 
 const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
   const [activeTab, setActiveTab] = useState('login');
@@ -129,7 +130,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] border-border bg-card">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center">ThreatWatch</DialogTitle>
+          <DialogTitle className="flex justify-center mb-4"><Logo className="h-10" /></DialogTitle>
           <DialogDescription className="text-center">
             {activeTab === 'login'
               ? 'Access your intelligence dashboard'
@@ -201,7 +202,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-3"
+                className="w-full bg-[#00FFB2] hover:bg-[#00E6A0] text-black text-white font-semibold py-3"
               >
                 {loading ? (
                   <>
@@ -321,7 +322,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-semibold py-3"
+                className="w-full bg-[#00FFB2] hover:bg-[#00E6A0] text-black text-white font-semibold py-3"
               >
                 {loading ? (
                   <>
@@ -350,7 +351,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
         )}
 
         <div className="text-center text-sm text-muted-foreground mt-4">
-          By signing up, you start with our <span className="text-cyan-400 font-semibold">Free Plan</span>
+          By signing up, you start with our <span className="text-[#00FFB2] font-semibold">Free Plan</span>
           <br />
           3 Quick Scans per day • Upgrade anytime for more features
         </div>

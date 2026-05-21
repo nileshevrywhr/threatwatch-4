@@ -93,7 +93,7 @@ const AuthCallback = () => {
       <div className="max-w-md w-full text-center space-y-6">
         {status === 'verifying' && (
           <>
-            <Loader2 className="h-12 w-12 animate-spin text-cyan-500 mx-auto" />
+            <Loader2 className="h-12 w-12 animate-spin text-[#00FFB2] mx-auto" />
             <div className="space-y-2">
               <h2 className="text-xl font-semibold">Verifying your account</h2>
               <p className="text-muted-foreground">Please wait while we complete the authentication process...</p>

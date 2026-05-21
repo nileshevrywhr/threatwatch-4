@@ -1,11 +1,11 @@
 /* eslint-disable no-restricted-globals */
 /**
- * PostHog Analytics Service for ThreatWatch Frontend
+ * PostHog Analytics Service for SignalCanary Frontend
  * Handles user journey tracking, drop-off analysis, and business metrics
  */
 import posthog from 'posthog-js'
 
-class ThreatWatchFrontendAnalytics {
+class SignalCanaryFrontendAnalytics {
   constructor() {
     this.isInitialized = false
     this.initializePostHog()
@@ -327,7 +327,7 @@ class ThreatWatchFrontendAnalytics {
 }
 
 // Global analytics instance
-export const frontendAnalytics = new ThreatWatchFrontendAnalytics()
+export const frontendAnalytics = new SignalCanaryFrontendAnalytics()
 
 // React hook for easy access
 export const useAnalytics = () => {

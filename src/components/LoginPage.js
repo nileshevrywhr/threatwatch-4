@@ -22,7 +22,7 @@ const LoginPage = () => {
         role="status"
         aria-label="Verifying authentication"
       >
-        <Loader2 className="h-10 w-10 animate-spin text-cyan-500" aria-hidden="true" />
+        <Loader2 className="h-10 w-10 animate-spin text-[#00FFB2]" aria-hidden="true" />
         <p className="text-muted-foreground animate-pulse font-medium">Verifying authentication...</p>
       </div>
     );

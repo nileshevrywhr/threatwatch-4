@@ -140,7 +140,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
           <div className="mb-6 p-4 bg-muted rounded-lg border border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <currentPlan.icon className="h-6 w-6 text-cyan-400" />
+                <currentPlan.icon className="h-6 w-6 text-[#00FFB2]" />
                 <div>
                   <h4 className="font-semibold">Current Plan: {currentPlan.name}</h4>
                   <p className="text-sm text-muted-foreground">
@@ -148,7 +148,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
                   </p>
                 </div>
               </div>
-              <Badge className="bg-cyan-500/10 text-cyan-500 border-cyan-500/20">
+              <Badge className="bg-[#00FFB2]/10 text-[#00FFB2] border-[#00FFB2]/20">
                 Active
               </Badge>
             </div>
@@ -166,7 +166,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
               } ${isCurrentPlan ? 'ring-2 ring-cyan-500' : ''}`}>
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-orange-500 text-white">Most Popular</Badge>
+                    <Badge className="bg-[#00FFB2] text-white">Most Popular</Badge>
                   </div>
                 )}
 
@@ -174,7 +174,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
                   <div className="flex justify-center mb-4">
                     <PlanIcon className={`h-12 w-12 ${
                       plan.id === 'free' ? 'text-muted-foreground' :
-                      plan.id === 'pro' ? 'text-orange-400' : 'text-purple-400'
+                      plan.id === 'pro' ? 'text-[#00FFB2]' : 'text-foreground'
                     }`} />
                   </div>
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>

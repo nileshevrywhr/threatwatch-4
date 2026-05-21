@@ -1,8 +1,8 @@
-# ThreatWatch Production Deployment Guide
+# SignalCanary Production Deployment Guide
 
 ## 🏗️ Architecture Overview
 
-Your ThreatWatch application consists of three main components that need separate deployment:
+Your SignalCanary application consists of three main components that need separate deployment:
 
 1. **Frontend (React)** → **Vercel** ✅ (Recommended)
 2. **Backend (FastAPI)** → **Railway/Render/DigitalOcean** ✅ 
@@ -16,7 +16,7 @@ Your ThreatWatch application consists of three main components that need separat
 - [ ] MongoDB Atlas account (for database)
 - [ ] PostHog Cloud account (analytics)
 - [ ] Google Cloud account (Custom Search API)
-- [ ] Emergent LLM key (AI integration)
+- [ ] SignalCanary LLM key (AI integration)
 
 ---
 
@@ -29,25 +29,25 @@ Your ThreatWatch application consists of three main components that need separat
 ```
 
 ### 1.2 Setup Instructions
-1. **Create New Project**: Name it "ThreatWatch"
+1. **Create New Project**: Name it "SignalCanary"
 2. **Build Database**: Choose "Free Shared" (M0 Sandbox)
 3. **Cloud Provider**: Choose your preferred region
-4. **Cluster Name**: `threatwatch-cluster`
+4. **Cluster Name**: `signalcanary-cluster`
 5. **Create Database User**: 
-   - Username: `threatwatch-admin`
+   - Username: `signalcanary-admin`
    - Password: Generate secure password (save it!)
 6. **Network Access**: Add `0.0.0.0/0` (allow from anywhere)
 7. **Connect**: Choose "Connect your application"
 8. **Driver**: Python, Version 3.12 or later
 9. **Copy Connection String**: 
    ```
-   mongodb+srv://threatwatch-admin:FBKz2ZM3xU90arFM@threatwatch-cluster.kqkappu.mongodb.net/?retryWrites=true&w=majority&appName=threatwatch-cluster
+   mongodb+srv://signalcanary-admin:FBKz2ZM3xU90arFM@signalcanary-cluster.kqkappu.mongodb.net/?retryWrites=true&w=majority&appName=signalcanary-cluster
    ```
 
 ### 1.3 Database Setup
 ```bash
 # Your connection string will look like:
-MONGO_URL=mongodb+srv://threatwatch-admin:YOUR_PASSWORD@threatwatch-cluster.xxxxx.mongodb.net/threatwatch?retryWrites=true&w=majority
+MONGO_URL=mongodb+srv://signalcanary-admin:YOUR_PASSWORD@signalcanary-cluster.xxxxx.mongodb.net/signalcanary?retryWrites=true&w=majority
 ```
 
 ---
@@ -66,7 +66,7 @@ npm install -g @railway/cli
 
 #### 2.2 Deploy Backend to Railway
 1. **Create New Project** → "Deploy from GitHub repo"
-2. **Connect Repository** → Select your ThreatWatch repo
+2. **Connect Repository** → Select your SignalCanary repo
 3. **Add Service** → "GitHub Repo" → Select backend folder
 4. **Configure Build**:
    - **Root Directory**: `/backend`
@@ -77,8 +77,8 @@ npm install -g @railway/cli
 Add these in Railway dashboard → Settings → Environment:
 ```bash
 # Database
-MONGO_URL=mongodb+srv://threatwatch-admin:PASSWORD@threatwatch-cluster.xxxxx.mongodb.net/threatwatch?retryWrites=true&w=majority
-DB_NAME=threatwatch
+MONGO_URL=mongodb+srv://signalcanary-admin:PASSWORD@signalcanary-cluster.xxxxx.mongodb.net/signalcanary?retryWrites=true&w=majority
+DB_NAME=signalcanary
 
 # Authentication
 JWT_SECRET_KEY=your-super-secure-jwt-secret-key-for-production
@@ -90,7 +90,7 @@ GOOGLE_API_KEY=AIzaSyAl7l21PEHK_McH2C7yCBsBE2Mtv7IAvew
 GOOGLE_SEARCH_ENGINE_ID=c44646770ee284c79
 
 # AI Integration
-EMERGENT_LLM_KEY=sk-emergent-887E98dE8781142254
+SIGNALCANARY_LLM_KEY=sk-signalcanary-887E98dE8781142254
 
 # Analytics
 POSTHOG_API_KEY=phc_your_actual_posthog_key_here
@@ -103,7 +103,7 @@ STRIPE_API_KEY=your-stripe-live-api-key
 STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret
 
 # CORS - Important!
-CORS_ORIGINS=https://your-frontend-domain.vercel.app,https://threatwatch.com
+CORS_ORIGINS=https://your-frontend-domain.vercel.app,https://signalcanary.com
 
 # Environment
 ENVIRONMENT=production
@@ -112,7 +112,7 @@ APP_VERSION=1.0.0
 
 #### 2.4 Custom Domain (Railway)
 1. **Settings** → **Networking** → **Custom Domain**
-2. Add: `api.threatwatch.com` (or your preferred subdomain)
+2. Add: `api.signalcanary.com` (or your preferred subdomain)
 3. Configure DNS: Add CNAME record pointing to Railway domain
 
 ### Option B: Render (Alternative)
@@ -125,9 +125,9 @@ APP_VERSION=1.0.0
 
 #### 2.2 Deploy to Render
 1. **New** → **Web Service**
-2. **Connect Repository** → Select your ThreatWatch repo
+2. **Connect Repository** → Select your SignalCanary repo
 3. **Configuration**:
-   - **Name**: `threatwatch-backend`
+   - **Name**: `signalcanary-backend`
    - **Root Directory**: `backend`
    - **Runtime**: `Python 3`
    - **Build Command**: `pip install -r requirements.txt`
@@ -165,7 +165,7 @@ APP_VERSION=1.0.0
 1. **Go to https://vercel.com/**
 2. **Sign up with GitHub**
 3. **New Project** → **Import Git Repository**
-4. **Select your ThreatWatch repository**
+4. **Select your SignalCanary repository**
 5. **Configure Project**:
    - **Framework Preset**: Create React App
    - **Root Directory**: `frontend`
@@ -188,7 +188,7 @@ vercel
 # - Set up and deploy? Yes
 # - Which scope? Your account
 # - Link to existing project? No
-# - Project name: threatwatch-frontend
+# - Project name: signalcanary-frontend
 # - Directory: ./
 ```
 
@@ -205,7 +205,7 @@ REACT_APP_POSTHOG_HOST=https://us.i.posthog.com
 
 ### 3.4 Custom Domain (Vercel)
 1. **Settings** → **Domains**
-2. **Add Domain**: `threatwatch.com` and `www.threatwatch.com`
+2. **Add Domain**: `signalcanary.com` and `www.signalcanary.com`
 3. **Configure DNS**: Add A and CNAME records as instructed
 
 ---
@@ -215,13 +215,13 @@ REACT_APP_POSTHOG_HOST=https://us.i.posthog.com
 ### 4.1 Update CORS Settings
 In your backend environment variables, update:
 ```bash
-CORS_ORIGINS=https://threatwatch.com,https://www.threatwatch.com,https://your-app.vercel.app
+CORS_ORIGINS=https://signalcanary.com,https://www.signalcanary.com,https://your-app.vercel.app
 ```
 
 ### 4.2 Update Frontend API URL
 In Vercel environment variables:
 ```bash
-REACT_APP_BACKEND_URL=https://api.threatwatch.com
+REACT_APP_BACKEND_URL=https://api.signalcanary.com
 # OR
 REACT_APP_BACKEND_URL=https://your-backend.railway.app
 ```
@@ -379,7 +379,7 @@ railway logs
 - **MongoDB Atlas**: https://docs.atlas.mongodb.com/
 - **PostHog**: https://posthog.com/docs
 
-### ThreatWatch Specific Help
+### SignalCanary Specific Help
 - Check `/app/POSTHOG_SETUP_GUIDE.md` for analytics setup
 - Review `/app/test_result.md` for testing protocols
 - All environment variables documented in `/app/backend/.env.example`
@@ -407,4 +407,4 @@ vercel --prod
 curl https://your-backend.railway.app/health
 ```
 
-Your ThreatWatch application will be production-ready with this setup! 🚀
+Your SignalCanary application will be production-ready with this setup! 🚀

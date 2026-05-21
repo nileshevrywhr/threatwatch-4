@@ -18,7 +18,7 @@ const AuthCallback = lazy(() => import("./components/AuthCallback"));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-background flex flex-col items-center justify-center" role="status" aria-label="Loading application">
-    <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
+    <Loader2 className="h-10 w-10 animate-spin text-[#00FFB2]" />
     <p className="mt-4 text-muted-foreground animate-pulse font-medium">Loading...</p>
   </div>
 );

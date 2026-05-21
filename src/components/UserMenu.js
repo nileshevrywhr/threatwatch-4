@@ -58,8 +58,8 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
         aria-label={`User menu for ${user.full_name}`}
       >
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
-              <User className="h-4 w-4 text-white" />
+            <div className="w-8 h-8 bg-[#00FFB2] rounded-full flex items-center justify-center">
+              <User className="h-4 w-4 text-black" />
             </div>
             <div className="hidden md:block text-left">
               <div className="text-sm font-medium text-foreground">{user.full_name}</div>

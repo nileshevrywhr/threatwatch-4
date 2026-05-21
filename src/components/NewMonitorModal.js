@@ -135,7 +135,7 @@ const NewMonitorModal = ({ isOpen, onClose }) => {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold"
+              className="w-full bg-[#00FFB2] hover:bg-[#00E6A0] text-black text-white font-semibold"
             >
               {loading ? (
                 <>
