@@ -16,7 +16,11 @@ const PaymentSuccess = lazy(() => import("./components/PaymentSuccess"));
 const AuthCallback = lazy(() => import("./components/AuthCallback"));
 
 const LoadingFallback = () => (
-  <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center" role="status" aria-label="Loading application">
+  <div
+    className="min-h-screen bg-slate-950 flex flex-col items-center justify-center"
+    role="status"
+    aria-label="Loading application"
+  >
     <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
     <p className="mt-4 text-slate-400 animate-pulse font-medium">Loading...</p>
   </div>
@@ -42,7 +46,10 @@ function App() {
                         </ProtectedRoute>
                       }
                     />
-                    <Route path="/payment-success" element={<PaymentSuccess />} />
+                    <Route
+                      path="/payment-success"
+                      element={<PaymentSuccess />}
+                    />
                     <Route path="/auth/callback" element={<AuthCallback />} />
                   </Routes>
                 </Suspense>
