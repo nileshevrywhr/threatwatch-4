@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { Analytics } from "@vercel/analytics/react";
 import { PostHogProvider } from "./components/PostHogProvider";
 import { AuthProvider } from "./components/AuthProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
@@ -50,6 +51,7 @@ function App() {
                   </Suspense>
                 </ErrorBoundary>
               </BrowserRouter>
+              <Analytics />
             </div>
           </TooltipProvider>
         </ThemeProvider>
