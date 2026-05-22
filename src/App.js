@@ -2,7 +2,7 @@ import React, { Suspense, lazy } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { PostHogProvider } from "./components/PostHogProvider";
+import { AnalyticsProvider } from "./components/AnalyticsProvider";
 import { AuthProvider } from "./components/AuthProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
 import LandingPage from "./components/LandingPage";
@@ -17,7 +17,15 @@ const PaymentSuccess = lazy(() => import("./components/PaymentSuccess"));
 const AuthCallback = lazy(() => import("./components/AuthCallback"));
 
 const LoadingFallback = () => (
+<<<<<<< HEAD
   <div className="min-h-screen bg-background flex flex-col items-center justify-center" role="status" aria-label="Loading application">
+=======
+  <div
+    className="min-h-screen bg-slate-950 flex flex-col items-center justify-center"
+    role="status"
+    aria-label="Loading application"
+  >
+>>>>>>> umami-analytics
     <Loader2 className="h-10 w-10 animate-spin text-cyan-500" />
     <p className="mt-4 text-muted-foreground animate-pulse font-medium">Loading...</p>
   </div>
@@ -25,8 +33,9 @@ const LoadingFallback = () => (
 
 function App() {
   return (
-    <PostHogProvider>
+    <AnalyticsProvider>
       <AuthProvider>
+<<<<<<< HEAD
         <ThemeProvider defaultTheme="system" storageKey="ui-theme">
           <TooltipProvider>
             <div className="App">
@@ -53,8 +62,37 @@ function App() {
             </div>
           </TooltipProvider>
         </ThemeProvider>
+=======
+        <TooltipProvider>
+          <div className="App">
+            <BrowserRouter>
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Routes>
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route
+                      path="/feed"
+                      element={
+                        <ProtectedRoute>
+                          <IntelligenceFeed />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/payment-success"
+                      element={<PaymentSuccess />}
+                    />
+                    <Route path="/auth/callback" element={<AuthCallback />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
+            </BrowserRouter>
+          </div>
+        </TooltipProvider>
+>>>>>>> umami-analytics
       </AuthProvider>
-    </PostHogProvider>
+    </AnalyticsProvider>
   );
 }
 
