@@ -2,7 +2,7 @@ import React, { Suspense, lazy } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { PostHogProvider } from "./components/PostHogProvider";
+import { AnalyticsProvider } from "./components/AnalyticsProvider";
 import { AuthProvider } from "./components/AuthProvider";
 import LandingPage from "./components/LandingPage";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -24,7 +24,7 @@ const LoadingFallback = () => (
 
 function App() {
   return (
-    <PostHogProvider>
+    <AnalyticsProvider>
       <AuthProvider>
         <TooltipProvider>
           <div className="App">
@@ -51,7 +51,7 @@ function App() {
           </div>
         </TooltipProvider>
       </AuthProvider>
-    </PostHogProvider>
+    </AnalyticsProvider>
   );
 }
 

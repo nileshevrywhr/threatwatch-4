@@ -1,57 +1,136 @@
 /* eslint-disable no-restricted-globals */
 /**
- * PostHog Analytics Service for ThreatWatch Frontend
+ * Umami Analytics Service for ThreatWatch Frontend
  * Handles user journey tracking, drop-off analysis, and business metrics
  */
-import posthog from 'posthog-js'
 
 class ThreatWatchFrontendAnalytics {
   constructor() {
     this.isInitialized = false
-    this.initializePostHog()
+    this.eventQueue = []
+    this.maxQueueSize = 100
+    this.sessionId = this._generateSessionId()
+    this.distinctId = this._getStoredDistinctId()
+    this.initializeUmami()
   }
 
-  initializePostHog() {
+  initializeUmami() {
     try {
-      const apiKey = process.env.REACT_APP_POSTHOG_KEY
-      const host = process.env.REACT_APP_POSTHOG_HOST || 'https://us.i.posthog.com'
-
-      if (!apiKey || apiKey === 'phc_your_project_api_key_here') {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('PostHog API key not configured. Frontend analytics disabled.')
-        }
+      if (typeof window === 'undefined') {
         return
       }
 
-      posthog.init(apiKey, {
-        api_host: host,
-        loaded: (posthog) => {
-          if (process.env.NODE_ENV === 'development') {
-            posthog.debug()
-          }
-        },
-        // Enable advanced features
-        capture_pageview: false, // We'll manually capture pageviews
-        capture_pageleave: true,
-        enable_recording_console_log: process.env.NODE_ENV === 'development',
-        disable_session_recording: false,
-        session_recording: {
-          maskAllInputs: false,
-          maskInputOptions: {
-            password: true,
-            email: false
-          }
-        }
-      })
-
       this.isInitialized = true
+
+      if (this._getUmamiClient()) {
+        this._flushQueue()
+      } else {
+        this._retryFlushQueue()
+      }
+
       if (process.env.NODE_ENV === 'development') {
-        console.log('PostHog frontend analytics initialized successfully')
+        console.log('Umami frontend analytics initialized successfully')
       }
     } catch (error) {
-      console.error('Failed to initialize PostHog:', error)
+      console.error('Failed to initialize Umami analytics:', error)
       this.isInitialized = false
     }
+  }
+
+  _getUmamiClient() {
+    if (typeof window === 'undefined') {
+      return null
+    }
+
+    const { umami } = window
+    if (!umami) {
+      return null
+    }
+
+    if (typeof umami === 'function') {
+      return {
+        track: (eventName, properties) => umami(eventName, properties)
+      }
+    }
+
+    if (typeof umami.track === 'function') {
+      return {
+        track: (eventName, properties) => umami.track(eventName, properties)
+      }
+    }
+
+    return null
+  }
+
+  _retryFlushQueue() {
+    let attempts = 0
+    const maxAttempts = 20
+
+    const timer = setInterval(() => {
+      attempts += 1
+      const client = this._getUmamiClient()
+
+      if (client) {
+        this._flushQueue()
+        clearInterval(timer)
+      } else if (attempts >= maxAttempts) {
+        clearInterval(timer)
+      }
+    }, 500)
+  }
+
+  _generateSessionId() {
+    return `session_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
+  }
+
+  _getStoredDistinctId() {
+    if (typeof window === 'undefined') {
+      return null
+    }
+
+    try {
+      return window.localStorage.getItem('tw_umami_distinct_id')
+    } catch (error) {
+      return null
+    }
+  }
+
+  _storeDistinctId(userId) {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    try {
+      if (userId) {
+        window.localStorage.setItem('tw_umami_distinct_id', userId)
+      } else {
+        window.localStorage.removeItem('tw_umami_distinct_id')
+      }
+    } catch (error) {
+      // Ignore storage failures in privacy-restricted environments.
+    }
+  }
+
+  _flushQueue() {
+    if (!this.eventQueue.length) {
+      return
+    }
+
+    const queuedEvents = [...this.eventQueue]
+    this.eventQueue = []
+    queuedEvents.forEach(({ eventName, properties }) => {
+      this._sendEvent(eventName, properties)
+    })
+  }
+
+  _sendEvent(eventName, properties) {
+    const client = this._getUmamiClient()
+    if (!client) {
+      return false
+    }
+
+    client.track(eventName, properties)
+    return true
   }
 
   /**
@@ -71,7 +150,15 @@ class ThreatWatchFrontendAnalytics {
         tracking_source: 'frontend'
       }
 
-      posthog.capture(eventName, { ...standardProperties, ...properties })
+      const payload = { ...standardProperties, ...properties }
+      const wasSent = this._sendEvent(eventName, payload)
+
+      if (!wasSent) {
+        this.eventQueue.push({ eventName, properties: payload })
+        if (this.eventQueue.length > this.maxQueueSize) {
+          this.eventQueue.shift()
+        }
+      }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error(`Failed to track event '${eventName}':`, error)
@@ -86,7 +173,12 @@ class ThreatWatchFrontendAnalytics {
     if (!this.isInitialized) return
 
     try {
-      posthog.identify(userId, userProperties)
+      this.distinctId = userId
+      this._storeDistinctId(userId)
+      this.track('identify', {
+        user_id: userId,
+        ...userProperties
+      })
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Failed to identify user:', error)
@@ -297,14 +389,14 @@ class ThreatWatchFrontendAnalytics {
    * Get session ID for correlation
    */
   getSessionId() {
-    return this.isInitialized ? posthog.get_session_id() : null
+    return this.isInitialized ? this.sessionId : null
   }
 
   /**
    * Get distinct ID for correlation
    */
   getDistinctId() {
-    return this.isInitialized ? posthog.get_distinct_id() : null
+    return this.isInitialized ? this.distinctId : null
   }
 
   /**
@@ -312,7 +404,7 @@ class ThreatWatchFrontendAnalytics {
    */
   flush() {
     if (this.isInitialized) {
-      posthog.flush()
+      this._flushQueue()
     }
   }
 
@@ -321,7 +413,9 @@ class ThreatWatchFrontendAnalytics {
    */
   reset() {
     if (this.isInitialized) {
-      posthog.reset()
+      this.distinctId = null
+      this._storeDistinctId(null)
+      this.track('analytics_reset')
     }
   }
 }

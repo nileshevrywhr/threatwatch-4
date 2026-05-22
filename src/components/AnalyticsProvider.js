@@ -1,22 +1,19 @@
 /**
- * PostHog Provider Component for ThreatWatch
- * Provides PostHog context throughout the React application
+ * Analytics Provider Component for ThreatWatch
+ * Provides analytics context throughout the React application
  */
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import posthog from 'posthog-js'
 import { frontendAnalytics } from '../services/analytics'
 
-const PostHogContext = createContext()
+const AnalyticsContext = createContext()
 
-export const PostHogProvider = ({ children }) => {
+export const AnalyticsProvider = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
-    // Initialize PostHog if not already done
     if (frontendAnalytics.isInitialized) {
       setIsInitialized(true)
     } else {
-      // Wait a bit and check again in case initialization is in progress
       const timer = setTimeout(() => {
         setIsInitialized(frontendAnalytics.isInitialized)
       }, 100)
@@ -26,7 +23,6 @@ export const PostHogProvider = ({ children }) => {
   }, [])
 
   useEffect(() => {
-    // Track initial page view
     if (isInitialized) {
       frontendAnalytics.trackPageView('app_loaded', {
         initial_load: true,
@@ -36,22 +32,21 @@ export const PostHogProvider = ({ children }) => {
   }, [isInitialized])
 
   const contextValue = {
-    posthog: isInitialized ? posthog : null,
     analytics: frontendAnalytics,
     isInitialized
   }
 
   return (
-    <PostHogContext.Provider value={contextValue}>
+    <AnalyticsContext.Provider value={contextValue}>
       {children}
-    </PostHogContext.Provider>
+    </AnalyticsContext.Provider>
   )
 }
 
-export const usePostHog = () => {
-  const context = useContext(PostHogContext)
+export const useAnalyticsContext = () => {
+  const context = useContext(AnalyticsContext)
   if (!context) {
-    throw new Error('usePostHog must be used within PostHogProvider')
+    throw new Error('useAnalyticsContext must be used within AnalyticsProvider')
   }
   return context
 }
