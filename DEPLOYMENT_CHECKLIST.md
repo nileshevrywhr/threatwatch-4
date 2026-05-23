@@ -1,4 +1,4 @@
-# 🚀 ThreatWatch Deployment Checklist
+# 🚀 SignalCanary Deployment Checklist
 
 ## Pre-Deployment Setup
 
@@ -13,7 +13,7 @@
 - [ ] MongoDB connection string obtained
 - [ ] PostHog project API key obtained
 - [ ] Google Custom Search API key verified
-- [ ] Emergent LLM key verified
+- [ ] SignalCanary LLM key verified
 - [ ] Secure JWT secret generated (32+ chars)
 - [ ] Stripe keys (if using payments)
 

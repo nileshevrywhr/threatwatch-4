@@ -1,7 +1,7 @@
-# PostHog Analytics Setup Guide for ThreatWatch
+# PostHog Analytics Setup Guide for SignalCanary
 
 ## 🎯 Overview
-I've implemented comprehensive PostHog analytics tracking for your ThreatWatch application to monitor the 5 key metrics you specified:
+I've implemented comprehensive PostHog analytics tracking for your SignalCanary application to monitor the 5 key metrics you specified:
 
 1. **Signups** → How many register, free vs. paid
 2. **Searches per user** → Are they running 1 search or 50?  
@@ -14,7 +14,7 @@ I've implemented comprehensive PostHog analytics tracking for your ThreatWatch a
 ### Step 1: Create PostHog Cloud Account
 1. Go to https://app.posthog.com/signup
 2. Sign up for a new account (free tier includes 1M events/month)
-3. Create a new project for "ThreatWatch"
+3. Create a new project for "SignalCanary"
 4. Choose your data region (US or EU based on your users)
 
 ### Step 2: Get Your API Keys

@@ -1,7 +1,8 @@
 import React, { useState, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Shield, Eye, Bell, LogIn, UserPlus, PlusCircle } from 'lucide-react';
+import { Eye, Bell, LogIn, UserPlus, PlusCircle } from 'lucide-react';
+import Logo from './Logo';
 import AuthModal from './AuthModal';
 import SubscriptionPlans from './SubscriptionPlans';
 import UserMenu from './UserMenu';
@@ -39,11 +40,10 @@ const Header = memo(({ onAuthSuccess, onNewMonitorClick }) => {
             <header className="py-6 px-4 border-b border-border bg-background">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div
-                        className="flex items-center space-x-2 cursor-pointer"
+                        className="cursor-pointer"
                         onClick={handleLogoClick}
                     >
-                        <Shield className="h-8 w-8 text-cyan-400" />
-                        <span className="text-2xl font-bold font-mono">ThreatWatch</span>
+                        <Logo className="h-10" />
                     </div>
 
                     <div className="flex items-center space-x-6">
@@ -62,12 +62,11 @@ const Header = memo(({ onAuthSuccess, onNewMonitorClick }) => {
                         {user ? (
                             <div className="flex items-center space-x-3">
                                 <Button
-                                    onClick={onNewMonitorClick}
-                                    variant="outline"
-                                    className="border-border"
+                                    onClick={() => navigate('/feed')}
+                                    className="bg-[#00FFB2] hover:bg-[#00E6A0] text-black font-semibold"
                                 >
-                                    <PlusCircle className="h-4 w-4 mr-2" />
-                                    New Monitor
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    View Feed
                                 </Button>
                                 <UserMenu
                                     user={user}
@@ -86,7 +85,7 @@ const Header = memo(({ onAuthSuccess, onNewMonitorClick }) => {
                                 </Button>
                                 <Button
                                     onClick={() => setShowAuthModal(true)}
-                                    className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
+                                    className="bg-[#00FFB2] hover:bg-[#00E6A0] text-black"
                                 >
                                     <UserPlus className="h-4 w-4 mr-2" />
                                     Get Started

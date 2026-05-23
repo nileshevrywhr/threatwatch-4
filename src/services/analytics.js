@@ -1,10 +1,10 @@
 /* eslint-disable no-restricted-globals */
 /**
- * Umami Analytics Service for ThreatWatch Frontend
+ * Umami Analytics Service for SignalCanary Frontend
  * Handles user journey tracking, drop-off analysis, and business metrics
  */
 
-class ThreatWatchFrontendAnalytics {
+class SignalCanaryFrontendAnalytics {
   constructor() {
     this.isInitialized = false;
     this.eventQueue = [];
@@ -426,7 +426,7 @@ class ThreatWatchFrontendAnalytics {
 }
 
 // Global analytics instance
-export const frontendAnalytics = new ThreatWatchFrontendAnalytics();
+export const frontendAnalytics = new SignalCanaryFrontendAnalytics();
 
 // React hook for easy access
 export const useAnalytics = () => {
