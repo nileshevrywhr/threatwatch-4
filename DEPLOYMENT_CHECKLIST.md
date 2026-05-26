@@ -15,7 +15,7 @@
 - [ ] Google Custom Search API key verified
 - [ ] SignalCanary LLM key verified
 - [ ] Secure JWT secret generated (32+ chars)
-- [ ] Stripe keys (if using payments)
+- [ ] Lemon Squeezy keys (if using payments)
 
 ## Deployment Steps
 
