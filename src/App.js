@@ -14,7 +14,8 @@ import { TooltipProvider } from "./components/ui/tooltip";
 // Lazy load route components for performance optimization
 const IntelligenceFeed = lazy(() => import("./components/IntelligenceFeed"));
 const LoginPage = lazy(() => import("./components/LoginPage"));
-const PaymentSuccess = lazy(() => import("./components/PaymentSuccess"));
+const BillingSuccess = lazy(() => import("./components/BillingSuccess"));
+const BillingCancel = lazy(() => import("./components/BillingCancel"));
 const AuthCallback = lazy(() => import("./components/AuthCallback"));
 
 const LoadingFallback = () => (
@@ -45,7 +46,8 @@ function App() {
                           </ProtectedRoute>
                         }
                       />
-                      <Route path="/payment-success" element={<PaymentSuccess />} />
+                      <Route path="/billing/success" element={<BillingSuccess />} />
+                      <Route path="/billing/cancel" element={<BillingCancel />} />
                       <Route path="/auth/callback" element={<AuthCallback />} />
                     </Routes>
                   </Suspense>

@@ -1,18 +1,34 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { CheckCircle, Zap, Crown, Shield, ArrowRight, Loader2 } from 'lucide-react';
 import { secureLog } from '../utils/secureLogger';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import { createCheckout, getSubscription } from '../lib/api';
 
 const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [subscription, setSubscription] = useState(null);
+  const [fetchingSubscription, setFetchingSubscription] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && authToken) {
+      const fetchSubscription = async () => {
+        setFetchingSubscription(true);
+        try {
+          const data = await getSubscription();
+          setSubscription(data);
+        } catch (error) {
+          secureLog.error('Failed to fetch subscription:', error);
+        } finally {
+          setFetchingSubscription(false);
+        }
+      };
+      fetchSubscription();
+    }
+  }, [isOpen, authToken]);
 
   const plans = [
     {
@@ -34,7 +50,6 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
         'No email alerts'
       ],
       buttonText: 'Current Plan',
-      disabled: currentUser?.subscription_tier === 'free',
       popular: false
     },
     {
@@ -53,14 +68,12 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
         'Priority support'
       ],
       limitations: [],
-      buttonText: currentUser?.subscription_tier === 'pro' ? 'Current Plan' : 'Upgrade to Pro',
-      disabled: currentUser?.subscription_tier === 'pro',
       popular: true
     },
     {
       id: 'enterprise',
       name: 'Enterprise',
-      price: '$19/mo',
+      price: '$29/mo',
       period: 'per month',
       description: 'Complete threat monitoring for large organizations',
       icon: Crown,
@@ -75,11 +88,11 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
         '24/7 premium support'
       ],
       limitations: [],
-      buttonText: currentUser?.subscription_tier === 'enterprise' ? 'Current Plan' : 'Upgrade to Enterprise',
-      disabled: currentUser?.subscription_tier === 'enterprise',
       popular: false
     }
   ];
+
+  const currentPlanId = subscription?.plan || currentUser?.subscription_tier || 'free';
 
   const handleUpgrade = async (planId) => {
     if (planId === 'free' || !authToken) return;
@@ -88,28 +101,13 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
     setSelectedPlan(planId);
 
     try {
-      const currentUrl = window.location.origin;
-      const successUrl = `${currentUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
-      const cancelUrl = `${currentUrl}/`;
-
-      const response = await axios.post(
-        `${API}/payments/checkout`,
-        {
-          plan: planId,
-          success_url: successUrl,
-          cancel_url: cancelUrl
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${authToken}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      // Redirect to Stripe Checkout
-      window.location.href = response.data.url;
-
+      const response = await createCheckout(planId);
+      // Redirect to Lemon Squeezy Checkout
+      if (response.url) {
+        window.location.href = response.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
     } catch (error) {
       secureLog.error('Checkout error:', error);
       alert('Failed to start checkout process. Please try again.');
@@ -118,12 +116,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
     }
   };
 
-  const getCurrentPlanInfo = () => {
-    const currentTier = currentUser?.subscription_tier || 'free';
-    return plans.find(plan => plan.id === currentTier);
-  };
-
-  const currentPlan = getCurrentPlanInfo();
+  const currentPlanInfo = plans.find(plan => plan.id === currentPlanId);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -136,29 +129,33 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
         </DialogHeader>
 
         {/* Current Plan Status */}
-        {currentPlan && (
-          <div className="mb-6 p-4 bg-muted rounded-lg border border-border">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <currentPlan.icon className="h-6 w-6 text-[#00FFB2]" />
-                <div>
-                  <h4 className="font-semibold">Current Plan: {currentPlan.name}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {currentUser?.subscription_tier === 'free' ? 'Free forever' : `${currentPlan.price} ${currentPlan.period}`}
-                  </p>
-                </div>
+        <div className="mb-6 p-4 bg-muted rounded-lg border border-border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              {currentPlanInfo ? (
+                <currentPlanInfo.icon className="h-6 w-6 text-[#00FFB2]" />
+              ) : (
+                <Shield className="h-6 w-6 text-[#00FFB2]" />
+              )}
+              <div>
+                <h4 className="font-semibold">
+                  {fetchingSubscription ? 'Loading subscription...' : `Current Plan: ${currentPlanInfo?.name || 'Free'}`}
+                </h4>
+                <p className="text-sm text-muted-foreground capitalize">
+                  Status: {subscription?.status || 'active'}
+                </p>
               </div>
-              <Badge className="bg-[#00FFB2]/10 text-[#00FFB2] border-[#00FFB2]/20">
-                Active
-              </Badge>
             </div>
+            <Badge className="bg-[#00FFB2]/10 text-[#00FFB2] border-[#00FFB2]/20">
+              Active
+            </Badge>
           </div>
-        )}
+        </div>
 
         <div className="grid gap-6 md:grid-cols-3">
           {plans.map((plan) => {
             const PlanIcon = plan.icon;
-            const isCurrentPlan = currentUser?.subscription_tier === plan.id;
+            const isCurrentPlan = currentPlanId === plan.id;
 
             return (
               <Card key={plan.id} className={`relative ${
@@ -198,7 +195,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
                     </ul>
                   </div>
 
-                  {plan.limitations.length > 0 && (
+                  {plan.limitations?.length > 0 && (
                     <div>
                       <h4 className="text-muted-foreground font-semibold mb-2 text-sm">Limitations:</h4>
                       <ul className="space-y-1">
@@ -213,7 +210,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
 
                   <Button
                     onClick={() => handleUpgrade(plan.id)}
-                    disabled={plan.disabled || loading}
+                    disabled={isCurrentPlan || loading || plan.id === 'free'}
                     className={`w-full font-semibold py-3 transition-all duration-300 ${
                       isCurrentPlan
                         ? 'bg-muted text-muted-foreground cursor-not-allowed'
@@ -235,7 +232,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
                       'Free Forever'
                     ) : (
                       <div className="flex items-center space-x-2">
-                        <span>{plan.buttonText}</span>
+                        <span>Upgrade to {plan.name}</span>
                         <ArrowRight className="h-4 w-4" />
                       </div>
                     )}

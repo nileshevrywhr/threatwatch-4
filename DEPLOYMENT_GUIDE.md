@@ -98,9 +98,9 @@ POSTHOG_HOST=https://us.i.posthog.com
 POSTHOG_SYNC_MODE=True
 POSTHOG_DEBUG=False
 
-# Payment (if using Stripe)
-STRIPE_API_KEY=your-stripe-live-api-key
-STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret
+# Payment (if using Lemon Squeezy)
+LEMON_SQUEEZY_API_KEY=your-lemon-squeezy-api-key
+LEMON_SQUEEZY_WEBHOOK_SECRET=your-lemon-squeezy-webhook-secret
 
 # CORS - Important!
 CORS_ORIGINS=https://your-frontend-domain.vercel.app,https://signalcanary.com

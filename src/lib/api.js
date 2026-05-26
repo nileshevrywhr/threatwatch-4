@@ -72,6 +72,17 @@ export const quickScan = (term) => {
   });
 };
 
+export const createCheckout = (plan) => {
+  return apiClient('/api/billing/create-checkout', {
+    method: 'POST',
+    body: JSON.stringify({ plan }),
+  });
+};
+
+export const getSubscription = () => {
+  return apiClient('/api/billing/subscription');
+};
+
 export const downloadReport = async (reportId) => {
   const { data: { session } } = await supabase.auth.getSession();
 
