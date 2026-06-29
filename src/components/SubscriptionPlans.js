@@ -88,16 +88,10 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
     setSelectedPlan(planId);
 
     try {
-      const currentUrl = window.location.origin;
-      const successUrl = `${currentUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`;
-      const cancelUrl = `${currentUrl}/`;
-
       const response = await axios.post(
-        `${API}/payments/checkout`,
+        `${API}/billing/create-checkout`,
         {
-          plan: planId,
-          success_url: successUrl,
-          cancel_url: cancelUrl
+          plan: planId
         },
         {
           headers: {
@@ -107,8 +101,8 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
         }
       );
 
-      // Redirect to Stripe Checkout
-      window.location.href = response.data.url;
+      // Redirect to Lemon Squeezy Checkout
+      window.location.href = response.data.checkout_url;
 
     } catch (error) {
       secureLog.error('Checkout error:', error);
