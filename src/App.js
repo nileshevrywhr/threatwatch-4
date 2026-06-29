@@ -55,7 +55,7 @@ function App() {
               </BrowserRouter>
               <Analytics />
             </div>
-          </ThemeProvider>
+          </TooltipProvider>
         </ThemeProvider>
       </AuthProvider>
     </AnalyticsProvider>
