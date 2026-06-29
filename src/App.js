@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { AnalyticsProvider } from "./components/AnalyticsProvider";
 import { Analytics } from "@vercel/analytics/react";
@@ -46,14 +46,16 @@ function App() {
                         }
                       />
                       <Route path="/payment-success" element={<PaymentSuccess />} />
+                      <Route path="/billing/success" element={<PaymentSuccess />} />
                       <Route path="/auth/callback" element={<AuthCallback />} />
+                      <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                   </Suspense>
                 </ErrorBoundary>
               </BrowserRouter>
               <Analytics />
             </div>
-          </TooltipProvider>
+          </ThemeProvider>
         </ThemeProvider>
       </AuthProvider>
     </AnalyticsProvider>
