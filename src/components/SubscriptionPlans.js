@@ -6,6 +6,7 @@ import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { CheckCircle, Zap, Crown, Shield, ArrowRight, Loader2 } from 'lucide-react';
 import { secureLog } from '../utils/secureLogger';
+import { supabase } from '../lib/supabaseClient';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -82,12 +83,22 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
   ];
 
   const handleUpgrade = async (planId) => {
-    if (planId === 'free' || !authToken) return;
+    if (planId === 'free') return;
 
     setLoading(true);
     setSelectedPlan(planId);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      
+      if (!token) {
+        alert('Authentication session expired. Please sign in again.');
+        setLoading(false);
+        setSelectedPlan(null);
+        return;
+      }
+
       const response = await axios.post(
         `${API}/billing/create-checkout`,
         {
@@ -95,14 +106,18 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
         },
         {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         }
       );
 
       // Redirect to Lemon Squeezy Checkout
-      window.location.href = response.data.checkout_url;
+      if (response.data && response.data.checkout_url) {
+        window.location.href = response.data.checkout_url;
+      } else {
+        throw new Error('No checkout URL returned from server');
+      }
 
     } catch (error) {
       secureLog.error('Checkout error:', error);
