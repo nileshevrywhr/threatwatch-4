@@ -55,17 +55,17 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
       <Button
         variant="ghost"
         className="flex items-center space-x-2 text-muted-foreground hover:text-foreground hover:bg-accent"
-        aria-label={`User menu for ${user.full_name}`}
+        aria-label={`User menu for ${user.user_metadata?.full_name || 'User'}`}
       >
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-[#00FFB2] rounded-full flex items-center justify-center">
               <User className="h-4 w-4 text-black" />
             </div>
             <div className="hidden md:block text-left">
-              <div className="text-sm font-medium text-foreground">{user.full_name}</div>
+              <div className="text-sm font-medium text-foreground">{user.user_metadata?.full_name || 'User'}</div>
               <div className="flex items-center space-x-1">
-                {getTierIcon(user.subscription_tier)}
-                <span className="text-xs capitalize text-muted-foreground">{user.subscription_tier}</span>
+                {getTierIcon(user.user_metadata?.subscription_tier || 'free')}
+                <span className="text-xs capitalize text-muted-foreground">{user.user_metadata?.subscription_tier || 'free'}</span>
               </div>
             </div>
           </div>
@@ -75,7 +75,7 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
       <DropdownMenuContent className="w-64 bg-card border-border" align="end">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium">{user.full_name}</p>
+            <p className="text-sm font-medium">{user.user_metadata?.full_name || 'User'}</p>
             <p className="text-xs text-muted-foreground">{user.email}</p>
           </div>
         </DropdownMenuLabel>
@@ -85,21 +85,21 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
         <div className="px-2 py-1">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Current Plan:</span>
-            <Badge className={`text-xs ${getTierColor(user.subscription_tier)}`}>
+            <Badge className={`text-xs ${getTierColor(user.user_metadata?.subscription_tier || 'free')}`}>
               <div className="flex items-center space-x-1">
-                {getTierIcon(user.subscription_tier)}
-                <span className="capitalize">{user.subscription_tier}</span>
+                {getTierIcon(user.user_metadata?.subscription_tier || 'free')}
+                <span className="capitalize">{user.user_metadata?.subscription_tier || 'free'}</span>
               </div>
             </Badge>
           </div>
           
-          {user.subscription_tier === 'free' && (
+          {(user.user_metadata?.subscription_tier || 'free') === 'free' && (
             <div className="mt-2 text-xs text-muted-foreground">
               {user.quick_scans_today || 0}/3 scans used today
             </div>
           )}
           
-          {(user.subscription_tier === 'pro' || user.subscription_tier === 'enterprise') && (
+          {(user.user_metadata?.subscription_tier === 'pro' || user.user_metadata?.subscription_tier === 'enterprise') && (
             <div className="mt-2 space-y-1 text-xs text-muted-foreground">
               <div>Quick scans: {user.quick_scans_today || 0} used today</div>
               <div>Monitoring terms: {user.monitoring_terms_count || 0} active</div>

@@ -34,7 +34,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
         'No email alerts'
       ],
       buttonText: 'Current Plan',
-      disabled: currentUser?.subscription_tier === 'free',
+      disabled: (currentUser?.user_metadata?.subscription_tier || 'free') === 'free',
       popular: false
     },
     {
@@ -53,8 +53,8 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
         'Priority support'
       ],
       limitations: [],
-      buttonText: currentUser?.subscription_tier === 'pro' ? 'Current Plan' : 'Upgrade to Pro',
-      disabled: currentUser?.subscription_tier === 'pro',
+      buttonText: currentUser?.user_metadata?.subscription_tier === 'pro' ? 'Current Plan' : 'Upgrade to Pro',
+      disabled: currentUser?.user_metadata?.subscription_tier === 'pro',
       popular: true
     },
     {
@@ -75,8 +75,8 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
         '24/7 premium support'
       ],
       limitations: [],
-      buttonText: currentUser?.subscription_tier === 'enterprise' ? 'Current Plan' : 'Upgrade to Enterprise',
-      disabled: currentUser?.subscription_tier === 'enterprise',
+      buttonText: currentUser?.user_metadata?.subscription_tier === 'enterprise' ? 'Current Plan' : 'Upgrade to Enterprise',
+      disabled: currentUser?.user_metadata?.subscription_tier === 'enterprise',
       popular: false
     }
   ];
@@ -113,7 +113,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
   };
 
   const getCurrentPlanInfo = () => {
-    const currentTier = currentUser?.subscription_tier || 'free';
+    const currentTier = currentUser?.user_metadata?.subscription_tier || 'free';
     return plans.find(plan => plan.id === currentTier);
   };
 
@@ -138,7 +138,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
                 <div>
                   <h4 className="font-semibold">Current Plan: {currentPlan.name}</h4>
                   <p className="text-sm text-muted-foreground">
-                    {currentUser?.subscription_tier === 'free' ? 'Free forever' : `${currentPlan.price} ${currentPlan.period}`}
+                    {(currentUser?.user_metadata?.subscription_tier || 'free') === 'free' ? 'Free forever' : `${currentPlan.price} ${currentPlan.period}`}
                   </p>
                 </div>
               </div>
@@ -152,7 +152,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
         <div className="grid gap-6 md:grid-cols-3">
           {plans.map((plan) => {
             const PlanIcon = plan.icon;
-            const isCurrentPlan = currentUser?.subscription_tier === plan.id;
+            const isCurrentPlan = (currentUser?.user_metadata?.subscription_tier || 'free') === plan.id;
 
             return (
               <Card key={plan.id} className={`relative ${
