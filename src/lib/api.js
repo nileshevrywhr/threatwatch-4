@@ -72,6 +72,16 @@ export const quickScan = (term) => {
   });
 };
 
+export const getSubscription = () => {
+  return apiClient('/api/billing/subscription');
+};
+
+export const cancelSubscription = () => {
+  return apiClient('/api/billing/cancel', {
+    method: 'POST'
+  });
+};
+
 export const downloadReport = async (reportId) => {
   const { data: { session } } = await supabase.auth.getSession();
 

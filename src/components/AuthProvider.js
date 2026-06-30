@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { getSubscription } from '../lib/api';
 
 const AuthContext = createContext();
 
@@ -7,6 +8,28 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [subscriptionPlan, setSubscriptionPlan] = useState(null);
+
+
+  const fetchSubscription = useCallback(async () => {
+    try {
+      const data = await getSubscription();
+      setSubscriptionPlan(data.subscription_plan || 'free');
+    } catch (error) {
+      console.error("Error fetching subscription:", error);
+      // Fallback to user metadata if API fails
+      const tier = user?.user_metadata?.subscription_tier || 'free';
+      setSubscriptionPlan(tier);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchSubscription();
+    } else {
+      setSubscriptionPlan(null);
+    }
+  }, [user, fetchSubscription]);
 
   useEffect(() => {
     // Check active sessions and sets the user
@@ -50,8 +73,10 @@ export const AuthProvider = ({ children }) => {
     session,
     user,
     signOut,
-    loading
-  }), [session, user, signOut, loading]);
+    loading,
+    subscriptionPlan,
+    refreshSubscription: fetchSubscription
+  }), [session, user, signOut, loading, subscriptionPlan, fetchSubscription]);
 
   return (
     <AuthContext.Provider value={value}>
