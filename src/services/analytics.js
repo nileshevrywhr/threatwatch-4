@@ -1,9 +1,9 @@
 // Analytics service - no-op stub
-// Original analytics removed; this preserves the export interface
+// Analytics provider removed; this preserves the export interface
 
 class Analytics {
-  initializeUmami() {}
-  _getUmamiClient() { return null; }
+  initialize() {}
+  _getClient() { return null; }
   _retryFlushQueue() {}
   _generateSessionId() { return null; }
   _getStoredDistinctId() { return null; }
