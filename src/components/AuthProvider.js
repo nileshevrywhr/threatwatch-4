@@ -12,8 +12,10 @@ export const AuthProvider = ({ children }) => {
 
 
   const fetchSubscription = useCallback(async () => {
+    if (!user) return;
     try {
       const data = await getSubscription();
+      console.log("Fetched subscription data:", data);
       setSubscriptionPlan(data.subscription_plan || 'free');
     } catch (error) {
       console.error("Error fetching subscription:", error);

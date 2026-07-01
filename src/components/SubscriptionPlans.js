@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -30,6 +30,12 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const { subscriptionPlan, refreshSubscription } = useAuth();
   const currentTier = subscriptionPlan || currentUser?.user_metadata?.subscription_tier || 'free';
+
+  useEffect(() => {
+    if (isOpen) {
+      refreshSubscription();
+    }
+  }, [isOpen, refreshSubscription]);
 
   const plans = [
     {

@@ -4,10 +4,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Button } from './ui/button';
 import { CheckCircle, ArrowRight, Mail } from 'lucide-react';
 import { useAuth } from './AuthProvider';
+import { useEffect } from 'react';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshSubscription } = useAuth();
+
+  useEffect(() => {
+    refreshSubscription();
+  }, [refreshSubscription]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
