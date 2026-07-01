@@ -28,7 +28,7 @@ import { useAuth } from './AuthProvider';
 const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
   const { theme, setTheme } = useTheme();
   const { subscriptionPlan } = useAuth();
-  const currentTier = subscriptionPlan || currentTier;
+  const currentTier = subscriptionPlan || user.user_metadata?.subscription_tier || 'free';
 
   const getTierIcon = (tier) => {
     switch (tier) {
