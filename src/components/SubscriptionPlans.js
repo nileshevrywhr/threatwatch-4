@@ -1,12 +1,27 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from './ui/card';
 import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
-import { CheckCircle, Zap, Crown, Shield, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckCircle, Shield, Zap, Crown, ArrowRight, Loader2 } from 'lucide-react';
+import axios from 'axios';
 import { secureLog } from '../utils/secureLogger';
 import { supabase } from '../lib/supabaseClient';
+import { useAuth } from './AuthProvider';
+import { cancelSubscription, extractTier } from '../lib/billing';
+import { useMemo, useCallback } from 'react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -14,8 +29,16 @@ const API = `${BACKEND_URL}/api`;
 const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
   const [loading, setLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const { subscriptionPlan, refreshSubscription } = useAuth();
+  const currentTier = subscriptionPlan || currentUser?.user_metadata?.subscription_tier || 'free';
 
-  const plans = [
+  useEffect(() => {
+    if (isOpen) {
+      refreshSubscription();
+    }
+  }, [isOpen, refreshSubscription]);
+
+  const plans = useMemo(() => [
     {
       id: 'free',
       name: 'Free',
@@ -34,8 +57,8 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
         'Limited scan history',
         'No email alerts'
       ],
-      buttonText: 'Current Plan',
-      disabled: (currentUser?.user_metadata?.subscription_tier || 'free') === 'free',
+      buttonText: currentTier === 'free' ? 'Current Plan' : 'Downgrade to Free',
+      disabled: currentTier === 'free',
       popular: false
     },
     {
@@ -54,8 +77,8 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
         'Priority support'
       ],
       limitations: [],
-      buttonText: currentUser?.user_metadata?.subscription_tier === 'pro' ? 'Current Plan' : 'Upgrade to Pro',
-      disabled: currentUser?.user_metadata?.subscription_tier === 'pro',
+      buttonText: currentTier === 'pro' ? 'Current Plan' : currentTier === 'enterprise' ? 'Downgrade to Pro' : 'Upgrade to Pro',
+      disabled: currentTier === 'pro',
       popular: true
     },
     {
@@ -76,19 +99,28 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
         '24/7 premium support'
       ],
       limitations: [],
-      buttonText: currentUser?.user_metadata?.subscription_tier === 'enterprise' ? 'Current Plan' : 'Upgrade to Enterprise',
-      disabled: currentUser?.user_metadata?.subscription_tier === 'enterprise',
+      buttonText: currentTier === 'enterprise' ? 'Current Plan' : 'Upgrade to Enterprise',
+      disabled: currentTier === 'enterprise',
       popular: false
     }
-  ];
+  ], [currentTier]);
 
-  const handleUpgrade = async (planId) => {
-    if (planId === 'free') return;
+  const handleUpgrade = useCallback(async (planId) => {
+    if (planId === currentTier) return;
 
     setLoading(true);
     setSelectedPlan(planId);
 
     try {
+      if (planId === 'free') {
+        await cancelSubscription();
+        await refreshSubscription();
+        setLoading(false);
+        setSelectedPlan(null);
+        alert('Subscription successfully cancelled. Your plan will be downgraded to Free at the end of the current billing cycle.');
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
       
@@ -121,14 +153,14 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
 
     } catch (error) {
       secureLog.error('Checkout error:', error);
-      alert('Failed to start checkout process. Please try again.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to start checkout process. Please try again.';
+      alert(errorMessage);
       setLoading(false);
       setSelectedPlan(null);
     }
-  };
+  }, [currentTier, refreshSubscription, supabase.auth]);
 
   const getCurrentPlanInfo = () => {
-    const currentTier = currentUser?.user_metadata?.subscription_tier || 'free';
     return plans.find(plan => plan.id === currentTier);
   };
 
@@ -153,7 +185,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
                 <div>
                   <h4 className="font-semibold">Current Plan: {currentPlan.name}</h4>
                   <p className="text-sm text-muted-foreground">
-                    {(currentUser?.user_metadata?.subscription_tier || 'free') === 'free' ? 'Free forever' : `${currentPlan.price} ${currentPlan.period}`}
+                    {currentTier === 'free' ? 'Free forever' : `${currentPlan.price} ${currentPlan.period}`}
                   </p>
                 </div>
               </div>
@@ -167,7 +199,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
         <div className="grid gap-6 md:grid-cols-3">
           {plans.map((plan) => {
             const PlanIcon = plan.icon;
-            const isCurrentPlan = (currentUser?.user_metadata?.subscription_tier || 'free') === plan.id;
+            const isCurrentPlan = currentTier === plan.id;
 
             return (
               <Card key={plan.id} className={`relative ${

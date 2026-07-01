@@ -72,6 +72,8 @@ export const quickScan = (term) => {
   });
 };
 
+
+
 export const downloadReport = async (reportId) => {
   const { data: { session } } = await supabase.auth.getSession();
 

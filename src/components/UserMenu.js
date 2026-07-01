@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { 
@@ -23,9 +23,23 @@ import {
 } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { useTheme } from './ThemeProvider';
+import { useAuth } from './AuthProvider';
+import { extractTier } from '../lib/billing';
 
-const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
+const UserMenu = ({ onLogout, onShowSubscriptionPlans }) => {
   const { theme, setTheme } = useTheme();
+  const { user, subscriptionPlan } = useAuth();
+
+  const currentTier = extractTier(subscriptionPlan || user?.user_metadata?.subscription_tier);
+
+  useEffect(() => {
+    console.log("UserMenu: Current state", {
+      email: user?.email,
+      subscriptionPlan,
+      metadataTier: user?.user_metadata?.subscription_tier,
+      effectiveTier: currentTier
+    });
+  }, [user, subscriptionPlan, currentTier]);
 
   const getTierIcon = (tier) => {
     switch (tier) {
@@ -49,6 +63,8 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
     }
   };
 
+  if (!user) return null;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -64,8 +80,8 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
             <div className="hidden md:block text-left">
               <div className="text-sm font-medium text-foreground">{user.user_metadata?.full_name || 'User'}</div>
               <div className="flex items-center space-x-1">
-                {getTierIcon(user.user_metadata?.subscription_tier || 'free')}
-                <span className="text-xs capitalize text-muted-foreground">{user.user_metadata?.subscription_tier || 'free'}</span>
+                {getTierIcon(currentTier)}
+                <span className="text-xs capitalize text-muted-foreground">{currentTier}</span>
               </div>
             </div>
           </div>
@@ -85,21 +101,21 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
         <div className="px-2 py-1">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Current Plan:</span>
-            <Badge className={`text-xs ${getTierColor(user.user_metadata?.subscription_tier || 'free')}`}>
+            <Badge className={`text-xs ${getTierColor(currentTier)}`}>
               <div className="flex items-center space-x-1">
-                {getTierIcon(user.user_metadata?.subscription_tier || 'free')}
-                <span className="capitalize">{user.user_metadata?.subscription_tier || 'free'}</span>
+                {getTierIcon(currentTier)}
+                <span className="capitalize">{currentTier}</span>
               </div>
             </Badge>
           </div>
           
-          {(user.user_metadata?.subscription_tier || 'free') === 'free' && (
+          {currentTier === 'free' && (
             <div className="mt-2 text-xs text-muted-foreground">
               {user.quick_scans_today || 0}/3 scans used today
             </div>
           )}
           
-          {(user.user_metadata?.subscription_tier === 'pro' || user.user_metadata?.subscription_tier === 'enterprise') && (
+          {(currentTier === 'pro' || currentTier === 'enterprise') && (
             <div className="mt-2 space-y-1 text-xs text-muted-foreground">
               <div>Quick scans: {user.quick_scans_today || 0} used today</div>
               <div>Monitoring terms: {user.monitoring_terms_count || 0} active</div>
