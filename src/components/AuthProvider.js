@@ -16,7 +16,19 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await getSubscription();
       console.log("Fetched subscription data:", data);
-      setSubscriptionPlan(data.subscription_plan || 'free');
+      const tier = data.subscription_plan || 'free';
+      setSubscriptionPlan(tier);
+
+      // Update user state if metadata is out of sync
+      if (user.user_metadata?.subscription_tier !== tier) {
+        setUser(prevUser => ({
+          ...prevUser,
+          user_metadata: {
+            ...prevUser.user_metadata,
+            subscription_tier: tier
+          }
+        }));
+      }
     } catch (error) {
       console.error("Error fetching subscription:", error);
       // Fallback to user metadata if API fails

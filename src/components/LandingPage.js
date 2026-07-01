@@ -85,8 +85,9 @@ const pruneSavedQuickScans = () => {
 };
 
 const LandingPage = () => {
+  const { user, subscriptionPlan } = useAuth();
+  const currentTier = subscriptionPlan || user?.user_metadata?.subscription_tier || 'free';
   const navigate = useNavigate();
-  const { user } = useAuth();
   const analytics = useAnalytics();
 
   const [formData, setFormData] = useState({
@@ -280,9 +281,9 @@ const LandingPage = () => {
                         </span>
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        {(user.user_metadata?.subscription_tier === 'free' || !user.user_metadata?.subscription_tier) && `${user.monitoring_terms_count || 0}/0 monitoring terms (upgrade to add more)`}
-                        {user.user_metadata?.subscription_tier === 'pro' && `${user.monitoring_terms_count || 0}/10 monitoring terms used`}
-                        {user.user_metadata?.subscription_tier === 'enterprise' && `${user.monitoring_terms_count || 0}/50 monitoring terms used`}
+                        {currentTier === 'free' && `${user.monitoring_terms_count || 0}/0 monitoring terms (upgrade to add more)`}
+                        {currentTier === 'pro' && `${user.monitoring_terms_count || 0}/10 monitoring terms used`}
+                        {currentTier === 'enterprise' && `${user.monitoring_terms_count || 0}/50 monitoring terms used`}
                       </div>
                     </div>
                   )}
@@ -411,7 +412,7 @@ const LandingPage = () => {
                       <p className="text-sm text-muted-foreground">{user.email}</p>
                       <div className="mt-2 flex items-center space-x-2">
                         <span className="text-xs text-muted-foreground">Plan:</span>
-                        <span className="text-xs capitalize text-[#00FFB2] font-semibold">{user.user_metadata?.subscription_tier || 'free'}</span>
+                        <span className="text-xs capitalize text-[#00FFB2] font-semibold">{currentTier}</span>
                       </div>
                     </div>
 
