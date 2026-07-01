@@ -20,7 +20,8 @@ import axios from 'axios';
 import { secureLog } from '../utils/secureLogger';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthProvider';
-import { cancelSubscription } from '../lib/api';
+import { cancelSubscription } from '../lib/billing';
+import { useMemo, useCallback } from 'react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -37,7 +38,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
     }
   }, [isOpen, refreshSubscription]);
 
-  const plans = [
+  const plans = useMemo(() => [
     {
       id: 'free',
       name: 'Free',
@@ -102,9 +103,9 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
       disabled: currentTier === 'enterprise',
       popular: false
     }
-  ];
+  ], [currentTier]);
 
-  const handleUpgrade = async (planId) => {
+  const handleUpgrade = useCallback(async (planId) => {
     if (planId === currentTier) return;
 
     setLoading(true);
@@ -157,7 +158,7 @@ const SubscriptionPlans = ({ isOpen, onClose, currentUser, authToken }) => {
       setLoading(false);
       setSelectedPlan(null);
     }
-  };
+  }, [currentTier, refreshSubscription, supabase.auth]);
 
   const getCurrentPlanInfo = () => {
     return plans.find(plan => plan.id === currentTier);

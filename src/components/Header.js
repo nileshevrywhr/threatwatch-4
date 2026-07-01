@@ -1,10 +1,11 @@
 import React, { useState, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Eye, Bell, LogIn, UserPlus, PlusCircle } from 'lucide-react';
+import { Eye, Bell, LogIn, UserPlus, PlusCircle, Loader2 } from 'lucide-react';
 import Logo from './Logo';
 import AuthModal from './AuthModal';
-import SubscriptionPlans from './SubscriptionPlans';
+import { Suspense, lazy } from 'react';
+const SubscriptionPlans = lazy(() => import('./SubscriptionPlans'));
 import UserMenu from './UserMenu';
 import { useAuth } from './AuthProvider';
 
@@ -104,12 +105,14 @@ const Header = memo(({ onAuthSuccess, onNewMonitorClick }) => {
             />
 
             {/* Subscription Plans Modal */}
-            <SubscriptionPlans
-                isOpen={showSubscriptionPlans}
-                onClose={() => setShowSubscriptionPlans(false)}
-                currentUser={user}
-                authToken={session?.access_token}
-            />
+            <Suspense fallback={null}>
+                <SubscriptionPlans
+                    isOpen={showSubscriptionPlans}
+                    onClose={() => setShowSubscriptionPlans(false)}
+                    currentUser={user}
+                    authToken={session?.access_token}
+                />
+            </Suspense>
         </>
     );
 });

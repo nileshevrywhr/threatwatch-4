@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { getSubscription } from '../lib/api';
+import { getSubscription } from '../lib/billing';
 
 const AuthContext = createContext();
 
@@ -12,38 +12,26 @@ export const AuthProvider = ({ children }) => {
 
 
   const fetchSubscription = useCallback(async () => {
-    if (!user) return;
+    if (!session?.user) return;
     try {
       const data = await getSubscription();
       console.log("Fetched subscription data:", data);
-      const tier = data.subscription_plan || 'free';
-      setSubscriptionPlan(tier);
-
-      // Update user state if metadata is out of sync
-      if (user.user_metadata?.subscription_tier !== tier) {
-        setUser(prevUser => ({
-          ...prevUser,
-          user_metadata: {
-            ...prevUser.user_metadata,
-            subscription_tier: tier
-          }
-        }));
-      }
+      setSubscriptionPlan(data.subscription_plan || 'free');
     } catch (error) {
       console.error("Error fetching subscription:", error);
       // Fallback to user metadata if API fails
-      const tier = user?.user_metadata?.subscription_tier || 'free';
+      const tier = session?.user?.user_metadata?.subscription_tier || 'free';
       setSubscriptionPlan(tier);
     }
-  }, [user]);
+  }, [session?.user]);
 
   useEffect(() => {
-    if (user) {
+    if (session?.user) {
       fetchSubscription();
     } else {
       setSubscriptionPlan(null);
     }
-  }, [user, fetchSubscription]);
+  }, [session?.user, fetchSubscription]);
 
   useEffect(() => {
     // Check active sessions and sets the user
