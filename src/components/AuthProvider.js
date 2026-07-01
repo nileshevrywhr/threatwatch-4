@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { getSubscription } from '../lib/billing';
+import { getSubscription, extractTier } from '../lib/billing';
 
 const AuthContext = createContext();
 
@@ -10,52 +10,55 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [subscriptionPlan, setSubscriptionPlan] = useState(null);
 
+  const fetchSubscription = useCallback(async (currentSession) => {
+    const activeUser = currentSession?.user;
+    if (!activeUser) return;
 
-  const fetchSubscription = useCallback(async () => {
-    if (!session?.user) return;
     try {
+      console.log("AuthProvider: Fetching subscription for", activeUser.email);
       const data = await getSubscription();
-      console.log("Fetched subscription data:", data);
-      setSubscriptionPlan(data.subscription_plan || 'free');
-    } catch (error) {
-      console.error("Error fetching subscription:", error);
-      // Fallback to user metadata if API fails
-      const tier = session?.user?.user_metadata?.subscription_tier || 'free';
-      setSubscriptionPlan(tier);
-    }
-  }, [session?.user]);
+      console.log("AuthProvider: Subscription API response:", data);
 
+      const tier = extractTier(data);
+      console.log("AuthProvider: Setting subscriptionPlan state to:", tier);
+      setSubscriptionPlan(tier);
+    } catch (error) {
+      console.error("AuthProvider: Error fetching subscription:", error);
+      const metadataTier = extractTier(activeUser?.user_metadata?.subscription_tier);
+      console.log("AuthProvider: Fallback to metadata tier:", metadataTier);
+      setSubscriptionPlan(metadataTier);
+    }
+  }, []);
+
+  // Update subscriptionPlan when session changes
   useEffect(() => {
-    if (session?.user) {
-      fetchSubscription();
+    if (session) {
+      fetchSubscription(session);
     } else {
       setSubscriptionPlan(null);
     }
-  }, [session?.user, fetchSubscription]);
+  }, [session, fetchSubscription]);
 
   useEffect(() => {
-    // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Initial session check
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      console.log("AuthProvider: Initial session check:", initialSession?.user?.email);
+      setSession(initialSession);
+      setUser(initialSession?.user ?? null);
       setLoading(false);
     }).catch((error) => {
-      console.error("Error getting session:", error);
+      console.error("AuthProvider: Error getting session:", error);
       setSession(null);
       setUser(null);
       setLoading(false);
     });
 
-    // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      try {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error in auth state change:", error);
-        setLoading(false);
-      }
+    // Auth state changes
+    const { data } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      console.log("AuthProvider: Auth state changed:", _event, currentSession?.user?.email);
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      setLoading(false);
     });
 
     return () => {
@@ -66,18 +69,17 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signOut = useCallback(async () => {
+    console.log("AuthProvider: Signing out");
     await supabase.auth.signOut();
   }, []);
 
-  // Performance Optimization: Memoize the context value to prevent unnecessary re-renders
-  // in consuming components when AuthProvider's parent re-renders but auth state hasn't changed.
   const value = useMemo(() => ({
     session,
     user,
     signOut,
     loading,
     subscriptionPlan,
-    refreshSubscription: fetchSubscription
+    refreshSubscription: () => fetchSubscription(session)
   }), [session, user, signOut, loading, subscriptionPlan, fetchSubscription]);
 
   return (

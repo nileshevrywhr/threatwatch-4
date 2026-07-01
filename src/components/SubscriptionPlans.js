@@ -20,7 +20,7 @@ import axios from 'axios';
 import { secureLog } from '../utils/secureLogger';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthProvider';
-import { cancelSubscription } from '../lib/billing';
+import { cancelSubscription, extractTier } from '../lib/billing';
 import { useMemo, useCallback } from 'react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;

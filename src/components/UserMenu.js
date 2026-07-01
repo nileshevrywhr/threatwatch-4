@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { 
@@ -24,11 +24,22 @@ import {
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { useTheme } from './ThemeProvider';
 import { useAuth } from './AuthProvider';
+import { extractTier } from '../lib/billing';
 
-const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
+const UserMenu = ({ onLogout, onShowSubscriptionPlans }) => {
   const { theme, setTheme } = useTheme();
-  const { subscriptionPlan } = useAuth();
-  const currentTier = subscriptionPlan || user?.user_metadata?.subscription_tier || 'free';
+  const { user, subscriptionPlan } = useAuth();
+
+  const currentTier = extractTier(subscriptionPlan || user?.user_metadata?.subscription_tier);
+
+  useEffect(() => {
+    console.log("UserMenu: Current state", {
+      email: user?.email,
+      subscriptionPlan,
+      metadataTier: user?.user_metadata?.subscription_tier,
+      effectiveTier: currentTier
+    });
+  }, [user, subscriptionPlan, currentTier]);
 
   const getTierIcon = (tier) => {
     switch (tier) {
@@ -51,6 +62,8 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
         return 'bg-muted text-muted-foreground border-border';
     }
   };
+
+  if (!user) return null;
 
   return (
     <DropdownMenu>
@@ -96,7 +109,7 @@ const UserMenu = ({ user, onLogout, onShowSubscriptionPlans }) => {
             </Badge>
           </div>
           
-          {(currentTier) === 'free' && (
+          {currentTier === 'free' && (
             <div className="mt-2 text-xs text-muted-foreground">
               {user.quick_scans_today || 0}/3 scans used today
             </div>

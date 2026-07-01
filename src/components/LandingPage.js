@@ -85,8 +85,9 @@ const pruneSavedQuickScans = () => {
 };
 
 const LandingPage = () => {
-  const { user, subscriptionPlan } = useAuth();
-  const currentTier = subscriptionPlan || user?.user_metadata?.subscription_tier || 'free';
+    const { user, subscriptionPlan } = useAuth();
+
+  const currentTier = (subscriptionPlan || user?.user_metadata?.subscription_tier || 'free').toLowerCase().trim();
   const navigate = useNavigate();
   const analytics = useAnalytics();
 

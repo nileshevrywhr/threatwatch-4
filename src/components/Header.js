@@ -70,7 +70,7 @@ const Header = memo(({ onAuthSuccess, onNewMonitorClick }) => {
                                     View Feed
                                 </Button>
                                 <UserMenu
-                                    user={user}
+
                                     onLogout={handleLogout}
                                     onShowSubscriptionPlans={() => setShowSubscriptionPlans(true)}
                                 />

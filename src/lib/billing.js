@@ -35,3 +35,22 @@ export const cancelSubscription = () => {
     method: 'POST'
   });
 };
+
+export const extractTier = (data) => {
+  if (!data) return 'free';
+  if (typeof data === 'string') return data.toLowerCase().trim();
+
+  // Handle case where response might be wrapped in { data: { ... } }
+  const source = data.data || data;
+
+  const tier = source.subscription_plan ||
+               source.plan ||
+               source.tier ||
+               source.subscription_tier ||
+               source.subscription_type ||
+               'free';
+
+  const result = String(tier).toLowerCase().trim();
+  console.log("extractTier: Extracted", result, "from", data);
+  return result;
+};
